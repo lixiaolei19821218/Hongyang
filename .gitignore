@@ -21,3 +21,20 @@ $RECYCLE.BIN/
 # =========================
 # Operating System Files
 # =========================
+.vs/Hongyang/v15/.suo
+*.suo
+.vs/Hongyang/v15/Server/sqlite3/db.lock
+*.ide
+.vs/Hongyang/v15/Server/sqlite3/storage.ide-shm
+*.ide-wal
+*.exe
+Hongyang/bin/Debug/Hongyang.pdb
+*.suo
+Hongyang/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
+*.cache
+Hongyang/obj/Debug/MainWindow.g.i.cs
+*.baml
+Hongyang/obj/Debug/Hongyang_MarkupCompile.lref
+*.lref
+*.nupkg
+Hongyang/obj/Debug/Hongyang.Properties.Resources.resources
