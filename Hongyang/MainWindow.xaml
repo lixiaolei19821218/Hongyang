@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Hongyang"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="自动检测" Height="450" Width="800">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -15,9 +15,16 @@
             <RowDefinition/>
             <RowDefinition/>
             <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
         <Label>刀具直径</Label>
         <TextBox Grid.Column="1" Name="tbxDiameter"></TextBox>
-        <Button Grid.Row="2" Grid.ColumnSpan="2" Click="Button_Click">计算</Button>
+        <Label Grid.Row="1">刀柄长度</Label>
+        <TextBox Grid.Row="1" Grid.Column="1" Name="tbxShankLength" ></TextBox>
+        <Label Grid.Row="2">伸出长度</Label>
+        <TextBox Grid.Row="2" Grid.Column="1" Name="tbxOverhang" ></TextBox>
+        <Button Grid.Row="5" Grid.ColumnSpan="2" Click="Button_Click">计算</Button>
     </Grid>
 </Window>

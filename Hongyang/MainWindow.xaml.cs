@@ -34,7 +34,8 @@ namespace Hongyang
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            powerMILL.DialogsOff();
+            session.l
+            //powerMILL.DialogsOff();
             powerMILL.Execute("MODE WORKPLANE_CREATE ; INTERACTIVE GEOMETRY");
             powerMILL.Execute("EXPLORER SELECT Workplane \"Workplane\\2\" NEW");
             powerMILL.Execute("ACTIVATE Workplane \"2\"");
