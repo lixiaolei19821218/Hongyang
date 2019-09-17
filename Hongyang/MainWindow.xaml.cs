@@ -40,10 +40,12 @@ namespace Hongyang
             //powerMILL.DialogsOff();
             powerMILL.Execute("MODE WORKPLANE_CREATE ; INTERACTIVE GEOMETRY");
             powerMILL.Execute("PICK -266.521 -149.743 266.521 149.743 -875.776 -386.645 488.954 -0.994872 -0.0357478 0.0946113 0.0962291 -0.0466247 0.994267 0 -21.046 -21.2323 -21.046 -21.2323");
+            session.Refresh();
             PMWorkplane workplane = session.Workplanes.Last();
             powerMILL.Execute($"EXPLORER SELECT Workplane \"Workplane\\{workplane.Name}\" NEW");
             powerMILL.Execute($"ACTIVATE Workplane \"{workplane.Name}\"");            
             powerMILL.Execute("CREATE TOOL ; PROBE FORM TOOL");
+            session.Refresh();
             PMTool tool = session.Tools.Last();
             powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" DIAMETER \"{tbxDiameter.Text}\"");
             powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT ADD");
@@ -57,10 +59,12 @@ namespace Hongyang
             powerMILL.Execute("TOOL ACCEPT");
             powerMILL.Execute("FORM STRATEGYSELECTOR");
             powerMILL.Execute("STRATEGYSELECTOR CATEGORY 'Probing' NEW");
-            powerMILL.Execute("STRATEGYSELECTOR STRATEGY \"Probing / Surface - Inspection.ptf\" NEW");
-            powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTORGUI \"Probing / Surface - Inspection.ptf\"");
+            powerMILL.Execute("STRATEGYSELECTOR STRATEGY \"Probing/Surface-Inspection.ptf\" NEW");
+            powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTORGUI \"Probing/Surface-Inspection.ptf\"");
+            session.Refresh();
             PMToolpath toolpath = session.Toolpaths.Last();
             powerMILL.Execute("CREATE PATTERN ; EDIT PATTERN ; CURVEEDITOR START");
+            session.Refresh();
             PMPattern pattern1 = session.Patterns.Last();
             powerMILL.Execute($"EDIT PAR 'Pattern' \"{pattern1.Name}\"");
             powerMILL.Execute("CURVEEDITOR MODE LINE_MULTI");
@@ -75,6 +79,7 @@ namespace Hongyang
 
             powerMILL.Execute($"EDIT LEVEL \"{cbxLevel.Text}\" SELECT ALL");
             powerMILL.Execute("CREATE PATTERN ;");
+            session.Refresh();
             PMPattern pattern2 = session.Patterns.Last();
             powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" INSERT MODEL");
             powerMILL.Execute("VIEW MODEL ; SHADE OFF");
@@ -107,14 +112,15 @@ namespace Hongyang
             powerMILL.Execute("PICK -153.567 -86.2806 153.567 86.2806 -694.01 -774.64 376.336 -0.716069 -0.691892 -0.0923641 -0.0390162 -0.0924418 0.994953 0 -119.441 1.5024 -117.724 -38.2039");
             powerMILL.Execute("FORM RIBBON TAB \"CurveTools.EditCurve\"");
             powerMILL.Execute("CURVEEDITOR FILLET INSERT RAISE");
-            powerMILL.Execute("FORM ACCEPT CEINSERTFILLE");
+            powerMILL.Execute("FORM ACCEPT CEINSERTFILLET");
             powerMILL.Execute("FORM RIBBON TAB \"CurveEditor.Edit\"");
             powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
 
             powerMILL.Execute($"EXPLORER SELECT Toolpath \"Toolpath\\{toolpath.Name}\" NEW");
-            powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\" FORM TOOLPATH\"");
+            powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\" FORM TOOLPATH");
             powerMILL.Execute($"EDIT TOOLPATH \"{toolpath.Name}\" CLONE");
             powerMILL.Execute($"EDIT PAR 'Pattern' \"{pattern2.Name}\"");
+            session.Refresh();
             PMToolpath clone = session.Toolpaths.Last();
             powerMILL.Execute($"EDIT TOOLPATH \"{clone.Name}\" CALCULATE");
             powerMILL.Execute("FORM ACCEPT SFSurfaceInspect");
@@ -124,6 +130,8 @@ namespace Hongyang
             powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
             powerMILL.Execute("PICK -86.3812 -48.5329 86.3812 48.5329 -743.703 -699.275 320.499 -0.748899 -0.632926 -0.196355 -0.140636 -0.137758 0.980431 0 34.7094 8.08881 45.2128 -23.9042");
             powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+
+            MessageBox.Show("计算完成");
         }
     }
 }
