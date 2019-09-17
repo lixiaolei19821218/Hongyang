@@ -5,26 +5,40 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Hongyang"
         mc:Ignorable="d"
-        Title="自动检测" Height="450" Width="800">
+        Title="自动检测" Height="300" Width="300">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Label>刀具直径</Label>
-        <TextBox Grid.Column="1" Name="tbxDiameter"></TextBox>
-        <Label Grid.Row="1">刀柄长度</Label>
-        <TextBox Grid.Row="1" Grid.Column="1" Name="tbxShankLength" ></TextBox>
-        <Label Grid.Row="2">伸出长度</Label>
-        <TextBox Grid.Row="2" Grid.Column="1" Name="tbxOverhang" ></TextBox>
-        <Button Grid.Row="5" Grid.ColumnSpan="2" Click="Button_Click">计算</Button>
+        <Label Margin="5">刀具直径</Label>
+        <TextBox Margin="5" Grid.Column="1" Name="tbxDiameter" Width="100" HorizontalAlignment="Left" Text="6"></TextBox>
+        <Label Margin="5" Grid.Row="1">刀柄长度</Label>
+        <TextBox Margin="5" Grid.Row="1" Grid.Column="1" Name="tbxShankLength" Width="100" HorizontalAlignment="Left" Text="100"></TextBox>
+        <Label Margin="5" Grid.Row="2">伸出长度</Label>
+        <TextBox Margin="5" Grid.Row="2" Grid.Column="1" Name="tbxOverhang" Width="100" HorizontalAlignment="Left" Text="100"></TextBox>
+        <Label Margin="5" Grid.Row="3">坐标偏移</Label>
+        <StackPanel Margin="5" Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
+            <Label>X</Label>
+            <TextBox Name="tbxX" Width="50" Text="0"></TextBox>
+            <Label>Y</Label>
+            <TextBox Name="tbxY" Width="50" Text="0"></TextBox>
+            <Label>Z</Label>
+            <TextBox Name="tbxZ" Width="50" Text="-10"></TextBox>
+        </StackPanel>
+        <Label Margin="5" Grid.Row="4">点数</Label>
+        <TextBox Margin="5" Grid.Row="4" Grid.Column="1" Name="tbxPoints" Width="100" HorizontalAlignment="Left" Text="16"></TextBox>
+        <Label Margin="5" Grid.Row="5">检测层</Label>
+        <ComboBox Name="cbxLevel" Margin="5" Grid.Row="5" Grid.Column="1" Width="100" HorizontalAlignment="Left"/>
+        <Button Margin="5" Grid.Row="6" Grid.ColumnSpan="2" Click="Button_Click" VerticalAlignment="Bottom">计算</Button>
     </Grid>
 </Window>

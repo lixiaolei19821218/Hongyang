@@ -37,3 +37,12 @@ C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Hongyang.csproj.Co
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Hongyang.csproj.CopyComplete
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Hongyang.exe
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Hongyang.pdb
+C:\Users\arthur.li\Source\repos\Hongyang\Hongyang\bin\Debug\Autodesk.Geometry.dll
+C:\Users\arthur.li\Source\repos\Hongyang\Hongyang\bin\Debug\Autodesk.ProductInterface.dll
+C:\Users\arthur.li\Source\repos\Hongyang\Hongyang\bin\Debug\Autodesk.ProductInterface.PowerMILL.dll
+C:\Users\arthur.li\Source\repos\Hongyang\Hongyang\bin\Debug\Autodesk.Utilities.dll
+C:\Users\arthur.li\Source\repos\Hongyang\Hongyang\bin\Debug\Autodesk.Geometry.xml
+C:\Users\arthur.li\Source\repos\Hongyang\Hongyang\bin\Debug\Autodesk.ProductInterface.xml
+C:\Users\arthur.li\Source\repos\Hongyang\Hongyang\bin\Debug\Autodesk.ProductInterface.PowerMILL.xml
+C:\Users\arthur.li\Source\repos\Hongyang\Hongyang\bin\Debug\Autodesk.Utilities.xml
+C:\Users\arthur.li\Source\repos\Hongyang\Hongyang\obj\Debug\Hongyang.csproj.CopyComplete
