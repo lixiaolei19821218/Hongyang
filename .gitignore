@@ -43,3 +43,13 @@ Hongyang/obj/Debug/MainWindow.g.cs
 *.resources
 Hongyang/obj/Debug/Hongyang.pdb
 Hongyang/obj/Debug/MainWindow.g.cs
+Hongyang/obj/Debug/MainWindow.g.cs
+*.pdb
+Hongyang/bin/Debug/Autodesk.Geometry.xml
+Hongyang/bin/Debug/Autodesk.Geometry.xml
+Hongyang/bin/Debug/Autodesk.ProductInterface.PowerMILL.xml
+Hongyang/bin/Debug/Autodesk.ProductInterface.xml
+Hongyang/bin/Debug/Autodesk.Utilities.xml
+Hongyang/bin/Hongyang.zip
+Hongyang/obj/Debug/Hongyang.pdb
+Hongyang/obj/Debug/MainWindow.g.cs

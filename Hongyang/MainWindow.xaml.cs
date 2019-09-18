@@ -1,4 +1,5 @@
-﻿using Autodesk.ProductInterface.PowerMILL;
+﻿using Autodesk.Geometry;
+using Autodesk.ProductInterface.PowerMILL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,15 +39,31 @@ namespace Hongyang
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
-            powerMILL.DialogsOff();            
+            powerMILL.DialogsOff();
             //powerMILL.Execute("MODE WORKPLANE_CREATE ; INTERACTIVE GEOMETRY");           
             //powerMILL.Execute("PICK -266.521 -149.743 266.521 149.743 -875.776 -386.645 488.954 -0.994872 -0.0357478 0.0946113 0.0962291 -0.0466247 0.994267 0 -21.046 -21.2323 -21.046 -21.2323");
+            for (int i = 0; i < session.Workplanes.Count; i++)
+            {
+                PMWorkplane w = session.Workplanes[0];
+                w.IsActive = false;
+            }
             powerMILL.Execute($"EDIT LEVEL \"{cbxLevel.Text}\" SELECT ALL");
+            string output = powerMILL.ExecuteEx("SIZE MODEL").ToString();
+            string[] lengths = output.Split('\r')[10].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            double x = double.Parse(lengths[1]);
+            double y = double.Parse(lengths[2]);
+            double a = Math.Atan2(x, y) * 180 / Math.PI;
             powerMILL.Execute("MODE WORKPLANE_CREATE ; SELECTION CENTRE");
             session.Refresh();
             PMWorkplane workplane = session.Workplanes.Last();
-            //workplane.ToWorkplane().
-            //workplane.ToWorkplane().
+            powerMILL.Execute($"MODE WORKPLANE_EDIT START \"{workplane.Name}\"");
+            powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Z");
+            powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{a}\"");
+            powerMILL.Execute("WPETWIST ACCEPT");
+            powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Y");
+            powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"-90\"");
+            powerMILL.Execute("WPETWIST ACCEPT");
+            powerMILL.Execute("MODE WORKPLANE_EDIT FINISH ACCEPT");
             powerMILL.Execute($"EXPLORER SELECT Workplane \"Workplane\\{workplane.Name}\" NEW");
             powerMILL.Execute($"ACTIVATE Workplane \"{workplane.Name}\"");            
             powerMILL.Execute("CREATE TOOL ; PROBE FORM TOOL");
@@ -135,11 +152,11 @@ namespace Hongyang
             powerMILL.Execute($"EDIT TOOLPATH \"{clone.Name}\" CALCULATE");
             powerMILL.Execute("FORM ACCEPT SFSurfaceInspect");
             powerMILL.Execute("VIEW MODEL ; SHADE NORMAL");
-            //powerMILL.Execute("PICK -86.3812 -48.5329 86.3812 48.5329 -743.703 -699.275 320.499 -0.748899 -0.632926 -0.196355 -0.140636 -0.137758 0.980431 0 -73.8255 9.53755 -62.477 -18.23");
+            powerMILL.Execute("PICK -86.3812 -48.5329 86.3812 48.5329 -743.703 -699.275 320.499 -0.748899 -0.632926 -0.196355 -0.140636 -0.137758 0.980431 0 -73.8255 9.53755 -62.477 -18.23");
             powerMILL.Execute("FORM RIBBON TAB \"ToolpathEdit\"");
             powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
             powerMILL.Execute("PICK -86.3812 -48.5329 86.3812 48.5329 -743.703 -699.275 320.499 -0.748899 -0.632926 -0.196355 -0.140636 -0.137758 0.980431 0 34.7094 8.08881 45.2128 -23.9042");
-            //powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+            powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
 
             WindowState = WindowState.Normal;
             MessageBox.Show("计算完成", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
