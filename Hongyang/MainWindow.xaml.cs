@@ -47,6 +47,7 @@ namespace Hongyang
                 PMWorkplane w = session.Workplanes[0];
                 w.IsActive = false;
             }
+            powerMILL.Execute("edit model all deselect all");
             powerMILL.Execute($"EDIT LEVEL \"{cbxLevel.Text}\" SELECT ALL");
             string output = powerMILL.ExecuteEx("SIZE MODEL").ToString();
             string[] lengths = output.Split('\r')[10].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -100,6 +101,7 @@ namespace Hongyang
             powerMILL.Execute("PROCESS TPLEADS");
             powerMILL.Execute("LEADS ACCEPT");
 
+            powerMILL.Execute("edit model all deselect all");
             powerMILL.Execute($"EDIT LEVEL \"{cbxLevel.Text}\" SELECT ALL");
             powerMILL.Execute("CREATE PATTERN ;");
             session.Refresh();
@@ -109,6 +111,7 @@ namespace Hongyang
             //powerMILL.Execute("PICK -108.57 -60.9996 108.57 60.9996 -746.448 -671.323 259.199 -0.77469 -0.551684 -0.30903 0.00239525 -0.491265 0.871007 0 14.3395 -21.6989 17.526 -29.2859");
             //powerMILL.Execute($"EDIT LEVEL \"{cbxLevel.Text}\" SELECT ALL");
             //powerMILL.Execute("DELETE SELECTION");
+            powerMILL.Execute("edit model all deselect all");
             powerMILL.Execute($"EDIT LEVEL \"{cbxLevel.Text}\" SELECT ALL");
             powerMILL.Execute("VIEW MODEL ; SHADE OFF");
             //powerMILL.Execute("PICK -108.57 -60.9996 108.57 60.9996 -746.448 -671.323 259.199 -0.77469 -0.551684 -0.30903 0.00239525 -0.491265 0.871007 0 -61.8342 -13.0497 -61.8342 -13.0497");
