@@ -38,7 +38,7 @@
         <Label Margin="5" Grid.Row="4">点数</Label>
         <TextBox Margin="5" Grid.Row="4" Grid.Column="1" Name="tbxPoints" Width="100" HorizontalAlignment="Left" Text="16"></TextBox>
         <Label Margin="5" Grid.Row="5">检测层</Label>
-        <ComboBox Name="cbxLevel" Margin="5" Grid.Row="5" Grid.Column="1" Width="100" HorizontalAlignment="Left"/>
+        <ComboBox Name="cbxLevel" Margin="5" Grid.Row="5" Grid.Column="1" Width="100" HorizontalAlignment="Left" SelectionChanged="CbxLevel_SelectionChanged"/>
         <Button Margin="5" Grid.Row="6" Grid.ColumnSpan="2" Click="Button_Click" VerticalAlignment="Bottom">计算</Button>
     </Grid>
 </Window>

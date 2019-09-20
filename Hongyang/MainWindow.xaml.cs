@@ -33,7 +33,7 @@ namespace Hongyang
             session = powerMILL.ActiveProject;
 
             cbxLevel.ItemsSource = session.LevelsAndSets.Select(l => l.Name);
-            cbxLevel.SelectedIndex = 1; 
+            cbxLevel.SelectedItem = "CAO1"; 
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -116,8 +116,25 @@ namespace Hongyang
             powerMILL.Execute($"EDIT LEVEL \"{cbxLevel.Text}\" SELECT ALL");
             powerMILL.Execute("VIEW MODEL ; SHADE OFF");
             //powerMILL.Execute("PICK -108.57 -60.9996 108.57 60.9996 -746.448 -671.323 259.199 -0.77469 -0.551684 -0.30903 0.00239525 -0.491265 0.871007 0 -61.8342 -13.0497 -61.8342 -13.0497");
-            // powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" DESELECT 1");
-            //powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" SELECT 0");    
+
+            powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" DESELECT ALL");
+            powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" SELECT 0");
+            output = powerMILL.ExecuteEx($"size pattern '{pattern2.Name}' selected").ToString();
+            double z1 = double.Parse(output.Split('\r')[1].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[3]);
+            powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" SELECT ALL");
+            powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" DESELECT 0");
+            output = powerMILL.ExecuteEx($"size pattern '{pattern2.Name}' selected").ToString();
+            double z2 = double.Parse(output.Split('\r')[1].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[3]);
+            if (z1 < z2)
+            {
+                powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" DESELECT ALL");
+                powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" SELECT 0");
+            }
+            output = powerMILL.ExecuteEx($"size pattern '{pattern2.Name}'").ToString();
+            double zMin = double.Parse(output.Split('\r')[1].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[3]);
+            double zMax = double.Parse(output.Split('\r')[2].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[3]);
+            double height = zMax - zMin;
+            powerMILL.Execute("DELETE SELECTION");
             powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" SELECT ALL");
             powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" CURVEEDITOR START");
             powerMILL.Execute("FORM RIBBON TAB \"CurveTools.EditCurve\"");
@@ -129,7 +146,14 @@ namespace Hongyang
             powerMILL.Execute("CURVEEDITOR UNDO");
             powerMILL.Execute("FORM RIBBON TAB \"CurveEditor.Edit\"");
             powerMILL.Execute("CURVEEDITOR MODE TRANSLATE");
-            powerMILL.Execute($"MODE COORDINPUT COORDINATES {tbxX.Text} {tbxY.Text} {tbxZ.Text}");
+            if (true)
+            {
+                powerMILL.Execute($"MODE COORDINPUT COORDINATES 0 0 -{height / 4}");
+            }
+            else
+            {
+                powerMILL.Execute($"MODE COORDINPUT COORDINATES {tbxX.Text} {tbxY.Text} {tbxZ.Text}");
+            }            
             powerMILL.Execute("MODE TRANSFORM FINISH");
             powerMILL.Execute("FORM RIBBON TAB \"CurveTools.EditCurve\"");
             powerMILL.Execute("CURVEEDITOR REPOINT RAISE");
@@ -157,11 +181,11 @@ namespace Hongyang
             powerMILL.Execute($"EDIT TOOLPATH \"{clone.Name}\" CALCULATE");
             powerMILL.Execute("FORM ACCEPT SFSurfaceInspect");
             powerMILL.Execute("VIEW MODEL ; SHADE NORMAL");
-            powerMILL.Execute("PICK -86.3812 -48.5329 86.3812 48.5329 -743.703 -699.275 320.499 -0.748899 -0.632926 -0.196355 -0.140636 -0.137758 0.980431 0 -73.8255 9.53755 -62.477 -18.23");
-            powerMILL.Execute("FORM RIBBON TAB \"ToolpathEdit\"");
-            powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
-            powerMILL.Execute("PICK -86.3812 -48.5329 86.3812 48.5329 -743.703 -699.275 320.499 -0.748899 -0.632926 -0.196355 -0.140636 -0.137758 0.980431 0 34.7094 8.08881 45.2128 -23.9042");
-            powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+            //powerMILL.Execute("PICK -86.3812 -48.5329 86.3812 48.5329 -743.703 -699.275 320.499 -0.748899 -0.632926 -0.196355 -0.140636 -0.137758 0.980431 0 -73.8255 9.53755 -62.477 -18.23");
+            //powerMILL.Execute("FORM RIBBON TAB \"ToolpathEdit\"");
+            //powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+            //powerMILL.Execute("PICK -86.3812 -48.5329 86.3812 48.5329 -743.703 -699.275 320.499 -0.748899 -0.632926 -0.196355 -0.140636 -0.137758 0.980431 0 34.7094 8.08881 45.2128 -23.9042");
+            //powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
 
             powerMILL.Execute("FORM COLLISION");
             powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
@@ -173,6 +197,25 @@ namespace Hongyang
 
             WindowState = WindowState.Normal;
             MessageBox.Show("计算完成", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+        }
+
+        private void CbxLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cbxLevel.SelectedItem.ToString() == "CAO1")
+            {
+                tbxPoints.Text = "33";
+                tbxZ.Text = "0.5";
+            }
+            else if (cbxLevel.SelectedItem.ToString() == "CAO2")
+            {
+                tbxPoints.Text = "33";
+                tbxZ.Text = "-2";
+            }
+            else
+            {
+                tbxPoints.Text = "16";
+                tbxZ.Text = "-10";
+            }
         }
     }
 }
