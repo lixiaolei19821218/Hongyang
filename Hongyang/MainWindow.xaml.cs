@@ -45,7 +45,8 @@ namespace Hongyang
             for (int i = 0; i < session.Workplanes.Count; i++)
             {
                 PMWorkplane w = session.Workplanes[0];
-                w.IsActive = false;
+                powerMILL.Execute($"EXPLORER SELECT Workplane \"Workplane\\{w.Name}\" NEW");
+                powerMILL.Execute("DEACTIVATE WORKPLANE");
             }
             powerMILL.Execute("edit model all deselect all");
             powerMILL.Execute($"EDIT LEVEL \"{cbxLevel.Text}\" SELECT ALL");
@@ -115,8 +116,9 @@ namespace Hongyang
             powerMILL.Execute($"EDIT LEVEL \"{cbxLevel.Text}\" SELECT ALL");
             powerMILL.Execute("VIEW MODEL ; SHADE OFF");
             //powerMILL.Execute("PICK -108.57 -60.9996 108.57 60.9996 -746.448 -671.323 259.199 -0.77469 -0.551684 -0.30903 0.00239525 -0.491265 0.871007 0 -61.8342 -13.0497 -61.8342 -13.0497");
-            powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" DESELECT 1");
-            powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" SELECT 0");            
+            // powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" DESELECT 1");
+            //powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" SELECT 0");    
+            powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" SELECT ALL");
             powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" CURVEEDITOR START");
             powerMILL.Execute("FORM RIBBON TAB \"CurveTools.EditCurve\"");
             powerMILL.Execute("CURVEEDITOR REPOINT RAISE");
@@ -160,6 +162,14 @@ namespace Hongyang
             powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
             powerMILL.Execute("PICK -86.3812 -48.5329 86.3812 48.5329 -743.703 -699.275 320.499 -0.748899 -0.632926 -0.196355 -0.140636 -0.137758 0.980431 0 34.7094 8.08881 45.2128 -23.9042");
             powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+
+            powerMILL.Execute("FORM COLLISION");
+            powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
+            powerMILL.Execute("EDIT COLLISION HIT_OUTPUT N");
+            powerMILL.Execute("EDIT COLLISION APPLY");
+            powerMILL.Execute("EDIT COLLISION TYPE COLLISION");
+            powerMILL.Execute("EDIT COLLISION APPLY");
+            powerMILL.Execute("COLLISION ACCEPT");
 
             WindowState = WindowState.Normal;
             MessageBox.Show("计算完成", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
