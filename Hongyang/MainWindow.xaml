@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Hongyang"
         mc:Ignorable="d"
-        Title="自动检测" Height="300" Width="300" ResizeMode="CanMinimize">
+        Title="自动检测" Height="320" Width="300" ResizeMode="CanMinimize">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
@@ -26,15 +26,20 @@
         <TextBox Margin="5" Grid.Row="1" Grid.Column="1" Name="tbxShankLength" Width="100" HorizontalAlignment="Left" Text="100"></TextBox>
         <Label Margin="5" Grid.Row="2">伸出长度</Label>
         <TextBox Margin="5" Grid.Row="2" Grid.Column="1" Name="tbxOverhang" Width="100" HorizontalAlignment="Left" Text="100"></TextBox>
-        <Label Margin="5" Grid.Row="3">坐标偏移</Label>
-        <StackPanel Margin="5" Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
-            <Label>X</Label>
-            <TextBox Name="tbxX" Width="50" Text="0"></TextBox>
-            <Label>Y</Label>
-            <TextBox Name="tbxY" Width="50" Text="0"></TextBox>
-            <Label>Z</Label>
-            <TextBox Name="tbxZ" Width="50" Text="-10"></TextBox>
-        </StackPanel>
+        <GroupBox Margin="5" Grid.Row="3" Grid.ColumnSpan="2">
+            <GroupBox.Header>
+                <CheckBox Name="ckbManul">手动设置偏移</CheckBox>
+            </GroupBox.Header>
+            <StackPanel Orientation="Horizontal" IsEnabled="{Binding ElementName=ckbManul, Path=IsChecked}">            
+                <Label Margin="5">X</Label>
+                <TextBox Margin="5" Name="tbxX" Width="50" Text="0"></TextBox>
+                <Label Margin="5">Y</Label>
+                <TextBox Margin="5" Name="tbxY" Width="50" Text="0"></TextBox>
+                <Label Margin="5">Z</Label>
+                <TextBox Margin="5" Name="tbxZ" Width="50" Text="-10"></TextBox>
+            </StackPanel>
+        </GroupBox>
+        
         <Label Margin="5" Grid.Row="4">点数</Label>
         <TextBox Margin="5" Grid.Row="4" Grid.Column="1" Name="tbxPoints" Width="100" HorizontalAlignment="Left" Text="16"></TextBox>
         <Label Margin="5" Grid.Row="5">检测层</Label>
