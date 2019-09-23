@@ -34,10 +34,13 @@ namespace Hongyang
             session = powerMILL.ActiveProject;
 
             cbxLevel.ItemsSource = session.LevelsAndSets.Select(l => l.Name);
-            cbxLevel.SelectedItem = "CAO1"; 
+            cbxLevel.SelectedItem = "CAO1";
+
+            cbxToolpaths.ItemsSource = session.Toolpaths.Select(t => t.Name);
+            cbxCopyToLevels.ItemsSource = session.LevelsAndSets.Select(l => l.Name);
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void BtnCalculate_Click(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
             powerMILL.DialogsOff();           
@@ -67,15 +70,11 @@ namespace Hongyang
 
                 powerMILL.Execute($"EDIT TOOLPATH \"{rcToolpath.Name}\" CALCULATE");
                 powerMILL.Execute("FORM ACCEPT SFSurfaceInspect");
+                CollisionCheck(rcToolpath.Name, rcToolpath.Name);
             }
             else
             {
-                for (int i = 0; i < session.Workplanes.Count; i++)
-                {
-                    PMWorkplane w = session.Workplanes[0];
-                    powerMILL.Execute($"EXPLORER SELECT Workplane \"Workplane\\{w.Name}\" NEW");
-                    powerMILL.Execute("DEACTIVATE WORKPLANE");
-                }
+                ActivateWorldPlane();
                 powerMILL.Execute("edit model all deselect all");
                 powerMILL.Execute($"EDIT LEVEL \"{cbxLevel.Text}\" SELECT ALL");
                 string output = powerMILL.ExecuteEx("SIZE MODEL").ToString();
@@ -96,8 +95,7 @@ namespace Hongyang
                 powerMILL.Execute("MODE WORKPLANE_EDIT FINISH ACCEPT");
                 powerMILL.Execute($"EXPLORER SELECT Workplane \"Workplane\\{workplane.Name}\" NEW");
                 powerMILL.Execute($"ACTIVATE Workplane \"{workplane.Name}\"");
-                powerMILL.Execute("CREATE TOOL ; PROBE FORM TOOL");
-                //powerMILL.Execute("CREATE TOOL");
+                powerMILL.Execute("CREATE TOOL ; PROBE FORM TOOL");               
                 session.Refresh();
                 PMTool tool = session.Tools.Last();
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" DIAMETER \"{tbxDiameter.Text}\"");
@@ -110,7 +108,7 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT LENGTH \"30\"");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" OVERHANG \"{tbxOverhang.Text}\"");
                 powerMILL.Execute("TOOL ACCEPT");
-                //powerMILL.Execute("FORM STRATEGYSELECTOR");
+               
                 powerMILL.Execute("STRATEGYSELECTOR CATEGORY 'Probing' NEW");
                 powerMILL.Execute("STRATEGYSELECTOR STRATEGY \"Probing/Surface-Inspection.ptf\" NEW");
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTORGUI \"Probing/Surface-Inspection.ptf\"");
@@ -200,26 +198,12 @@ namespace Hongyang
                 PMToolpath clone = session.Toolpaths.Last();
                 powerMILL.Execute($"EDIT TOOLPATH \"{clone.Name}\" CALCULATE");
                 powerMILL.Execute("FORM ACCEPT SFSurfaceInspect");
-                powerMILL.Execute("VIEW MODEL ; SHADE NORMAL");                
+                powerMILL.Execute("VIEW MODEL ; SHADE NORMAL");
+                toolpath.Delete();
+                CollisionCheck(clone.Name, cbxLevel.Text);
             }
-
-            powerMILL.Execute("FORM COLLISION");
-            powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
-            powerMILL.Execute("EDIT COLLISION HIT_OUTPUT N");
-            powerMILL.Execute("EDIT COLLISION APPLY");
-            powerMILL.Execute("EDIT COLLISION TYPE COLLISION");
-            powerMILL.Execute("EDIT COLLISION APPLY");
-            powerMILL.Execute("COLLISION ACCEPT");
-
-            session.Refresh();
-            var oldToolpaths = session.Toolpaths.Where(t => t.Name.Contains(cbxLevel.SelectedItem.ToString()) && t.IsActive == false);
-            foreach (PMToolpath tp in oldToolpaths)
-            {
-                powerMILL.Execute($"DELETE TOOLPATH \"{tp.Name}\"");
-            }
-            session.Refresh();
-            PMToolpath final = session.Toolpaths.Last();
-            final.Name = cbxLevel.SelectedItem.ToString();
+          
+            cbxToolpaths.ItemsSource = session.Toolpaths.Select(t => t.Name); 
 
             WindowState = WindowState.Normal;
             MessageBox.Show("计算完成", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
@@ -242,6 +226,106 @@ namespace Hongyang
                 tbxPoints.Text = "16";
                 tbxZ.Text = "-10";
             }
-        }  
+        }
+
+        private void BtnCopy_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+
+            ActivateWorldPlane();
+
+            PMToolpath toolpath = session.Toolpaths.FirstOrDefault(t => t.Name == cbxToolpaths.Text);
+            BoundingBox boundingBox = toolpath.BoundingBox;
+            double x0 = boundingBox.VolumetricCentre.X;
+            double y0 = boundingBox.VolumetricCentre.Y;
+            double a0 = Math.Atan2(y0, x0) * 180 / Math.PI;
+
+            powerMILL.Execute("edit model all deselect all");
+            powerMILL.Execute($"EDIT LEVEL \"{cbxCopyToLevels.Text}\" SELECT ALL");
+            string output = powerMILL.ExecuteEx("SIZE MODEL").ToString();
+            string[] min = output.Split('\r')[8].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] max = output.Split('\r')[9].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            double x1 = (double.Parse(max[1]) + double.Parse(min[1])) / 2;
+            double y1 = (double.Parse(max[2]) + double.Parse(min[2])) / 2; 
+            double a1 = Math.Atan2(y1, x1) * 180 / Math.PI;
+
+            string patternName = powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Pattern.Name\"").ToString();
+            string workplaneName = powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Workplane.Name\"").ToString();
+            powerMILL.Execute($"EDIT PATTERN \"{patternName}\" CLIPBOARD COPY");
+            powerMILL.Execute("CREATE PATTERN CLIPBOARD");
+            powerMILL.Execute($"COPY WORKPLANE \"{workplaneName}\"");
+            session.Refresh();
+            PMPattern pattern = session.Patterns.Last();
+            powerMILL.Execute($"EDIT PATTERN \"{pattern.Name}\" CURVEEDITOR START");
+            powerMILL.Execute("CURVEEDITOR MODE ROTATE");
+            powerMILL.Execute($"MODE TRANSFORM ROTATE ANGLE \"{a1 - a0}\"");
+            powerMILL.Execute("CURVEEDITOR FINISH ACCEPT\rYES");
+            int index = session.Workplanes.IndexOf(session.Workplanes.First(w => w.))
+            PMWorkplane workplane = session.Workplanes[workplaneName + "_1"];
+            powerMILL.Execute($"MODE WORKPLANE_EDIT START \"{workplane.Name}\"");
+            powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Z");
+            powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{a1 - a0}\"");
+            powerMILL.Execute("WPETWIST ACCEPT");
+
+            powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\" FORM TOOLPATH");
+            powerMILL.Execute($"EDIT TOOLPATH \"{toolpath.Name}\" CLONE");
+            powerMILL.Execute("FORM CANCEL SFSurfaceInspect");
+            session.Refresh();
+            PMToolpath cloned = session.Toolpaths.Last();
+            powerMILL.Execute($"ACTIVATE TOOLPATH \"{cloned.Name}\" FORM TOOLPATH");
+            powerMILL.Execute($"ACTIVATE WORKPLANE \"{workplane.Name}\"");
+            powerMILL.Execute("EDIT TPPAGE SWSurfaceInspect");
+            powerMILL.Execute($"EDIT PAR 'Pattern' \"{pattern.Name}\"");            
+            powerMILL.Execute($"EDIT TOOLPATH \"{cloned.Name}\" CALCULATE");
+            powerMILL.Execute("FORM ACCEPT SFSurfaceInspect");
+
+            CollisionCheck(cloned.Name, cbxCopyToLevels.Text);
+
+            cbxToolpaths.ItemsSource = session.Toolpaths.Select(t => t.Name);
+
+            WindowState = WindowState.Normal;
+            MessageBox.Show("复制完成", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+        }
+
+        private void ActivateWorldPlane()
+        {
+            for (int i = 0; i < session.Workplanes.Count; i++)
+            {
+                PMWorkplane w = session.Workplanes[0];
+                powerMILL.Execute($"EXPLORER SELECT Workplane \"Workplane\\{w.Name}\" NEW");
+                powerMILL.Execute("DEACTIVATE WORKPLANE");
+            }
+        }
+
+        private void CollisionCheck(string toolpathName, string newName)
+        {
+            session.Refresh();
+            int count = session.Toolpaths.Count;
+            PMToolpath toolpath = session.Toolpaths.FirstOrDefault(t => t.Name == toolpathName);
+            powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\"");
+            powerMILL.Execute("FORM COLLISION");
+            powerMILL.Execute("EDIT COLLISION SPLIT_TOOLPATH Y");
+            powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
+            powerMILL.Execute("EDIT COLLISION HIT_OUTPUT N");
+            powerMILL.Execute("EDIT COLLISION APPLY");
+            session.Refresh();           
+            if (session.Toolpaths.Count > count)
+            {
+                toolpath.Delete();
+                toolpath = session.Toolpaths.ActiveItem;                
+                session.Refresh();                
+                count = session.Toolpaths.Count;                  
+            }
+            powerMILL.Execute("EDIT COLLISION TYPE COLLISION");
+            powerMILL.Execute("EDIT COLLISION APPLY");
+            powerMILL.Execute("COLLISION ACCEPT");
+            session.Refresh();           
+            if (session.Toolpaths.Count > count)
+            {
+                toolpath.Delete();
+                toolpath = session.Toolpaths.ActiveItem;                
+            }
+            toolpath.Name = newName;
+        }
     }
 }

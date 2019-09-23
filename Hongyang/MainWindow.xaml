@@ -5,13 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Hongyang"
         mc:Ignorable="d"
-        Title="自动检测" Height="320" Width="300" ResizeMode="CanMinimize">
+        Title="自动检测" Height="420" Width="320" ResizeMode="CanMinimize">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -38,12 +39,22 @@
                 <Label Margin="5">Z</Label>
                 <TextBox Margin="5" Name="tbxZ" Width="50" Text="-10"></TextBox>
             </StackPanel>
-        </GroupBox>
-        
+        </GroupBox>        
         <Label Margin="5" Grid.Row="4">点数</Label>
         <TextBox Margin="5" Grid.Row="4" Grid.Column="1" Name="tbxPoints" Width="100" HorizontalAlignment="Left" Text="16"></TextBox>
         <Label Margin="5" Grid.Row="5">检测层</Label>
         <ComboBox Name="cbxLevel" Margin="5" Grid.Row="5" Grid.Column="1" Width="100" HorizontalAlignment="Left" SelectionChanged="CbxLevel_SelectionChanged"/>
-        <Button Margin="5" Grid.Row="6" Grid.ColumnSpan="2" Click="Button_Click" VerticalAlignment="Bottom">计算</Button>
+        <Button Margin="5" Name="btnCalculate" Grid.Row="6" Grid.ColumnSpan="2" Click="BtnCalculate_Click">计算</Button>
+        <GroupBox Margin="5" Grid.Row="7" Grid.ColumnSpan="2" Header="复制刀具路径">
+            <StackPanel>
+                <StackPanel Margin="5" Orientation="Horizontal">
+                    <Label>刀路</Label>
+                    <ComboBox Name="cbxToolpaths" Width="90" SelectedIndex="0"/>
+                    <Label>复制到层</Label>
+                    <ComboBox Name="cbxCopyToLevels" Width="90" SelectedIndex="0"/>
+                </StackPanel>
+                <Button Margin="5" Name="btnCopy" Click="BtnCopy_Click">复制</Button>
+            </StackPanel>
+        </GroupBox>
     </Grid>
 </Window>
