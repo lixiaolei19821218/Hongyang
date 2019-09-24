@@ -45,11 +45,12 @@ namespace Hongyang
             powerMILL.DialogsOff();           
 
             session.Refresh();
-            PMToolpath rcToolpath = session.Toolpaths.FirstOrDefault(t => t.Name == cbxLevel.SelectedItem.ToString());
-            if (rcToolpath != null && (ckbManul.IsChecked ?? false))
+            CreateTool();
+            PMToolpath rcToolpath = session.Toolpaths.FirstOrDefault(t => t.Name == cbxLevel.SelectedItem.ToString());            
+            if ((chxAdjust.IsChecked ?? false) && rcToolpath != null)
             {
                 string patternName = powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{rcToolpath.Name}').Pattern.Name\"").ToString();
-                powerMILL.Execute($"ACTIVATE TOOLPATH \"{rcToolpath.Name}\" FORM TOOLPATH");
+                powerMILL.Execute($"ACTIVATE TOOLPATH \"{rcToolpath.Name}\"");
                 powerMILL.Execute($"EDIT TOOLPATH \"{rcToolpath.Name}\" RECYCLE");
 
                 powerMILL.Execute("EDIT TPPAGE SWSurfaceInspect");
@@ -58,12 +59,13 @@ namespace Hongyang
 
                 powerMILL.Execute($"EDIT PATTERN \"{patternName}\" CURVEEDITOR START");
                 powerMILL.Execute("FORM RIBBON TAB \"CurveEditor.Edit\"");
-                powerMILL.Execute("CURVEEDITOR MODE TRANSLATE");
+                powerMILL.Execute("CURVEEDITOR MODE TRANSLATE");                
                 powerMILL.Execute($"MODE COORDINPUT COORDINATES {tbxX.Text} {tbxY.Text} {tbxZ.Text}");
+               
                 powerMILL.Execute("MODE TRANSFORM FINISH");
                 powerMILL.Execute("FORM RIBBON TAB \"Pattern\"");
                 powerMILL.Execute("CURVEEDITOR FINISH ACCEPT\rYes");
-                powerMILL.Execute($"ACTIVATE TOOLPATH \"{rcToolpath.Name}\" FORM TOOLPATH");
+                powerMILL.Execute($"ACTIVATE TOOLPATH \"{rcToolpath.Name}\"");
                 powerMILL.Execute("EDIT TPPAGE SWSurfaceInspect");
                 powerMILL.Execute($"EDIT PAR 'Pattern' \"{patternName}\"");
 
@@ -73,45 +75,35 @@ namespace Hongyang
             }
             else
             {
+                ClearToolpath(cbxLevel.Text);
                 CreateWorkplane(cbxLevel.Text);                
-                powerMILL.Execute("CREATE TOOL ; PROBE FORM TOOL");               
-                session.Refresh();
-                PMTool tool = session.Tools.Last();
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" DIAMETER \"{tbxDiameter.Text}\"");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT ADD");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LOWERDIA \"4\"");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT UPPERDIA \"4\"");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LENGTH \"{tbxShankLength.Text}\"");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT ADD");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT LOWERDIA \"30\"");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT LENGTH \"30\"");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" OVERHANG \"{tbxOverhang.Text}\"");
-                powerMILL.Execute("TOOL ACCEPT");
                
                 powerMILL.Execute("STRATEGYSELECTOR CATEGORY 'Probing' NEW");
                 powerMILL.Execute("STRATEGYSELECTOR STRATEGY \"Probing/Surface-Inspection.ptf\" NEW");
-                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTORGUI \"Probing/Surface-Inspection.ptf\"");
+                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
                 session.Refresh();
                 PMToolpath toolpath = session.Toolpaths.Last();
+               
                 powerMILL.Execute("CREATE PATTERN ; EDIT PATTERN ; CURVEEDITOR START");
-                session.Refresh();
-                PMPattern pattern1 = session.Patterns.Last();
+                session.Refresh();                
+                PMPattern pattern1 = session.Patterns.Last();                
                 powerMILL.Execute($"EDIT PAR 'Pattern' \"{pattern1.Name}\"");
                 powerMILL.Execute("CURVEEDITOR MODE LINE_MULTI");
-                powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
-                powerMILL.Execute($"EDIT TOOLPATH \"{toolpath.Name}\" CALCULATE");
+                powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");               
                 powerMILL.Execute("FORM ACCEPT SFSurfaceInspect");
                 powerMILL.Execute("EDIT TOOLPATH LEADS RAISEFORM");
                 powerMILL.Execute("EDIT TOOLPATH SAFEAREA CALCULATE_DIMENSIONS");
                 powerMILL.Execute("EDIT TOOLPATH SAFEAREA APPLY");
                 powerMILL.Execute("PROCESS TPLEADS");
-                powerMILL.Execute("LEADS ACCEPT");
+                powerMILL.Execute("LEADS ACCEPT");                
 
                 powerMILL.Execute("edit model all deselect all");
                 powerMILL.Execute($"EDIT LEVEL \"{cbxLevel.Text}\" SELECT ALL");
                 powerMILL.Execute("CREATE PATTERN ;");
                 session.Refresh();
+                
                 PMPattern pattern2 = session.Patterns.Last();
+                pattern2.Name = cbxLevel.Text;
                 powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" INSERT MODEL");
                 powerMILL.Execute("edit model all deselect all");
                 powerMILL.Execute($"EDIT LEVEL \"{cbxLevel.Text}\" SELECT ALL");
@@ -168,9 +160,8 @@ namespace Hongyang
                 powerMILL.Execute("FORM ACCEPT CEINSERTFILLET");
                 powerMILL.Execute("FORM RIBBON TAB \"CurveEditor.Edit\"");
                 powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
-
-                powerMILL.Execute($"EXPLORER SELECT Toolpath \"Toolpath\\{toolpath.Name}\" NEW");
-                powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\" FORM TOOLPATH");
+                
+                powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\"");
                 powerMILL.Execute($"EDIT TOOLPATH \"{toolpath.Name}\" CLONE");
                 powerMILL.Execute($"EDIT PAR 'Pattern' \"{pattern2.Name}\"");
                 session.Refresh();
@@ -179,6 +170,7 @@ namespace Hongyang
                 powerMILL.Execute("FORM ACCEPT SFSurfaceInspect");
                 powerMILL.Execute("VIEW MODEL ; SHADE NORMAL");
                 toolpath.Delete();
+                pattern1.Delete();
                 CollisionCheck(clone.Name, cbxLevel.Text);
             }
           
@@ -211,7 +203,9 @@ namespace Hongyang
         {
             WindowState = WindowState.Minimized;
 
+            ClearToolpath(cbxCopyToLevels.Text);
             ActivateWorldPlane();
+            CreateTool();
 
             PMToolpath toolpath = session.Toolpaths.FirstOrDefault(t => t.Name == cbxToolpaths.Text);
             BoundingBox boundingBox = toolpath.BoundingBox;
@@ -233,6 +227,7 @@ namespace Hongyang
             powerMILL.Execute("CREATE PATTERN CLIPBOARD");
             session.Refresh();
             PMPattern pattern = session.Patterns.Last();
+            pattern.Name = cbxCopyToLevels.Text;
             powerMILL.Execute($"EDIT PATTERN \"{pattern.Name}\" CURVEEDITOR START");
             powerMILL.Execute("CURVEEDITOR MODE ROTATE");
             powerMILL.Execute($"MODE TRANSFORM ROTATE ANGLE \"{a1 - a0}\"");
@@ -240,12 +235,12 @@ namespace Hongyang
 
             PMWorkplane workplane = CreateWorkplane(cbxCopyToLevels.Text);
 
-            powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\" FORM TOOLPATH");
+            powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\"");
             powerMILL.Execute($"EDIT TOOLPATH \"{toolpath.Name}\" CLONE");
             powerMILL.Execute("FORM CANCEL SFSurfaceInspect");
             session.Refresh();
             PMToolpath cloned = session.Toolpaths.Last();
-            powerMILL.Execute($"ACTIVATE TOOLPATH \"{cloned.Name}\" FORM TOOLPATH");
+            powerMILL.Execute($"ACTIVATE TOOLPATH \"{cloned.Name}\"");
             workplane.IsActive = true;
             powerMILL.Execute("EDIT TPPAGE SWSurfaceInspect");
             powerMILL.Execute($"EDIT PAR 'Pattern' \"{pattern.Name}\"");            
@@ -276,7 +271,7 @@ namespace Hongyang
             int count = session.Toolpaths.Count;
             PMToolpath toolpath = session.Toolpaths.FirstOrDefault(t => t.Name == toolpathName);
             powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\"");
-            powerMILL.Execute("FORM COLLISION");
+            //powerMILL.Execute("FORM COLLISION");
             powerMILL.Execute("EDIT COLLISION SPLIT_TOOLPATH Y");
             powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
             powerMILL.Execute("EDIT COLLISION HIT_OUTPUT N");
@@ -314,7 +309,13 @@ namespace Hongyang
             double a = Math.Atan2(y, x) * 180 / Math.PI;
             powerMILL.Execute("MODE WORKPLANE_CREATE ; SELECTION CENTRE");
             session.Refresh();
-            PMWorkplane workplane = session.Workplanes.Last();
+            PMWorkplane workplane = session.Workplanes.FirstOrDefault(w => w.Name == level);
+            if (workplane != null)
+            {
+                workplane.Delete();
+            }
+            workplane = session.Workplanes.Last();
+            workplane.Name = level;
             powerMILL.Execute($"MODE WORKPLANE_EDIT START \"{workplane.Name}\"");
             powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Z");
             powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{a}\"");
@@ -326,6 +327,63 @@ namespace Hongyang
             powerMILL.Execute($"EXPLORER SELECT Workplane \"Workplane\\{workplane.Name}\" NEW");
             powerMILL.Execute($"ACTIVATE Workplane \"{workplane.Name}\"");
             return workplane;
+        }
+
+        private double CalculateHeight(string patternName)
+        {
+            foreach (PMPattern pattern in session.Patterns)
+            {
+                powerMILL.Execute($"EDIT PATTERN \"{pattern.Name}\" DESELECT ALL");
+            }
+            powerMILL.Execute($"EDIT PATTERN \"{patternName}\" SELECT ALL");
+            string output = powerMILL.ExecuteEx($"size pattern '{patternName}' selected").ToString();
+            double zMin = double.Parse(output.Split('\r')[1].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[3]);
+            double zMax = double.Parse(output.Split('\r')[2].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[3]);
+            double height = zMax - zMin;
+            return height;
+        }
+
+        private void ChxAdjust_Checked(object sender, RoutedEventArgs e)
+        {
+            ckbManul.IsChecked = true;
+        }
+
+        private void ClearToolpath(string toolpathName)
+        {
+            PMToolpath toolpath = session.Toolpaths.FirstOrDefault(t => t.Name == toolpathName);
+            if (toolpath != null)
+            {
+                string patternName = powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Pattern.Name\"").ToString();
+                toolpath.Delete();
+                PMPattern pattern = session.Patterns.FirstOrDefault(p => p.Name == patternName);
+                if (pattern != null)
+                {
+                    pattern.Delete();
+                }
+            }            
+        }
+
+        private void CreateTool(string toolName = "InspectionHead")
+        {
+            PMTool tool = session.Tools.FirstOrDefault(t => t.Name == toolName);
+            if (tool == null)
+            {
+                powerMILL.Execute("CREATE TOOL ; PROBE FORM TOOL");
+                session.Refresh();
+                tool = session.Tools.Last();
+                tool.Name = "InspectionHead";
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" DIAMETER \"{tbxDiameter.Text}\"");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT ADD");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LOWERDIA \"4\"");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT UPPERDIA \"4\"");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LENGTH \"{tbxShankLength.Text}\"");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT ADD");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT LOWERDIA \"30\"");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT LENGTH \"30\"");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" OVERHANG \"{tbxOverhang.Text}\"");
+                powerMILL.Execute("TOOL ACCEPT");
+            }                       
+            tool.IsActive = true;
         }
     }
 }
