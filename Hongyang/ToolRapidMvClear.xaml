@@ -1,0 +1,85 @@
+﻿<Page x:Class="Hongyang.ToolRapidMvClear"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Hongyang"
+      mc:Ignorable="d" 
+      d:DesignHeight="650" d:DesignWidth="800"
+      Title="ToolRapidMvClear">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <GroupBox Header="退刀和进刀移动">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Label HorizontalAlignment="Right" Margin="5">沿着</Label>
+                <ComboBox Name="cbxMoveDir" Grid.Column="1" Width="150" SelectedIndex="0" Margin="5" SelectionChanged="CbxMoveDir_SelectionChanged" DropDownClosed="CbxMoveDir_DropDownClosed">
+                    <ComboBoxItem Tag="TOOLAXIS">刀轴</ComboBoxItem>
+                    <ComboBoxItem Tag="NORMAL">接触点法向</ComboBoxItem>
+                    <ComboBoxItem Tag="TANGENT">切线</ComboBoxItem>
+                    <ComboBoxItem Tag="RADIAL">径向</ComboBoxItem>
+                </ComboBox>
+                <Label Grid.Row="1" HorizontalAlignment="Right" Margin="5">最小退刀距离</Label>
+                <TextBox Grid.Row="1" Grid.Column="1" Margin="5" TextChanged="TextBox_TextChanged" Tag="RETRACTDIST">0.0</TextBox>
+                <Label Grid.Row="2" HorizontalAlignment="Right" Margin="5">最小进刀距离</Label>
+                <TextBox Grid.Row="2" Grid.Column="1" Margin="5" TextChanged="TextBox_TextChanged" Tag="APPROACHDIST">0.0</TextBox>
+                <GroupBox Grid.Row="3" Grid.ColumnSpan="2">
+                    <GroupBox.Header>
+                        <CheckBox Name="cbxExtend" Click="CbxExtend_Click">自动延长</CheckBox>
+                    </GroupBox.Header>
+                    <StackPanel Orientation="Horizontal" IsEnabled="{Binding ElementName=cbxExtend, Path=IsChecked}">
+                        <Label Margin="5">最大长度</Label>
+                        <TextBox Width="120" Name="txtMaxExtension" TextChanged="TxtMaxExtension_TextChanged">250.0</TextBox>
+                    </StackPanel>
+                </GroupBox>
+            </Grid>
+        </GroupBox>
+        <GroupBox Grid.Row="1" Header="平面掠过移动">
+            <StackPanel Orientation="Horizontal">
+                <Label>平面</Label>
+                <ComboBox SelectedIndex="0" Width="150" Name="cbxSkimPlane" SelectionChanged="CbxSkimPlane_SelectionChanged">
+                    <ComboBoxItem Tag="AUTOMATIC">自动</ComboBoxItem>
+                    <ComboBoxItem Tag="INTERPOLATED">插值</ComboBoxItem>
+                    <ComboBoxItem Tag="SAFEAREA">安全区域</ComboBoxItem>
+                    <ComboBoxItem Tag="WORKPLANE">工作平面 Z</ComboBoxItem>
+                </ComboBox>
+            </StackPanel>               
+        </GroupBox>
+        <GroupBox Grid.Row="2">
+            <GroupBox.Header>
+                <CheckBox Name="cbxArcFit" Click="CbxArcFit_Click">修圆快进移动</CheckBox>
+            </GroupBox.Header>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" IsEnabled="{Binding ElementName=cbxArcFit, Path=IsChecked}">
+                <Label>圆弧半径（刀具直径单位）</Label>
+                <TextBox Width="100" Text="0.25" Name="txtArcFit" TextChanged="TxtArcFit_TextChanged"/>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox Grid.Row="3" Header="间隙">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Label>轴向间隙</Label>
+                    <TextBox Width="100" Tag="SKIMDIST" TextChanged="TextBox_TextChanged">5.0</TextBox>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Label>径向间隙</Label>
+                    <TextBox Width="100" Tag="RADIAL_CLEARANCE" TextChanged="TextBox_TextChanged">0.0</TextBox>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+    </Grid>
+</Page>

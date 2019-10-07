@@ -1,0 +1,65 @@
+﻿<Page x:Class="Hongyang.Toolpath"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Hongyang"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="Tool">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Label Margin="5">刀具直径</Label>
+        <TextBox Margin="5" Grid.Column="1" Name="tbxDiameter" Width="100" HorizontalAlignment="Left" Text="6"></TextBox>
+        <Label Margin="5" Grid.Row="1">刀柄长度</Label>
+        <TextBox Margin="5" Grid.Row="1" Grid.Column="1" Name="tbxShankLength" Width="100" HorizontalAlignment="Left" Text="100"></TextBox>
+        <Label Margin="5" Grid.Row="2">伸出长度</Label>
+        <TextBox Margin="5" Grid.Row="2" Grid.Column="1" Name="tbxOverhang" Width="100" HorizontalAlignment="Left" Text="100"></TextBox>
+        <GroupBox Margin="5" Grid.Row="3" Grid.ColumnSpan="2">
+            <GroupBox.Header>
+                <CheckBox Name="ckbManul">手动设置偏移</CheckBox>
+            </GroupBox.Header>
+            <StackPanel Orientation="Horizontal" IsEnabled="{Binding ElementName=ckbManul, Path=IsChecked}">
+                <Label Margin="5">X</Label>
+                <TextBox Margin="5" Name="tbxX" Width="50" Text="0"></TextBox>
+                <Label Margin="5">Y</Label>
+                <TextBox Margin="5" Name="tbxY" Width="50" Text="0"></TextBox>
+                <Label Margin="5">Z</Label>
+                <TextBox Margin="5" Name="tbxZ" Width="50" Text="-10"></TextBox>
+            </StackPanel>
+        </GroupBox>
+        <Label Margin="5" Grid.Row="4">点数</Label>
+        <TextBox Margin="5" Grid.Row="4" Grid.Column="1" Name="tbxPoints" Width="100" HorizontalAlignment="Left" Text="16"></TextBox>
+        <Label Margin="5" Grid.Row="5">检测层</Label>
+        <DockPanel Grid.Row="5" Grid.Column="1">
+            <ComboBox Name="cbxLevel" Width="100" HorizontalAlignment="Left" SelectionChanged="CbxLevel_SelectionChanged"/>
+            <CheckBox Name="chxAdjust" VerticalAlignment="Center" HorizontalAlignment="Right" Checked="ChxAdjust_Checked">调整偏移</CheckBox>
+        </DockPanel>
+        <Button Margin="5" Grid.Row="6" Grid.ColumnSpan="2" Name="btnCalculate" Click="BtnCalculate_Click">计算</Button>
+        <GroupBox Margin="5" Grid.Row="7" Grid.ColumnSpan="2" Header="复制刀具路径">
+            <StackPanel>
+                <StackPanel Margin="5" Orientation="Horizontal">
+                    <Label>刀路</Label>
+                    <ComboBox Name="cbxToolpaths" Width="90" SelectedIndex="0"/>
+                    <Label>复制到层</Label>
+                    <ComboBox Name="cbxCopyToLevels" Width="90" SelectedIndex="0"/>
+                </StackPanel>
+                <Button Margin="5" Name="btnCopy" Click="BtnCopy_Click">复制</Button>
+            </StackPanel>
+        </GroupBox>
+    </Grid>
+</Page>

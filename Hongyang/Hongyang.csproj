@@ -68,6 +68,27 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converter\ConstraintConverter.cs" />
+    <Compile Include="Link.xaml.cs">
+      <DependentUpon>Link.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ToolAxOVec.xaml.cs">
+      <DependentUpon>ToolAxOVec.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Toolpath.xaml.cs">
+      <DependentUpon>Toolpath.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ToolRapidMv.xaml.cs">
+      <DependentUpon>ToolRapidMv.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ToolRapidMvClear.xaml.cs">
+      <DependentUpon>ToolRapidMvClear.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModel\TreeItem.cs" />
+    <Page Include="Link.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -80,6 +101,22 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="ToolAxOVec.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Toolpath.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ToolRapidMv.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ToolRapidMvClear.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -107,6 +144,27 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\pmill.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\Toolpath.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\External-Thread.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\Bore-Finishing.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\2D-Curve-Profile.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\Corner-Pencil-Finishing.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\Cooling.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
