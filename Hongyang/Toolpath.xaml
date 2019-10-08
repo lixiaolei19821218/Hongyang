@@ -46,10 +46,11 @@
         <TextBox Margin="5" Grid.Row="4" Grid.Column="1" Name="tbxPoints" Width="100" HorizontalAlignment="Left" Text="16"></TextBox>
         <Label Margin="5" Grid.Row="5">检测层</Label>
         <DockPanel Grid.Row="5" Grid.Column="1">
-            <ComboBox Name="cbxLevel" Width="100" HorizontalAlignment="Left" SelectionChanged="CbxLevel_SelectionChanged"/>
+            <ComboBox Name="cbxLevel" Width="100" SelectedIndex="0" HorizontalAlignment="Left" SelectionChanged="CbxLevel_SelectionChanged"/>
             <CheckBox Name="chxAdjust" VerticalAlignment="Center" HorizontalAlignment="Right" Checked="ChxAdjust_Checked">调整偏移</CheckBox>
         </DockPanel>
         <Button Margin="5" Grid.Row="6" Grid.ColumnSpan="2" Name="btnCalculate" Click="BtnCalculate_Click">计算</Button>
+        <!--
         <GroupBox Margin="5" Grid.Row="7" Grid.ColumnSpan="2" Header="复制刀具路径">
             <StackPanel>
                 <StackPanel Margin="5" Orientation="Horizontal">
@@ -61,5 +62,6 @@
                 <Button Margin="5" Name="btnCopy" Click="BtnCopy_Click">复制</Button>
             </StackPanel>
         </GroupBox>
+        -->
     </Grid>
 </Page>

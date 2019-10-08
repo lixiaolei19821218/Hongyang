@@ -35,13 +35,13 @@ namespace Hongyang
             cbxLevel.ItemsSource = session.LevelsAndSets.Select(l => l.Name);
             cbxLevel.SelectedItem = "CAO1";
 
-            cbxToolpaths.ItemsSource = session.Toolpaths.Select(t => t.Name);
-            cbxCopyToLevels.ItemsSource = session.LevelsAndSets.Select(l => l.Name);
+            //cbxToolpaths.ItemsSource = session.Toolpaths.Select(t => t.Name);
+            //cbxCopyToLevels.ItemsSource = session.LevelsAndSets.Select(l => l.Name);
         }
 
         private void BtnCalculate_Click(object sender, RoutedEventArgs e)
         {
-            //WindowState = WindowState.Minimized;
+            Application.Current.MainWindow.WindowState = WindowState.Minimized;
             powerMILL.DialogsOff();
 
             session.Refresh();
@@ -117,21 +117,27 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" SELECT ALL");
                 powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" DESELECT 0");
                 output = powerMILL.ExecuteEx($"size pattern '{pattern2.Name}' selected").ToString();
-                double z1Min = double.Parse(output.Split('\r')[1].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[3]);
-                double z1Max = double.Parse(output.Split('\r')[2].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[3]);
                 double height;
-                if (z0Min < z1Min)
-                {
-                    powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" DESELECT ALL");
-                    powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" SELECT 0");
-                    height = z1Max - z1Min;
+                if (output.Split('\r').Length == 1)
+                {                    
+                    height = z0Max - z0Min;
                 }
                 else
                 {
-                    height = z0Max - z0Min;
+                    double z1Min = double.Parse(output.Split('\r')[1].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[3]);
+                    double z1Max = double.Parse(output.Split('\r')[2].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[3]);
+                    if (z0Min < z1Min)
+                    {
+                        powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" DESELECT ALL");
+                        powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" SELECT 0");
+                        height = z1Max - z1Min;
+                    }
+                    else
+                    {
+                        height = z0Max - z0Min;
+                    }
+                    powerMILL.Execute("DELETE SELECTION");
                 }
-
-                powerMILL.Execute("DELETE SELECTION");
                 powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" SELECT ALL");
                 powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" CURVEEDITOR START");
                 powerMILL.Execute("FORM RIBBON TAB \"CurveEditor.Edit\"");
@@ -174,9 +180,9 @@ namespace Hongyang
                 CollisionCheck(clone.Name, cbxLevel.Text);
             }
 
-            cbxToolpaths.ItemsSource = session.Toolpaths.Select(t => t.Name);
+            //cbxToolpaths.ItemsSource = session.Toolpaths.Select(t => t.Name);
 
-            //WindowState = WindowState.Normal;
+            Application.Current.MainWindow.WindowState = WindowState.Normal;
             MessageBox.Show("计算完成", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
         }
 
@@ -199,11 +205,12 @@ namespace Hongyang
             }
         }
 
+        /*
         private void BtnCopy_Click(object sender, RoutedEventArgs e)
         {
             //WindowState = WindowState.Minimized;
 
-            ClearToolpath(cbxCopyToLevels.Text);
+            //ClearToolpath(cbxCopyToLevels.Text);
             ActivateWorldPlane();
             CreateTool();
 
@@ -254,6 +261,7 @@ namespace Hongyang
             //WindowState = WindowState.Normal;
             MessageBox.Show("复制完成", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
         }
+        */
 
         private void ActivateWorldPlane()
         {
@@ -306,7 +314,9 @@ namespace Hongyang
             string[] max = output.Split('\r')[9].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             double x = (double.Parse(min[1]) + double.Parse(max[1])) / 2;
             double y = (double.Parse(min[2]) + double.Parse(max[2])) / 2;
+            double z = (double.Parse(min[3]) + double.Parse(max[3])) / 2;
             double a = Math.Atan2(y, x) * 180 / Math.PI;
+            double b = Math.Atan2(x, z) * 180 / Math.PI;
             powerMILL.Execute("MODE WORKPLANE_CREATE ; SELECTION CENTRE");
             session.Refresh();
             PMWorkplane workplane = session.Workplanes.FirstOrDefault(w => w.Name == level);
@@ -320,8 +330,23 @@ namespace Hongyang
             powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Z");
             powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{a}\"");
             powerMILL.Execute("WPETWIST ACCEPT");
+            powerMILL.Execute("MODE WORKPLANE_EDIT FINISH ACCEPT");
+
+            powerMILL.Execute($"ACTIVATE Workplane \"{workplane.Name}\"");
+            powerMILL.Execute("edit model all deselect all");
+            powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
+            output = powerMILL.ExecuteEx("SIZE MODEL").ToString();
+            min = output.Split('\r')[8].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            max = output.Split('\r')[9].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            x = (double.Parse(min[1]) + double.Parse(max[1])) / 2;
+            y = (double.Parse(min[2]) + double.Parse(max[2])) / 2;
+            z = (double.Parse(min[3]) + double.Parse(max[3])) / 2;
+            a = Math.Atan2(y, x) * 180 / Math.PI;
+            b = Math.Atan2(x, z) * 180 / Math.PI;
+            powerMILL.Execute($"MODE WORKPLANE_EDIT START \"{workplane.Name}\"");
             powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Y");
-            powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"90\"");
+            powerMILL.Execute($"MODE WORKPLANE_EDIT START \"{workplane.Name}\"");
+            powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{b}\"");
             powerMILL.Execute("WPETWIST ACCEPT");
             powerMILL.Execute("MODE WORKPLANE_EDIT FINISH ACCEPT");
             powerMILL.Execute($"EXPLORER SELECT Workplane \"Workplane\\{workplane.Name}\" NEW");
