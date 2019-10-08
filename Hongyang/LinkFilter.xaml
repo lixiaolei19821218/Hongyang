@@ -1,0 +1,61 @@
+﻿<Page x:Class="Hongyang.LinkFilter"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Hongyang"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="LinkFilter">
+
+    <StackPanel>
+        <CheckBox IsChecked="True" Margin="10" Tag="UseToolpathSettings" Click="CheckBox_Click">应用到切入切出和连接</CheckBox>
+        <GroupBox>
+            <GroupBox.Header>
+                <CheckBox Name="chxDist" Tag="Rapid.Active" Click="CheckBox_Click">应用到快进连接</CheckBox>
+            </GroupBox.Header>
+            <StackPanel IsEnabled="{Binding ElementName=chxDist, Path=IsChecked}">
+                <GroupBox Header="输出点分布">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Label>输出类型</Label>
+                        <ComboBox Grid.Column="1" Width="150" SelectedIndex="0" SelectionChanged="ComboBox_SelectionChanged">
+                            <ComboBoxItem Tag="strip">公差并保留圆弧</ComboBoxItem>
+                            <ComboBoxItem Tag="strip_smash_arcs">公差并保留圆弧</ComboBoxItem>
+                            <ComboBoxItem Tag="redistribute">重新分布</ComboBoxItem>
+                            <ComboBoxItem Tag="arcfit">修圆</ComboBoxItem>
+                        </ComboBox>
+                        <Label Grid.Row="1">公差系数</Label>
+                        <TextBox Grid.Row="1" Grid.Column="1" Width="150" Text="0.5" Tag="Filter.Factor" TextChanged="TextBox_TextChanged"/>
+                    </Grid>
+                </GroupBox>
+                <GroupBox Name="gpbDistance">
+                    <GroupBox.Header>
+                        <CheckBox Name="chxDistance" Tag="Rapid.MaxDistanceBetweenPoints.Active"  Click="CheckBox_Click">点间距离</CheckBox>
+                    </GroupBox.Header>
+                    <StackPanel IsEnabled="{Binding ElementName=chxDistance, Path=IsChecked}" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Label>最大距离</Label>
+                        <TextBox Width="150" Tag="MaxDistanceBetweenPoints.Value" TextChanged="TextBox_TextChanged">10.0</TextBox>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Name="gpbAngle">
+                    <GroupBox.Header>
+                        <CheckBox Name="chxAngle" Tag="Rapid.MaxAngleBetweenPoints.Active" Click="CheckBox_Click">点间角度</CheckBox>
+                    </GroupBox.Header>
+                    <StackPanel IsEnabled="{Binding ElementName=chxAngle, Path=IsChecked}" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Label>最大角</Label>
+                        <TextBox Width="150" Tag="MaxAngleBetweenPoints.Value" TextChanged="TextBox_TextChanged">0.25</TextBox>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+        </GroupBox>
+        <CheckBox HorizontalAlignment="Right" Margin="10" Tag="GOUGECHECK" Click="CheckBox_Click">过切检查</CheckBox>
+    </StackPanel>
+</Page>

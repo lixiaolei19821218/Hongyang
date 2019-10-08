@@ -13,7 +13,7 @@
     <StackPanel>
         <GroupBox Header="第一选择">
             <StackPanel>
-                <ComboBox Width="100" HorizontalAlignment="Right" Tag="0" SelectionChanged="CbxProbing_SelectionChanged">
+                <ComboBox Width="100" HorizontalAlignment="Right" Tag="0" SelectedIndex="0" SelectionChanged="CbxProbing_SelectionChanged">
                     <ComboBoxItem Tag="probing_safe">探测安全高度</ComboBoxItem>
                     <ComboBoxItem Tag="probing_skim">探测掠过</ComboBoxItem>
                     <ComboBoxItem Tag="probing_straight">探测笔直</ComboBoxItem>
@@ -21,7 +21,7 @@
                 </ComboBox>
                 <GroupBox>
                     <GroupBox.Header>
-                        <CheckBox Name="chx1stConstraint">应用约束</CheckBox>
+                        <CheckBox Name="chx1stConstraint" Tag="0" Click="CheckBox_Click">应用约束</CheckBox>
                     </GroupBox.Header>
                     <Grid Tag="First" IsEnabled="{Binding ElementName=chx1stConstraint, Path=IsChecked}">
                         <Grid.RowDefinitions>
@@ -34,7 +34,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
-                        <ComboBox Width="100" SelectedIndex="0" Tag="0" SelectionChanged="CbxConstraint_SelectionChanged" Name="cbx1stConstraint" Grid.ColumnSpan="2">
+                        <ComboBox Width="100" SelectedIndex="0" Tag="0" SelectionChanged="CbxConstraint_SelectionChanged" Name="cbx1stLink1stConstraint" Grid.ColumnSpan="2">
                             <ComboBoxItem Tag="unspecified">&#160;</ComboBoxItem>
                             <ComboBoxItem Tag="distance">距离</ComboBoxItem>
                             <ComboBoxItem Tag="surface_slope">曲面倾角</ComboBoxItem>
@@ -42,35 +42,88 @@
                             <ComboBoxItem Tag="azimuth">方位角</ComboBoxItem>
                             <ComboBoxItem Tag="elevation">仰角</ComboBoxItem>
                         </ComboBox>
-                        <ComboBox Width="50" Grid.Column="2" Height="21" Margin="5,5,5,0" VerticalAlignment="Top" Tag="0" IsEnabled="{Binding ElementName=cbx1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ResourceKey=ConstraintConverter}}">
+                        <ComboBox Width="50" Grid.Column="2" Height="21" Margin="5,5,5,0" VerticalAlignment="Top" Tag="0" SelectedIndex="0" SelectionChanged="ComboBox_SelectionChanged" IsEnabled="{Binding ElementName=cbx1stLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ResourceKey=ConstraintConverter}}">
                             <ComboBoxItem Tag="less_than">&lt;</ComboBoxItem>
                             <ComboBoxItem Tag="greater_than">&gt;</ComboBoxItem>
                         </ComboBox>
-                        <TextBox Width="50" Grid.Column="3" HorizontalAlignment="Left" Text="0.0" Margin="5,5,0,5"/>
-                        <ComboBox Width="100" Grid.Row="1" Tag="1" SelectedIndex="0" Grid.ColumnSpan="2">
-                            <ComboBoxItem Tag="unspecified"></ComboBoxItem>
+                        <TextBox Width="50" Grid.Column="3" HorizontalAlignment="Left" Text="0.0" Margin="5,5,0,5" Tag="0" SelectionChanged="TextBox_SelectionChanged" Visibility="{Binding ElementName=cbx1stLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}"/>
+                        <ComboBox Width="100" Grid.Row="1" Tag="1" SelectedIndex="0" SelectionChanged="CbxConstraint_SelectionChanged" Grid.ColumnSpan="2" Name="cbx1stLink2ndConstraint" Visibility="{Binding ElementName=cbx1stLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}">
+                            <ComboBoxItem Tag="unspecified">&#160;</ComboBoxItem>
                             <ComboBoxItem Tag="distance">距离</ComboBoxItem>
                             <ComboBoxItem Tag="surface_slope">曲面倾角</ComboBoxItem>
                             <ComboBoxItem Tag="angular_change">角度改变</ComboBoxItem>
                             <ComboBoxItem Tag="azimuth">方位角</ComboBoxItem>
                             <ComboBoxItem Tag="elevation">仰角</ComboBoxItem>
                         </ComboBox>
-                        <ComboBox Width="50" Grid.Row="1" Grid.Column="2" Tag="1">
+                        <ComboBox Width="50" Grid.Row="1" Grid.Column="2" Tag="1" SelectedIndex="0" SelectionChanged="ComboBox_SelectionChanged" Visibility="{Binding ElementName=cbx1stLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}" IsEnabled="{Binding ElementName=cbx1stLink2ndConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}">
                             <ComboBoxItem Tag="less_than">&lt;</ComboBoxItem>
                             <ComboBoxItem Tag="greater_than">&gt;</ComboBoxItem>
                         </ComboBox>
-                        <TextBox Width="50" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Left" Text="0.0" Margin="5,5,0,5"/>
+                        <TextBox Width="50" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Left" Text="0.0" Tag="1" Margin="5,5,0,5"  SelectionChanged="TextBox_SelectionChanged" Visibility="{Binding ElementName=cbx1stLink2ndConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}"/>
                     </Grid>
 
                 </GroupBox>
             </StackPanel>
         </GroupBox>
         <GroupBox Header="第二选择">
-
+            <StackPanel>
+                <ComboBox Width="100" HorizontalAlignment="Right" Tag="0" SelectedIndex="1" SelectionChanged="CbxProbing_SelectionChanged">
+                    <ComboBoxItem Tag="probing_safe">探测安全高度</ComboBoxItem>
+                    <ComboBoxItem Tag="probing_skim">探测掠过</ComboBoxItem>
+                    <ComboBoxItem Tag="probing_straight">探测笔直</ComboBoxItem>
+                    <ComboBoxItem Tag="probing_circular_arc">探测圆弧</ComboBoxItem>
+                </ComboBox>
+                <GroupBox>
+                    <GroupBox.Header>
+                        <CheckBox Name="chx2ndConstraint" Tag="1" Click="CheckBox_Click">应用约束</CheckBox>
+                    </GroupBox.Header>
+                    <Grid Tag="First" IsEnabled="{Binding ElementName=chx2ndConstraint, Path=IsChecked}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="32"/>
+                            <ColumnDefinition Width="78"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox Width="100" SelectedIndex="0" Tag="0" SelectionChanged="CbxConstraint_SelectionChanged" Name="cbx2ndLink1stConstraint" Grid.ColumnSpan="2">
+                            <ComboBoxItem Tag="unspecified">&#160;</ComboBoxItem>
+                            <ComboBoxItem Tag="distance">距离</ComboBoxItem>
+                            <ComboBoxItem Tag="surface_slope">曲面倾角</ComboBoxItem>
+                            <ComboBoxItem Tag="angular_change">角度改变</ComboBoxItem>
+                            <ComboBoxItem Tag="azimuth">方位角</ComboBoxItem>
+                            <ComboBoxItem Tag="elevation">仰角</ComboBoxItem>
+                        </ComboBox>
+                        <ComboBox Width="50" Grid.Column="2" Height="21" Margin="5,5,5,0" VerticalAlignment="Top" Tag="0" SelectedIndex="0" SelectionChanged="ComboBox_SelectionChanged" IsEnabled="{Binding ElementName=cbx2ndLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ResourceKey=ConstraintConverter}}">
+                            <ComboBoxItem Tag="less_than">&lt;</ComboBoxItem>
+                            <ComboBoxItem Tag="greater_than">&gt;</ComboBoxItem>
+                        </ComboBox>
+                        <TextBox Width="50" Grid.Column="3" HorizontalAlignment="Left" Text="0.0" Margin="5,5,0,5" Tag="0"  SelectionChanged="TextBox_SelectionChanged" Visibility="{Binding ElementName=cbx2ndLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}"/>
+                        <ComboBox Width="100" Grid.Row="1" Tag="1" SelectedIndex="0" SelectionChanged="CbxConstraint_SelectionChanged" Grid.ColumnSpan="2" Name="cbx2ndLink2ndConstraint" Visibility="{Binding ElementName=cbx2ndLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}">
+                            <ComboBoxItem Tag="unspecified">&#160;</ComboBoxItem>
+                            <ComboBoxItem Tag="distance">距离</ComboBoxItem>
+                            <ComboBoxItem Tag="surface_slope">曲面倾角</ComboBoxItem>
+                            <ComboBoxItem Tag="angular_change">角度改变</ComboBoxItem>
+                            <ComboBoxItem Tag="azimuth">方位角</ComboBoxItem>
+                            <ComboBoxItem Tag="elevation">仰角</ComboBoxItem>
+                        </ComboBox>
+                        <ComboBox Width="50" Grid.Row="1" Grid.Column="2" SelectedIndex="0" Tag="1" SelectionChanged="ComboBox_SelectionChanged" Visibility="{Binding ElementName=cbx2ndLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}" IsEnabled="{Binding ElementName=cbx2ndLink2ndConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}">
+                            <ComboBoxItem Tag="less_than">&lt;</ComboBoxItem>
+                            <ComboBoxItem Tag="greater_than">&gt;</ComboBoxItem>
+                        </ComboBox>
+                        <TextBox Width="50" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Left" Text="0.0" Margin="5,5,0,5" Tag="1" SelectionChanged="TextBox_SelectionChanged" Visibility="{Binding ElementName=cbx2ndLink2ndConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}"/>
+                    </Grid>
+                </GroupBox>
+            </StackPanel>
         </GroupBox>
         <GroupBox Header="默认">
-
+            <ComboBox Width="100" HorizontalAlignment="Right" Tag="Default" SelectedIndex="0" SelectionChanged="CbxConstraint_SelectionChanged">
+                <ComboBoxItem Tag="probing_safe">探测安全高度</ComboBoxItem>
+                <ComboBoxItem Tag="probing_skim">探测掠过</ComboBoxItem>                
+            </ComboBox>
         </GroupBox>
-        <CheckBox HorizontalAlignment="Right" Margin="5">过切检查</CheckBox>
+        <CheckBox HorizontalAlignment="Right" Margin="5" Tag="GOUGECHECK" Click="CheckBox_Click">过切检查</CheckBox>
     </StackPanel>
 </Page>

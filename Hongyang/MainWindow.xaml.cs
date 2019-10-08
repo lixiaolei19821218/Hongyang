@@ -34,7 +34,11 @@ namespace Hongyang
         private ToolAxOVec ToolAxOVec;
         private ToolRapidMv ToolRapidMv;
         private ToolRapidMvClear ToolRapidMvClear;
+        private LeadLink LeadLink;
         private Link Link;
+        private LinkFilter LinkFilter;
+        private SPoint SPoint;
+        private EPoint EPoint;
 
         public ObservableCollection<string> Toolpaths = new ObservableCollection<string>();
 
@@ -59,7 +63,11 @@ namespace Hongyang
             ToolAxOVec = new ToolAxOVec();
             ToolRapidMv = new ToolRapidMv();
             ToolRapidMvClear = new ToolRapidMvClear();
+            LeadLink = new LeadLink();
             Link = new Link();
+            LinkFilter = new LinkFilter();
+            SPoint = new SPoint();
+            EPoint = new EPoint();
         }
 
         public void RefreshToolpaths()
@@ -121,8 +129,20 @@ namespace Hongyang
                 case "移动和间隙":
                     frame.Navigate(ToolRapidMvClear);
                     break;
+                case "切入切出和连接":
+                    frame.Navigate(LeadLink);
+                    break;
                 case "连接":
                     frame.Navigate(Link);
+                    break;
+                case "点分布":
+                    frame.Navigate(LinkFilter);
+                    break;
+                case "开始点":
+                    frame.Navigate(SPoint);
+                    break;
+                case "结束点":
+                    frame.Navigate(EPoint);
                     break;
                 default:
                     break;

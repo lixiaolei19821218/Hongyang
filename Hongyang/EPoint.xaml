@@ -1,0 +1,51 @@
+﻿<Page x:Class="Hongyang.EPoint"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Hongyang"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="EPoint">
+
+    <StackPanel>
+        <StackPanel Name="skpMain">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Label>使用</Label>
+                <ComboBox Width="150" SelectedIndex="0" Tag="TYPE" SelectionChanged="ComboBox_SelectionChanged">
+                    <ComboBoxItem Tag="BLOCK">毛坯中心安全高度</ComboBoxItem>
+                    <ComboBoxItem Tag="POINT_SAFE">第一点安全高度</ComboBoxItem>
+                    <ComboBoxItem Tag="POINT">第一点</ComboBoxItem>
+                    <ComboBoxItem Tag="ABSOLUTE">绝对</ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
+            <CheckBox Name="chxMove" IsEnabled="False" Margin="10" HorizontalAlignment="Right" Tag="DIRECT_MOVE" Click="ChxSeparate_Click">直接移动</CheckBox>
+            <GroupBox>
+                <GroupBox.Header>
+                    <CheckBox Name="chxSeparate" Tag="SEPARATE" Click="ChxSeparate_Click">单独进刀</CheckBox>
+                </GroupBox.Header>
+                <StackPanel IsEnabled="{Binding ElementName=chxSeparate, Path=IsChecked}">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Label>沿..进刀</Label>
+                        <ComboBox Width="100" SelectedIndex="0" Tag="MOVE_DIR" SelectionChanged="ComboBox_SelectionChanged">
+                            <ComboBoxItem Tag="TOOLAXIS">刀轴</ComboBoxItem>
+                            <ComboBoxItem Tag="NORMAL">接触点法向</ComboBoxItem>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Label>进刀距离</Label>
+                        <TextBox Width="100" Text="0.0" Tag="DISTANCE" TextChanged="TextBox_TextChanged"/>
+                    </StackPanel>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="坐标" Name="gpbPosition" Visibility="Hidden">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBox Width="100" Text="0.0" Tag="POSITION X" TextChanged="TextBox_TextChanged"/>
+                    <TextBox Width="100" Text="0.0" Tag="POSITION Y" TextChanged="TextBox_TextChanged"/>
+                    <TextBox Width="100" Text="0.0" Tag="POSITION Z" TextChanged="TextBox_TextChanged"/>
+                </StackPanel>
+            </GroupBox>
+        </StackPanel>
+        <Image Source="icon/unlock.gif" Width="30" Height="30" Margin="10" HorizontalAlignment="Right" MouseLeftButtonUp="Image_MouseLeftButtonUp"/>
+    </StackPanel>
+</Page>

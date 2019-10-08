@@ -34,6 +34,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Surface-Inspection.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autodesk.Geometry, Version=1.0.4.0, Culture=neutral, PublicKeyToken=e8ff820723601f0b, processorArchitecture=MSIL">
       <HintPath>..\packages\Autodesk.ProductInterface.PowerMILL.1.0.4\lib\net45\Autodesk.Geometry.dll</HintPath>
@@ -69,8 +72,20 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Converter\ConstraintConverter.cs" />
+    <Compile Include="EPoint.xaml.cs">
+      <DependentUpon>EPoint.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="LeadLink.xaml.cs">
+      <DependentUpon>LeadLink.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Link.xaml.cs">
       <DependentUpon>Link.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="LinkFilter.xaml.cs">
+      <DependentUpon>LinkFilter.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SPoint.xaml.cs">
+      <DependentUpon>SPoint.xaml</DependentUpon>
     </Compile>
     <Compile Include="ToolAxOVec.xaml.cs">
       <DependentUpon>ToolAxOVec.xaml</DependentUpon>
@@ -85,7 +100,19 @@
       <DependentUpon>ToolRapidMvClear.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\TreeItem.cs" />
+    <Page Include="EPoint.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="LeadLink.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Link.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="LinkFilter.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -101,6 +128,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="SPoint.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ToolAxOVec.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -165,6 +196,21 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icon\Cooling.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="External-Thread.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\Surface-Inspection.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Surface-Inspection.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\unlock.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\lock.gif" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
