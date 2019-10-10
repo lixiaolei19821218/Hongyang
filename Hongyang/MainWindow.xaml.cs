@@ -159,5 +159,17 @@ namespace Hongyang
         {
             Close();
         }
+
+        private void CbxToolpaths_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ToolAxOVec.Refresh();
+            ToolRapidMv.Refresh();
+            ToolRapidMvClear.Refresh();
+            LeadLink.Refresh();
+            Link.Refresh();
+            LinkFilter.Refresh();
+            SPoint.Refresh();
+            EPoint.Refresh();
+        }
     }
 }

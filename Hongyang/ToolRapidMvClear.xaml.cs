@@ -30,11 +30,13 @@ namespace Hongyang
 
             PowerMILL = (Application.Current.MainWindow as MainWindow).PowerMILL;
             Session = (Application.Current.MainWindow as MainWindow).Session;
+
+            Refresh();
         }
 
-        private void CbxMoveDir_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        public void Refresh()
         {
-           
+
         }
 
         private void CbxMoveDir_DropDownClosed(object sender, EventArgs e)

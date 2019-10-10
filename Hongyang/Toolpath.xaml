@@ -47,7 +47,7 @@
         <Label Margin="5" Grid.Row="5">检测层</Label>
         <DockPanel Grid.Row="5" Grid.Column="1">
             <ComboBox Name="cbxLevel" Width="100" SelectedIndex="0" HorizontalAlignment="Left" SelectionChanged="CbxLevel_SelectionChanged"/>
-            <CheckBox Name="chxAdjust" VerticalAlignment="Center" HorizontalAlignment="Right" Checked="ChxAdjust_Checked">调整偏移</CheckBox>
+            <CheckBox Name="chxAdjust" Margin="10" VerticalAlignment="Center" HorizontalAlignment="Right" Checked="ChxAdjust_Checked">调整偏移</CheckBox>
         </DockPanel>
         <Button Margin="5" Grid.Row="6" Grid.ColumnSpan="2" Name="btnCalculate" Click="BtnCalculate_Click">计算</Button>
         <!--

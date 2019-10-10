@@ -30,6 +30,13 @@ namespace Hongyang
 
             PowerMILL = (Application.Current.MainWindow as MainWindow).PowerMILL;
             Session = (Application.Current.MainWindow as MainWindow).Session;
+
+            Refresh();
+        }
+
+        public void Refresh()
+        {
+
         }
 
         private void CbxProbing_SelectionChanged(object sender, SelectionChangedEventArgs e)

@@ -181,8 +181,9 @@ namespace Hongyang
             }
 
             //cbxToolpaths.ItemsSource = session.Toolpaths.Select(t => t.Name);
-
+             (Application.Current.MainWindow as MainWindow).RefreshToolpaths();
             Application.Current.MainWindow.WindowState = WindowState.Normal;
+           
             MessageBox.Show("计算完成", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
         }
 
@@ -316,7 +317,15 @@ namespace Hongyang
             double y = (double.Parse(min[2]) + double.Parse(max[2])) / 2;
             double z = (double.Parse(min[3]) + double.Parse(max[3])) / 2;
             double a = Math.Atan2(y, x) * 180 / Math.PI;
-            double b = Math.Atan2(x, z) * 180 / Math.PI;
+            double b;
+            if (level.ToLower().Contains("horizontal"))
+            {
+                b = 90;
+            }
+            else
+            {
+                b = x > 0 ? Math.Atan2(x, z) * 180 / Math.PI : 90 + Math.Atan2(x, z) * 180 / Math.PI;
+            }
             powerMILL.Execute("MODE WORKPLANE_CREATE ; SELECTION CENTRE");
             session.Refresh();
             PMWorkplane workplane = session.Workplanes.FirstOrDefault(w => w.Name == level);
@@ -330,8 +339,20 @@ namespace Hongyang
             powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Z");
             powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{a}\"");
             powerMILL.Execute("WPETWIST ACCEPT");
+            powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Y");
+            powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{b}\"");
+            powerMILL.Execute("WPETWIST ACCEPT");
             powerMILL.Execute("MODE WORKPLANE_EDIT FINISH ACCEPT");
-
+            /*
+            powerMILL.Execute($"ACTIVATE Workplane \"{workplane.Name}\"");
+            powerMILL.Execute($"MODE WORKPLANE_EDIT START \"{workplane.Name}\"");
+            powerMILL.Execute("MODE WORKPLANE_EDIT POSITION");
+            //powerMILL.Execute("MODE POSITION CARTESIAN X \"-10.0\"");
+            powerMILL.Execute("MODE POSITION CARTESIAN Z \"-10.0\"");
+            powerMILL.Execute("POSITION ACCEPT");
+            powerMILL.Execute("MODE WORKPLANE_EDIT FINISH ACCEPT");
+            */
+            /*
             powerMILL.Execute($"ACTIVATE Workplane \"{workplane.Name}\"");
             powerMILL.Execute("edit model all deselect all");
             powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
@@ -342,13 +363,14 @@ namespace Hongyang
             y = (double.Parse(min[2]) + double.Parse(max[2])) / 2;
             z = (double.Parse(min[3]) + double.Parse(max[3])) / 2;
             a = Math.Atan2(y, x) * 180 / Math.PI;
-            b = Math.Atan2(x, z) * 180 / Math.PI;
+            b = Math.Atan2(double.Parse(max[3]), x) * 180 / Math.PI;            
             powerMILL.Execute($"MODE WORKPLANE_EDIT START \"{workplane.Name}\"");
             powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Y");
             powerMILL.Execute($"MODE WORKPLANE_EDIT START \"{workplane.Name}\"");
             powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{b}\"");
             powerMILL.Execute("WPETWIST ACCEPT");
             powerMILL.Execute("MODE WORKPLANE_EDIT FINISH ACCEPT");
+            */
             powerMILL.Execute($"EXPLORER SELECT Workplane \"Workplane\\{workplane.Name}\" NEW");
             powerMILL.Execute($"ACTIVATE Workplane \"{workplane.Name}\"");
             return workplane;

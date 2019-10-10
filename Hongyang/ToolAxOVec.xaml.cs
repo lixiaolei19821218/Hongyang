@@ -23,7 +23,13 @@ namespace Hongyang
         public ToolAxOVec()
         {
             InitializeComponent();
-           
+
+            Refresh();
+        }
+
+        public void Refresh()
+        {
+
         }
     }
 }

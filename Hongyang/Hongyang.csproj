@@ -35,7 +35,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Surface-Inspection.ico</ApplicationIcon>
+    <ApplicationIcon>
+    </ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autodesk.Geometry, Version=1.0.4.0, Culture=neutral, PublicKeyToken=e8ff820723601f0b, processorArchitecture=MSIL">
@@ -198,13 +199,7 @@
     <Resource Include="Icon\Cooling.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="External-Thread.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Icon\Surface-Inspection.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Surface-Inspection.ico" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icon\unlock.gif" />

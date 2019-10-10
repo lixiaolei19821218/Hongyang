@@ -30,6 +30,70 @@ namespace Hongyang
 
             powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
             session = powerMILL.ActiveProject;
+
+            Refresh();
+        }
+
+        public void Refresh()
+        {            
+            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.mode\"") == "fixed")
+            {
+                imgLock.Source = new BitmapImage(new Uri(@"Icon\lock.gif", UriKind.Relative));
+                skpMain1.IsEnabled = false;
+                skpMain2.IsEnabled = false;
+            }
+            else
+            {
+                imgLock.Source = new BitmapImage(new Uri(@"Icon\unlock.gif", UriKind.Relative));
+                skpMain1.IsEnabled = true;
+                skpMain2.IsEnabled = true;
+            }
+
+            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.directMove\"") == "1")
+            {
+                chxMove.IsChecked = true;
+            }
+            else
+            {
+                chxMove.IsChecked = false;
+            }
+
+            tbxX.Text = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.position[0]\"").ToString();
+            tbxY.Text = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.position[1]\"").ToString();
+            tbxZ.Text = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.position[2]\"").ToString();
+
+            string type = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.type\"").ToString();
+            for (int i = 0; i < cbxType.Items.Count; i++)
+            {
+                ComboBoxItem item = cbxType.Items[i] as ComboBoxItem;
+                if (item.Tag.ToString() == type)
+                {
+                    cbxType.SelectedIndex = i;
+                    break;
+                }
+            }
+
+            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.SeparateFinalRetract\"") == "1")
+            {
+                chxSeparate.IsChecked = true;
+            }
+            else
+            {
+                chxSeparate.IsChecked = false;
+            }
+
+            string direction = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.movedirection\"").ToString();
+            for (int i = 0; i < cbxDir.Items.Count; i++)
+            {
+                ComboBoxItem item = cbxType.Items[i] as ComboBoxItem;
+                if (item.Tag.ToString() == direction)
+                {
+                    cbxType.SelectedIndex = i;
+                    break;
+                }
+            }
+
+            tbxDir.Text = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.Distance\"").ToString();
         }
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -81,13 +145,15 @@ namespace Hongyang
             if (image.Source.ToString().Contains("unlock"))
             {
                 image.Source = new BitmapImage(new Uri(@"Icon\lock.gif", UriKind.Relative));
-                skpMain.IsEnabled = false;
+                skpMain1.IsEnabled = false;
+                skpMain2.IsEnabled = false;
                 powerMILL.Execute($"EDIT TOOLPATH END MODE FIXED");
             }
             else
             {
                 image.Source = new BitmapImage(new Uri(@"Icon\unlock.gif", UriKind.Relative));
-                skpMain.IsEnabled = true;
+                skpMain1.IsEnabled = true;
+                skpMain2.IsEnabled = true;
                 powerMILL.Execute($"EDIT TOOLPATH END MODE AUTOMATIC");
             }
         }

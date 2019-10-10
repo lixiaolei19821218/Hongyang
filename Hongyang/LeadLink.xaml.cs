@@ -23,6 +23,13 @@ namespace Hongyang
         public LeadLink()
         {
             InitializeComponent();
+
+            Refresh();
+        }
+
+        public void Refresh()
+        {
+
         }
     }
 }

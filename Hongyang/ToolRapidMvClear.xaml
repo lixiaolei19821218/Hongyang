@@ -28,7 +28,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <Label HorizontalAlignment="Right" Margin="5">沿着</Label>
-                <ComboBox Name="cbxMoveDir" Grid.Column="1" Width="150" SelectedIndex="0" Margin="5" SelectionChanged="CbxMoveDir_SelectionChanged" DropDownClosed="CbxMoveDir_DropDownClosed">
+                <ComboBox Name="cbxMoveDir" Grid.Column="1" Width="150" SelectedIndex="0" Margin="5" DropDownClosed="CbxMoveDir_DropDownClosed">
                     <ComboBoxItem Tag="TOOLAXIS">刀轴</ComboBoxItem>
                     <ComboBoxItem Tag="NORMAL">接触点法向</ComboBoxItem>
                     <ComboBoxItem Tag="TANGENT">切线</ComboBoxItem>

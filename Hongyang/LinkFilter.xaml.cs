@@ -30,6 +30,13 @@ namespace Hongyang
 
             powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
             session = powerMILL.ActiveProject;
+
+            Refresh();
+        }
+
+        public void Refresh()
+        {
+
         }
 
         private void CheckBox_Click(object sender, RoutedEventArgs e)
