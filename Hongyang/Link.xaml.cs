@@ -36,7 +36,78 @@ namespace Hongyang
 
         public void Refresh()
         {
+            string type;
 
+            type = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.Link[0].ProbingType\"").ToString();
+            for (int i = 0; i < cbxType0.Items.Count; i++)
+            {
+                ComboBoxItem item = cbxType0.Items[i] as ComboBoxItem;
+                if (item.Tag.ToString() == type)
+                {
+                    cbxType0.SelectedIndex = i;
+                    break;
+                }
+            }
+
+            if (PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.Link[0].ApplyConstraints\"").ToString() == "1")
+            {
+                chx1stConstraint.IsChecked = true;
+            }
+            else
+            {
+                chx1stConstraint.IsChecked = false;
+            }
+
+            type = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.Link[0].Constraint[0].Type\"").ToString();
+            for (int i = 0; i < cbx1stLink1stConstraint.Items.Count; i++)
+            {
+                ComboBoxItem item = cbx1stLink1stConstraint.Items[i] as ComboBoxItem;
+                if (item.Tag.ToString() == type)
+                {
+                    cbx1stLink1stConstraint.SelectedIndex = i;
+                    break;
+                }
+            }
+
+            type = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.Link[1].ProbingType\"").ToString();
+            for (int i = 0; i < cbxType1.Items.Count; i++)
+            {
+                ComboBoxItem item = cbxType0.Items[i] as ComboBoxItem;
+                if (item.Tag.ToString() == type)
+                {
+                    cbxType0.SelectedIndex = i;
+                    break;
+                }
+            }
+
+            if (PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.Link[1].ApplyConstraints\"").ToString() == "1")
+            {
+                chx2ndConstraint.IsChecked = true;
+            }
+            else
+            {
+                chx2ndConstraint.IsChecked = false;
+            }
+
+            type = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.Link[1].Constraint[0].Type\"").ToString();
+            for (int i = 0; i < cbx2ndLink1stConstraint.Items.Count; i++)
+            {
+                ComboBoxItem item = cbx2ndLink1stConstraint.Items[i] as ComboBoxItem;
+                if (item.Tag.ToString() == type)
+                {
+                    cbx2ndLink1stConstraint.SelectedIndex = i;
+                    break;
+                }
+            }
+
+            if (PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.gougecheck\"").ToString() == "1")
+            {
+                chxGouge.IsChecked = true;
+            }
+            else
+            {
+                chxGouge.IsChecked = false;
+            }            
         }
 
         private void CbxProbing_SelectionChanged(object sender, SelectionChangedEventArgs e)

@@ -35,9 +35,9 @@
                     <ComboBoxItem Tag="RADIAL">径向</ComboBoxItem>
                 </ComboBox>
                 <Label Grid.Row="1" HorizontalAlignment="Right" Margin="5">最小退刀距离</Label>
-                <TextBox Grid.Row="1" Grid.Column="1" Margin="5" TextChanged="TextBox_TextChanged" Tag="RETRACTDIST">0.0</TextBox>
+                <TextBox Name="tbxRetract" Grid.Row="1" Grid.Column="1" Margin="5" TextChanged="TextBox_TextChanged" Tag="RETRACTDIST">0.0</TextBox>
                 <Label Grid.Row="2" HorizontalAlignment="Right" Margin="5">最小进刀距离</Label>
-                <TextBox Grid.Row="2" Grid.Column="1" Margin="5" TextChanged="TextBox_TextChanged" Tag="APPROACHDIST">0.0</TextBox>
+                <TextBox Name="tbxApproach" Grid.Row="2" Grid.Column="1" Margin="5" TextChanged="TextBox_TextChanged" Tag="APPROACHDIST">0.0</TextBox>
                 <GroupBox Grid.Row="3" Grid.ColumnSpan="2">
                     <GroupBox.Header>
                         <CheckBox Name="cbxExtend" Click="CbxExtend_Click">自动延长</CheckBox>
@@ -73,11 +73,11 @@
             <StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Label>轴向间隙</Label>
-                    <TextBox Width="100" Tag="SKIMDIST" TextChanged="TextBox_TextChanged">5.0</TextBox>
+                    <TextBox Name="txtSkimDir" Width="100" Tag="SKIMDIST" TextChanged="TextBox_TextChanged">5.0</TextBox>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Label>径向间隙</Label>
-                    <TextBox Width="100" Tag="RADIAL_CLEARANCE" TextChanged="TextBox_TextChanged">0.0</TextBox>
+                    <TextBox Name="txtClearance" Width="100" Tag="RADIAL_CLEARANCE" TextChanged="TextBox_TextChanged">0.0</TextBox>
                 </StackPanel>
             </StackPanel>
         </GroupBox>

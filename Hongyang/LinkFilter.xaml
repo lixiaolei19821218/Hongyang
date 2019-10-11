@@ -9,7 +9,7 @@
       Title="LinkFilter">
 
     <StackPanel>
-        <CheckBox IsChecked="True" Margin="10" Tag="UseToolpathSettings" Click="CheckBox_Click">应用到切入切出和连接</CheckBox>
+        <CheckBox Name="chxUseSetting" IsChecked="True" Margin="10" Tag="UseToolpathSettings" Click="CheckBox_Click">应用到切入切出和连接</CheckBox>
         <GroupBox>
             <GroupBox.Header>
                 <CheckBox Name="chxDist" Tag="Rapid.Active" Click="CheckBox_Click">应用到快进连接</CheckBox>
@@ -26,14 +26,14 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <Label>输出类型</Label>
-                        <ComboBox Grid.Column="1" Width="150" SelectedIndex="0" SelectionChanged="ComboBox_SelectionChanged">
+                        <ComboBox Name="cbxType" Grid.Column="1" Width="150" SelectedIndex="0" SelectionChanged="ComboBox_SelectionChanged">
                             <ComboBoxItem Tag="strip">公差并保留圆弧</ComboBoxItem>
                             <ComboBoxItem Tag="strip_smash_arcs">公差并保留圆弧</ComboBoxItem>
                             <ComboBoxItem Tag="redistribute">重新分布</ComboBoxItem>
                             <ComboBoxItem Tag="arcfit">修圆</ComboBoxItem>
                         </ComboBox>
                         <Label Grid.Row="1">公差系数</Label>
-                        <TextBox Grid.Row="1" Grid.Column="1" Width="150" Text="0.5" Tag="Filter.Factor" TextChanged="TextBox_TextChanged"/>
+                        <TextBox Name="tbxFactor" Grid.Row="1" Grid.Column="1" Width="150" Text="0.5" Tag="Filter.Factor" TextChanged="TextBox_TextChanged"/>
                     </Grid>
                 </GroupBox>
                 <GroupBox Name="gpbDistance">
@@ -42,7 +42,7 @@
                     </GroupBox.Header>
                     <StackPanel IsEnabled="{Binding ElementName=chxDistance, Path=IsChecked}" Orientation="Horizontal" HorizontalAlignment="Right">
                         <Label>最大距离</Label>
-                        <TextBox Width="150" Tag="MaxDistanceBetweenPoints.Value" TextChanged="TextBox_TextChanged">10.0</TextBox>
+                        <TextBox Name="tbxDistance" Width="150" Tag="MaxDistanceBetweenPoints.Value" TextChanged="TextBox_TextChanged">10.0</TextBox>
                     </StackPanel>
                 </GroupBox>
                 <GroupBox Name="gpbAngle">
@@ -51,11 +51,11 @@
                     </GroupBox.Header>
                     <StackPanel IsEnabled="{Binding ElementName=chxAngle, Path=IsChecked}" Orientation="Horizontal" HorizontalAlignment="Right">
                         <Label>最大角</Label>
-                        <TextBox Width="150" Tag="MaxAngleBetweenPoints.Value" TextChanged="TextBox_TextChanged">0.25</TextBox>
+                        <TextBox Name="tbxAngle" Width="150" Tag="MaxAngleBetweenPoints.Value" TextChanged="TextBox_TextChanged">0.25</TextBox>
                     </StackPanel>
                 </GroupBox>
             </StackPanel>
         </GroupBox>
-        <CheckBox HorizontalAlignment="Right" Margin="10" Tag="GOUGECHECK" Click="CheckBox_Click">过切检查</CheckBox>
+        <CheckBox Name="chxGouge" IsChecked="True" HorizontalAlignment="Right" Margin="10" Tag="GOUGECHECK" Click="CheckBox_Click">过切检查</CheckBox>
     </StackPanel>
 </Page>

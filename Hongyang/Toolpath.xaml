@@ -23,12 +23,21 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+        <!--
         <Label Margin="5">刀具直径</Label>
         <TextBox Margin="5" Grid.Column="1" Name="tbxDiameter" Width="100" HorizontalAlignment="Left" Text="6"></TextBox>
         <Label Margin="5" Grid.Row="1">刀柄长度</Label>
         <TextBox Margin="5" Grid.Row="1" Grid.Column="1" Name="tbxShankLength" Width="100" HorizontalAlignment="Left" Text="100"></TextBox>
         <Label Margin="5" Grid.Row="2">伸出长度</Label>
         <TextBox Margin="5" Grid.Row="2" Grid.Column="1" Name="tbxOverhang" Width="100" HorizontalAlignment="Left" Text="100"></TextBox>
+        -->
+        <GroupBox Header="当前刀具" Grid.ColumnSpan="2">
+            <StackPanel Margin="5" Orientation="Horizontal">
+                <Image Width="15" Source="Icon\tooltipdiscu.png"></Image>
+                <Label>当前刀具</Label>
+                <ComboBox Name="cbxTool" SelectedIndex="0" Width="150" SelectionChanged="CbxTool_SelectionChanged"/>
+            </StackPanel>
+        </GroupBox>
         <GroupBox Margin="5" Grid.Row="3" Grid.ColumnSpan="2">
             <GroupBox.Header>
                 <CheckBox Name="ckbManul">手动设置偏移</CheckBox>
@@ -46,8 +55,11 @@
         <TextBox Margin="5" Grid.Row="4" Grid.Column="1" Name="tbxPoints" Width="100" HorizontalAlignment="Left" Text="16"></TextBox>
         <Label Margin="5" Grid.Row="5">检测层</Label>
         <DockPanel Grid.Row="5" Grid.Column="1">
-            <ComboBox Name="cbxLevel" Width="100" SelectedIndex="0" HorizontalAlignment="Left" SelectionChanged="CbxLevel_SelectionChanged"/>
-            <CheckBox Name="chxAdjust" Margin="10" VerticalAlignment="Center" HorizontalAlignment="Right" Checked="ChxAdjust_Checked">调整偏移</CheckBox>
+            <ComboBox Name="cbxLevel" Width="150" SelectedIndex="0" HorizontalAlignment="Left" SelectionChanged="CbxLevel_SelectionChanged"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <CheckBox Name="chxAdjust" Margin="10" VerticalAlignment="Center"  Checked="ChxAdjust_Checked">调整偏移</CheckBox>
+                <CheckBox Name="chxNewTP" Margin="10" IsEnabled="{Binding ElementName=chxAdjust, Path=IsChecked}">新建刀路</CheckBox>
+            </StackPanel>
         </DockPanel>
         <Button Margin="5" Grid.Row="6" Grid.ColumnSpan="2" Name="btnCalculate" Click="BtnCalculate_Click">计算</Button>
         <!--

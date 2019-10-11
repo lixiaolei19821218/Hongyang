@@ -14,8 +14,8 @@
                 <Label>使用</Label>
                 <ComboBox Name="cbxType" Width="150" SelectedIndex="0" Tag="TYPE" SelectionChanged="ComboBox_SelectionChanged">
                     <ComboBoxItem Tag="BLOCK">毛坯中心安全高度</ComboBoxItem>
-                    <ComboBoxItem Tag="POINT_SAFE">第一点安全高度</ComboBoxItem>
-                    <ComboBoxItem Tag="POINT">第一点</ComboBoxItem>
+                    <ComboBoxItem Tag="POINT_SAFE">最后一点安全高度</ComboBoxItem>
+                    <ComboBoxItem Tag="POINT">最后一点</ComboBoxItem>
                     <ComboBoxItem Tag="ABSOLUTE">绝对</ComboBoxItem>
                 </ComboBox>
             </StackPanel>

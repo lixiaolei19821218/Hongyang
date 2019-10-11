@@ -8,6 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("icon/lock.gif")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("icon/tooltipdiscu.png")]
 
 

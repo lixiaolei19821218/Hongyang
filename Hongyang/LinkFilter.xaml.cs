@@ -36,7 +36,64 @@ namespace Hongyang
 
         public void Refresh()
         {
+            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.UseToolpathSettings\"").ToString() == "1")
+            {
+                chxUseSetting.IsChecked = true;
+            }
+            else
+            {
+                chxUseSetting.IsChecked = false;
+            }
 
+            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.active\"").ToString() == "1")
+            {
+                chxDist.IsChecked = true;
+            }
+            else
+            {
+                chxDist.IsChecked = false;
+            }
+
+            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.MaxAngleBetweenPoints.active\"").ToString() == "1")
+            {
+                chxAngle.IsChecked = true;
+            }
+            else
+            {
+                chxAngle.IsChecked = false;
+            }
+            tbxAngle.Text = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.MaxAngleBetweenPoints.Value\"").ToString();
+
+            tbxFactor.Text = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.Filter.Factor\"").ToString();
+            string type = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.Filter.type\"").ToString();
+            for (int i = 0; i < cbxType.Items.Count; i++)
+            {
+                ComboBoxItem item = cbxType.Items[i] as ComboBoxItem;
+                if (item.Tag.ToString().ToLower() == type.ToLower())
+                {
+                    cbxType.SelectedIndex = i;
+                    break;
+                }
+            }
+
+            tbxDistance.Text = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.MaxDistanceBetweenPoints.value\"").ToString();
+            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.MaxDistanceBetweenPoints.active\"").ToString() == "1")
+            {
+                chxDistance.IsChecked = true;
+            }
+            else
+            {
+                chxDistance.IsChecked = false;
+            }
+
+            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.gougecheck\"").ToString() == "1")
+            {
+                chxGouge.IsChecked = true;
+            }
+            else
+            {
+                chxGouge.IsChecked = false;
+            }
         }
 
         private void CheckBox_Click(object sender, RoutedEventArgs e)

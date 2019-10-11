@@ -36,7 +36,53 @@ namespace Hongyang
 
         public void Refresh()
         {
+            string direction = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.MoveDirection\"").ToString().Replace("_", "");
+            for (int i = 0; i < cbxMoveDir.Items.Count; i++)
+            {
+                ComboBoxItem item = cbxMoveDir.Items[i] as ComboBoxItem;
+                if (direction.ToLower() == item.ToString().ToLower())
+                {
+                    cbxMoveDir.SelectedIndex = i;
+                    break;
+                }
+            }
 
+            tbxRetract.Text = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.RetractDistance\"").ToString();
+            tbxApproach.Text = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.ApproachDistance\"").ToString();
+
+            if (PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.ExtendMove\"").ToString() == "1")
+            {
+                cbxExtend.IsChecked = true;
+            }
+            else
+            {
+                cbxExtend.IsChecked = false;
+            }
+            txtMaxExtension.Text = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.MaxMoveExtension\"").ToString();
+
+            string type = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.SkimPlane.type\"").ToString();
+            for (int i = 0; i < cbxSkimPlane.Items.Count; i++)
+            {
+                ComboBoxItem item = cbxSkimPlane.Items[i] as ComboBoxItem;
+                if (item.Tag.ToString().ToLower() == type.ToLower())
+                {
+                    cbxSkimPlane.SelectedIndex = i;
+                    break;
+                }
+            }
+
+            if (PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.ArcFittingRadius.active\"").ToString() == "1")
+            {
+                cbxArcFit.IsChecked = true;
+            }
+            else
+            {
+                cbxArcFit.IsChecked = false;
+            }
+            txtArcFit.Text = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.ArcFittingRadius.value\"").ToString();
+
+            txtSkimDir.Text = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.SkimDistance\"").ToString();
+            txtClearance.Text = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.RadialClearance\"").ToString();
         }
 
         private void CbxMoveDir_DropDownClosed(object sender, EventArgs e)

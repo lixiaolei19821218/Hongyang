@@ -36,7 +36,7 @@ namespace Hongyang
 
         public void Refresh()
         {
-            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').startpoint.mode\"") == "fixed")
+            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').startpoint.mode\"").ToString() == "fixed")
             {
                 imgLock.Source = new BitmapImage(new Uri(@"Icon\lock.gif", UriKind.Relative));
                 skpMain1.IsEnabled = false;
@@ -49,7 +49,7 @@ namespace Hongyang
                 skpMain2.IsEnabled = true;
             }
 
-            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').startpoint.directMove\"") == "1")
+            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').startpoint.directMove\"").ToString() == "1")
             {
                 chxMove.IsChecked = true;
             }
@@ -63,17 +63,23 @@ namespace Hongyang
             tbxZ.Text = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').startpoint.position[2]\"").ToString();
 
             string type = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').startpoint.type\"").ToString();
-            for (int i = 0; i < cbxType.Items.Count; i++)
+            switch (type)
             {
-                ComboBoxItem item = cbxType.Items[i] as ComboBoxItem;
-                if (item.Tag.ToString() == type)
-                {
-                    cbxType.SelectedIndex = i;
+                case "block_centre":
+                    cbxType.SelectedIndex = 0;
                     break;
-                }
+                case "first_safe":
+                    cbxType.SelectedIndex = 1;
+                    break;
+                case "first_incr":
+                    cbxType.SelectedIndex = 2;
+                    break;
+                case "absolute":
+                    cbxType.SelectedIndex = 3;
+                    break;
             }
 
-            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').startpoint.SeparateFinalRetract\"") == "1")
+            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').startpoint.SeparateFinalRetract\"").ToString() == "1")
             {
                 chxSeparate.IsChecked = true;
             }
@@ -83,14 +89,14 @@ namespace Hongyang
             }
 
             string direction = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').startpoint.movedirection\"").ToString();
-            for (int i = 0; i < cbxDir.Items.Count; i++)
+            switch (direction)
             {
-                ComboBoxItem item = cbxType.Items[i] as ComboBoxItem;
-                if (item.Tag.ToString() == direction)
-                {
-                    cbxType.SelectedIndex = i;
+                case "tool_axis":
+                    cbxDir.SelectedIndex = 0;
                     break;
-                }
+                case "normal":
+                    cbxDir.SelectedIndex = 1;
+                    break;
             }
 
             tbxDir.Text = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').startpoint.Distance\"").ToString();

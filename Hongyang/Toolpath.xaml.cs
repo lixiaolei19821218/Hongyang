@@ -35,6 +35,9 @@ namespace Hongyang
             cbxLevel.ItemsSource = session.LevelsAndSets.Select(l => l.Name);
             cbxLevel.SelectedItem = "CAO1";
 
+            CreateTool();
+            cbxTool.ItemsSource = session.Tools.Select(t => t.Name);
+
             //cbxToolpaths.ItemsSource = session.Toolpaths.Select(t => t.Name);
             //cbxCopyToLevels.ItemsSource = session.LevelsAndSets.Select(l => l.Name);
         }
@@ -45,13 +48,27 @@ namespace Hongyang
             powerMILL.DialogsOff();
 
             session.Refresh();
-            CreateTool();
+            
             PMToolpath rcToolpath = session.Toolpaths.FirstOrDefault(t => t.Name == cbxLevel.SelectedItem.ToString());
             if ((chxAdjust.IsChecked ?? false) && rcToolpath != null)
             {
                 string patternName = powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{rcToolpath.Name}').Pattern.Name\"").ToString();
                 powerMILL.Execute($"ACTIVATE TOOLPATH \"{rcToolpath.Name}\"");
-                powerMILL.Execute($"EDIT TOOLPATH \"{rcToolpath.Name}\" RECYCLE");
+                if (chxNewTP.IsEnabled && (chxNewTP.IsChecked ?? false))
+                {
+                    powerMILL.Execute($"EDIT TOOLPATH \"{rcToolpath.Name}\" CLONE");
+                    powerMILL.Execute($"EDIT PATTERN \"{patternName}\" CLIPBOARD COPY");
+                    powerMILL.Execute("CREATE PATTERN CLIPBOARD");
+                    session.Refresh();
+                    rcToolpath = session.Toolpaths.ActiveItem;
+                    PMPattern pattern = session.Patterns.Last();
+                    pattern.Name = rcToolpath.Name;
+                    patternName = pattern.Name;
+                }
+                else
+                {
+                    powerMILL.Execute($"EDIT TOOLPATH \"{rcToolpath.Name}\" RECYCLE");
+                }
 
                 powerMILL.Execute("EDIT TPPAGE SWSurfaceInspect");
                 powerMILL.Execute("EDIT PAR 'Pattern' \" \"");
@@ -419,18 +436,26 @@ namespace Hongyang
                 session.Refresh();
                 tool = session.Tools.Last();
                 tool.Name = "InspectionHead";
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" DIAMETER \"{tbxDiameter.Text}\"");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" DIAMETER \"6\"");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT ADD");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LOWERDIA \"4\"");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT UPPERDIA \"4\"");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LENGTH \"{tbxShankLength.Text}\"");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LENGTH \"100\"");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT ADD");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT LOWERDIA \"30\"");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT LENGTH \"30\"");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" OVERHANG \"{tbxOverhang.Text}\"");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" OVERHANG \"100\"");
                 powerMILL.Execute("TOOL ACCEPT");
             }
-            tool.IsActive = true;
+            
+            session.Refresh();
+            session.Tools.First().IsActive = true;
+        }
+
+        private void CbxTool_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBox comboBox = sender as ComboBox;
+            powerMILL.Execute($"ACTIVATE TOOL \"{comboBox.SelectedValue}\"");
         }
     }
 }

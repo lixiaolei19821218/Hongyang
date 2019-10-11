@@ -13,7 +13,7 @@
     <StackPanel>
         <GroupBox Header="第一选择">
             <StackPanel>
-                <ComboBox Width="100" HorizontalAlignment="Right" Tag="0" SelectedIndex="0" SelectionChanged="CbxProbing_SelectionChanged">
+                <ComboBox Name="cbxType0" Width="100" HorizontalAlignment="Right" Tag="0" SelectedIndex="0" SelectionChanged="CbxProbing_SelectionChanged">
                     <ComboBoxItem Tag="probing_safe">探测安全高度</ComboBoxItem>
                     <ComboBoxItem Tag="probing_skim">探测掠过</ComboBoxItem>
                     <ComboBoxItem Tag="probing_straight">探测笔直</ComboBoxItem>
@@ -67,7 +67,7 @@
         </GroupBox>
         <GroupBox Header="第二选择">
             <StackPanel>
-                <ComboBox Width="100" HorizontalAlignment="Right" Tag="0" SelectedIndex="1" SelectionChanged="CbxProbing_SelectionChanged">
+                <ComboBox Name="cbxType1" Width="100" HorizontalAlignment="Right" Tag="0" SelectedIndex="1" SelectionChanged="CbxProbing_SelectionChanged">
                     <ComboBoxItem Tag="probing_safe">探测安全高度</ComboBoxItem>
                     <ComboBoxItem Tag="probing_skim">探测掠过</ComboBoxItem>
                     <ComboBoxItem Tag="probing_straight">探测笔直</ComboBoxItem>
@@ -119,11 +119,11 @@
             </StackPanel>
         </GroupBox>
         <GroupBox Header="默认">
-            <ComboBox Width="100" HorizontalAlignment="Right" Tag="Default" SelectedIndex="0" SelectionChanged="CbxConstraint_SelectionChanged">
+            <ComboBox Name="cbxTypeDef" Width="100" HorizontalAlignment="Right" Tag="Default" SelectedIndex="0" SelectionChanged="CbxConstraint_SelectionChanged">
                 <ComboBoxItem Tag="probing_safe">探测安全高度</ComboBoxItem>
                 <ComboBoxItem Tag="probing_skim">探测掠过</ComboBoxItem>                
             </ComboBox>
         </GroupBox>
-        <CheckBox HorizontalAlignment="Right" Margin="5" Tag="GOUGECHECK" Click="CheckBox_Click">过切检查</CheckBox>
+        <CheckBox Name="chxGouge" HorizontalAlignment="Right" Margin="5" Tag="GOUGECHECK" Click="CheckBox_Click">过切检查</CheckBox>
     </StackPanel>
 </Page>
