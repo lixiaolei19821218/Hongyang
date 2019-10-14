@@ -427,27 +427,65 @@ namespace Hongyang
             }
         }
 
-        private void CreateTool(string toolName = "InspectionHead")
+        private void CreateTool()
         {
+            string toolName = "D6-R3-L50";
             PMTool tool = session.Tools.FirstOrDefault(t => t.Name == toolName);
+            string pmlth = AppContext.BaseDirectory + @"Macro\HKS-A-63-toolholder.pmlth";
             if (tool == null)
             {
                 powerMILL.Execute("CREATE TOOL ; PROBE FORM TOOL");
                 session.Refresh();
                 tool = session.Tools.Last();
-                tool.Name = "InspectionHead";
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" DIAMETER \"6\"");
+                tool.Name = "D6-R3-L50";
+                tool.Diameter = 6;
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" NUMBER COMMANDFROMUI 20");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT ADD");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LOWERDIA \"4\"");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT UPPERDIA \"4\"");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LENGTH \"100\"");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT ADD");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT LOWERDIA \"30\"");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT LENGTH \"30\"");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" OVERHANG \"100\"");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" IMPORT_HOLDER FILEOPEN {pmlth}");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" OVERHANG \"50\"");
                 powerMILL.Execute("TOOL ACCEPT");
             }
-            
+            toolName = "D4-R2-L50";
+            tool = session.Tools.FirstOrDefault(t => t.Name == toolName);
+            if (tool == null)
+            {
+                powerMILL.Execute("CREATE TOOL ; PROBE FORM TOOL");
+                session.Refresh();
+                tool = session.Tools.Last();
+                tool.Name = "D4-R2-L50";
+                tool.Diameter = 4;
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" NUMBER COMMANDFROMUI 21");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT ADD");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT UPPERDIA \"3\"");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LENGTH \"100\"");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT ADD");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" IMPORT_HOLDER FILEOPEN {pmlth}");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" OVERHANG \"50\"");
+                powerMILL.Execute("TOOL ACCEPT");
+            }
+            toolName = "D3-R1.5-L50";
+            tool = session.Tools.FirstOrDefault(t => t.Name == toolName);
+            if (tool == null)
+            {
+                powerMILL.Execute("CREATE TOOL ; PROBE FORM TOOL");
+                session.Refresh();
+                tool = session.Tools.Last();
+                tool.Name = "D3-R1.5-L50";
+                tool.Diameter = 3;
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" NUMBER COMMANDFROMUI 22");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT ADD");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT UPPERDIA \"2\"");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LOWERDIA \"2\"");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LENGTH \"100\"");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT ADD");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" IMPORT_HOLDER FILEOPEN {pmlth}");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" OVERHANG \"50\"");
+                powerMILL.Execute("TOOL ACCEPT");
+            }
+
             session.Refresh();
             session.Tools.First().IsActive = true;
         }
