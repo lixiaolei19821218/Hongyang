@@ -168,6 +168,8 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="packages.config" />
+    <None Include="Pmoptz\Fidia_KR199_OMV_V3.pmoptz" />
+    <None Include="Pmoptz\TNC530_OMV_DMC210P_20141115.pmoptz" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

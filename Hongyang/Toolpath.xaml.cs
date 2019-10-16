@@ -38,8 +38,7 @@ namespace Hongyang
             CreateTool();
             cbxTool.ItemsSource = session.Tools.Select(t => t.Name);
 
-            //cbxToolpaths.ItemsSource = session.Toolpaths.Select(t => t.Name);
-            //cbxCopyToLevels.ItemsSource = session.LevelsAndSets.Select(l => l.Name);
+            RefreshToolpaths();
         }
 
         private void BtnCalculate_Click(object sender, RoutedEventArgs e)
@@ -200,7 +199,8 @@ namespace Hongyang
             //cbxToolpaths.ItemsSource = session.Toolpaths.Select(t => t.Name);
              (Application.Current.MainWindow as MainWindow).RefreshToolpaths();
             Application.Current.MainWindow.WindowState = WindowState.Normal;
-           
+            RefreshToolpaths();
+
             MessageBox.Show("计算完成", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
         }
 
@@ -335,7 +335,7 @@ namespace Hongyang
             double z = (double.Parse(min[3]) + double.Parse(max[3])) / 2;
             double a = Math.Atan2(y, x) * 180 / Math.PI;
             double b;
-            if (level.ToLower().Contains("horizontal"))
+            if (level.Substring(level.Length - 2, 2).ToLower() == "_h")
             {
                 b = 90;
             }
@@ -490,10 +490,73 @@ namespace Hongyang
             session.Tools.First().IsActive = true;
         }
 
+        private void RefreshToolpaths()
+        {
+            session.Refresh();
+            lstToolpath.ItemsSource = session.Toolpaths;
+        }
+
         private void CbxTool_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox comboBox = sender as ComboBox;
             powerMILL.Execute($"ACTIVATE TOOL \"{comboBox.SelectedValue}\"");
+        }
+
+        private void BtnTo_Click(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            if (button.Name == "btnToRight")
+            {
+                foreach (PMToolpath toolpath in lstToolpath.SelectedItems)
+                {
+                    if (!lstSelected.Items.Contains(toolpath))
+                    {
+                        lstSelected.Items.Add(toolpath);
+                    }
+                }
+            }
+            else
+            {
+                List<PMToolpath> selected = new List<PMToolpath>();
+                foreach (PMToolpath toolpath in lstSelected.SelectedItems)
+                {
+                    selected.Add(toolpath);
+                }
+                foreach (PMToolpath toolpath in selected)
+                {
+                    lstSelected.Items.Remove(toolpath);
+                }
+            }
+        }
+
+        private void BtnGenerateNC_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.MainWindow.WindowState = WindowState.Minimized;
+            string nc = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            powerMILL.DialogsOff();
+            powerMILL.EchoCommandsOn();
+            powerMILL.Execute($"CREATE NCPROGRAM '{nc}'");
+            foreach (PMToolpath toolpath in lstSelected.Items)
+            {
+                powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
+            }
+            powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" QUIT FORM NCTOOLPATH");
+            powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" FILENAME FILESAVE\r'{AppContext.BaseDirectory}ncprograms\\{nc}.tap'");
+            powerMILL.Execute($"EDIT NCPROGRAM '{nc}' SET WORKPLANE \" \"");           
+            powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TAPEOPTIONS \"{AppContext.BaseDirectory + "Pmoptz\\" + (cbxOpt.SelectedItem as ComboBoxItem).Tag}\" FORM ACCEPT SelectOptionFile");
+            if (cbxOpt.Text == "Fidia")
+            {
+                powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TOOLCOORDS CENTRE");
+            }
+            else
+            {
+                powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TOOLCOORDS TIP");
+            }
+            powerMILL.Execute($"ACTIVATE NCPROGRAM \"{nc}\" KEEP NCPROGRAM ;\rYes\rYes");
+            
+            powerMILL.Execute($"NCTOOLPATH ACCEPT FORM ACCEPT NCTOOLPATHLIST FORM ACCEPT NCTOOLLIST FORM ACCEPT PROBINGNCOPTS");
+            powerMILL.Execute("TEXTINFO ACCEPT");
+            Application.Current.MainWindow.WindowState = WindowState.Normal;
         }
     }
 }
