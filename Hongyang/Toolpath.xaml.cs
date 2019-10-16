@@ -481,7 +481,7 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LOWERDIA \"2\"");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LENGTH \"100\"");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT ADD");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" IMPORT_HOLDER FILEOPEN {pmlth}");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" IMPORT_HOLDER FILEOPEN '{pmlth}'");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" OVERHANG \"50\"");
                 powerMILL.Execute("TOOL ACCEPT");
             }

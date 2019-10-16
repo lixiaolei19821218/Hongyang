@@ -35,8 +35,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>
-    </ApplicationIcon>
+    <ApplicationIcon>Surface-Inspection.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autodesk.Geometry, Version=1.0.4.0, Culture=neutral, PublicKeyToken=e8ff820723601f0b, processorArchitecture=MSIL">
@@ -212,6 +211,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icon\tooltipdiscu.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Surface-Inspection.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

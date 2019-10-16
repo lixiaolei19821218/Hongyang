@@ -8,6 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("icon/tooltipdiscu.png")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("surface-inspection.ico")]
 
 
