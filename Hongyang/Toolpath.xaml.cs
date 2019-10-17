@@ -493,7 +493,7 @@ namespace Hongyang
         private void RefreshToolpaths()
         {
             session.Refresh();
-            lstToolpath.ItemsSource = session.Toolpaths;
+            lstToolpath.ItemsSource = session.Toolpaths.Where(t => t.IsCalculated);
         }
 
         private void CbxTool_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -531,17 +531,21 @@ namespace Hongyang
 
         private void BtnGenerateNC_Click(object sender, RoutedEventArgs e)
         {
+            if (session.Directory == null)
+            {
+                MessageBox.Show("请先保存PowerMILL项目。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
             Application.Current.MainWindow.WindowState = WindowState.Minimized;
-            string nc = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            powerMILL.DialogsOff();
-            powerMILL.EchoCommandsOn();
+            string nc = DateTime.Now.ToString("yyyyMMdd_HHmmss");           
+            powerMILL.DialogsOff();            
             powerMILL.Execute($"CREATE NCPROGRAM '{nc}'");
             foreach (PMToolpath toolpath in lstSelected.Items)
             {
                 powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
             }
             powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" QUIT FORM NCTOOLPATH");
-            powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" FILENAME FILESAVE\r'{AppContext.BaseDirectory}ncprograms\\{nc}.tap'");
+            //powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" FILENAME FILESAVE\r'{AppContext.BaseDirectory}Project\\{nc}\\ncprograms\\{nc}.tap'");
             powerMILL.Execute($"EDIT NCPROGRAM '{nc}' SET WORKPLANE \" \"");           
             powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TAPEOPTIONS \"{AppContext.BaseDirectory + "Pmoptz\\" + (cbxOpt.SelectedItem as ComboBoxItem).Tag}\" FORM ACCEPT SelectOptionFile");
             if (cbxOpt.Text == "Fidia")
