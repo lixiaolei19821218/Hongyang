@@ -167,6 +167,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="Macro\Tools.mac" />
     <None Include="packages.config" />
     <None Include="Pmoptz\Fidia_KR199_OMV_V3.pmoptz" />
     <None Include="Pmoptz\TNC530_OMV_DMC210P_20141115.pmoptz" />
@@ -208,9 +209,7 @@
   <ItemGroup>
     <Resource Include="Icon\lock.gif" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Macro\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Resource Include="Icon\tooltipdiscu.png" />
   </ItemGroup>

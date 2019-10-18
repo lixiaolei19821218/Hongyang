@@ -437,14 +437,13 @@ namespace Hongyang
                 powerMILL.Execute("CREATE TOOL ; PROBE FORM TOOL");
                 session.Refresh();
                 tool = session.Tools.Last();
-                tool.Name = "D6-R3-L50";
-                tool.Diameter = 6;
+                tool.Name = toolName;
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" DIAMETER \"6\"");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" NUMBER COMMANDFROMUI 20");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT ADD");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT UPPERDIA \"4\"");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LENGTH \"100\"");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT ADD");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" IMPORT_HOLDER FILEOPEN {pmlth}");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LENGTH \"100\"");               
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" IMPORT_HOLDER FILEOPEN '{pmlth}'");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" OVERHANG \"50\"");
                 powerMILL.Execute("TOOL ACCEPT");
             }
@@ -455,14 +454,13 @@ namespace Hongyang
                 powerMILL.Execute("CREATE TOOL ; PROBE FORM TOOL");
                 session.Refresh();
                 tool = session.Tools.Last();
-                tool.Name = "D4-R2-L50";
+                tool.Name = toolName;
                 tool.Diameter = 4;
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" NUMBER COMMANDFROMUI 21");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT ADD");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT UPPERDIA \"3\"");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LENGTH \"100\"");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT ADD");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" IMPORT_HOLDER FILEOPEN {pmlth}");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LENGTH \"100\"");                
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" IMPORT_HOLDER FILEOPEN '{pmlth}'");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" OVERHANG \"50\"");
                 powerMILL.Execute("TOOL ACCEPT");
             }
@@ -473,14 +471,13 @@ namespace Hongyang
                 powerMILL.Execute("CREATE TOOL ; PROBE FORM TOOL");
                 session.Refresh();
                 tool = session.Tools.Last();
-                tool.Name = "D3-R1.5-L50";
+                tool.Name = toolName;
                 tool.Diameter = 3;
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" NUMBER COMMANDFROMUI 22");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT ADD");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT UPPERDIA \"2\"");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LOWERDIA \"2\"");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LENGTH \"100\"");
-                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" HOLDER_COMPONENT ADD");
+                powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" SHANK_COMPONENT LENGTH \"100\"");               
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" IMPORT_HOLDER FILEOPEN '{pmlth}'");
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" OVERHANG \"50\"");
                 powerMILL.Execute("TOOL ACCEPT");
