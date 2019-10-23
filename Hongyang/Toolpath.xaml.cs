@@ -117,14 +117,17 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT LEVEL \"{cbxLevel.Text}\" SELECT ALL");
                 powerMILL.Execute("CREATE PATTERN ;");
                 session.Refresh();
-
-                PMPattern pattern2 = session.Patterns.Last();
-                pattern2.Name = cbxLevel.Text;
+                PMPattern pattern = session.Patterns.FirstOrDefault(p => p.Name == cbxLevel.Text);
+                if (pattern != null)
+                {
+                    pattern.Delete();
+                }
+                PMPattern pattern2 = session.Patterns.Last();                            
+                pattern2.Name = cbxLevel.Text;                
                 powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" INSERT MODEL");
-                powerMILL.Execute("edit model all deselect all");
+                powerMILL.Execute("edit model all deselect all");                
                 powerMILL.Execute($"EDIT LEVEL \"{cbxLevel.Text}\" SELECT ALL");
-                powerMILL.Execute("VIEW MODEL ; SHADE OFF");
-
+                powerMILL.Execute("VIEW MODEL ; SHADE OFF");                
                 powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" DESELECT ALL");
                 powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" SELECT 0");
                 string output = powerMILL.ExecuteEx($"size pattern '{pattern2.Name}' selected").ToString();
@@ -153,7 +156,7 @@ namespace Hongyang
                         height = z0Max - z0Min;
                     }
                     powerMILL.Execute("DELETE SELECTION");
-                }
+                }                
                 powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" SELECT ALL");
                 powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" CURVEEDITOR START");
                 powerMILL.Execute("FORM RIBBON TAB \"CurveEditor.Edit\"");
@@ -182,12 +185,23 @@ namespace Hongyang
                 powerMILL.Execute("FORM ACCEPT CEINSERTFILLET");
                 powerMILL.Execute("FORM RIBBON TAB \"CurveEditor.Edit\"");
                 powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
-
+                
                 powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\"");
                 powerMILL.Execute($"EDIT TOOLPATH \"{toolpath.Name}\" CLONE");
                 powerMILL.Execute($"EDIT PAR 'Pattern' \"{pattern2.Name}\"");
                 session.Refresh();
                 PMToolpath clone = session.Toolpaths.Last();
+
+                MainWindow window = Application.Current.MainWindow as MainWindow;
+                window.EPoint.Apply();
+                window.LeadLink.Apply();
+                window.Link.Apply();
+                window.LinkFilter.Apply();
+                window.SPoint.Apply();
+                window.ToolAxOVec.Apply();
+                window.ToolRapidMv.Apply();
+                window.ToolRapidMvClear.Apply();
+
                 powerMILL.Execute($"EDIT TOOLPATH \"{clone.Name}\" CALCULATE");
                 powerMILL.Execute("FORM ACCEPT SFSurfaceInspect");
                 powerMILL.Execute("VIEW MODEL ; SHADE NORMAL");
@@ -206,6 +220,7 @@ namespace Hongyang
 
         private void CbxLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            /*
             if (cbxLevel.SelectedItem.ToString() == "CAO1")
             {
                 tbxPoints.Text = "33";
@@ -221,6 +236,7 @@ namespace Hongyang
                 tbxPoints.Text = "16";
                 tbxZ.Text = "-10";
             }
+            */
         }
 
         /*
@@ -542,7 +558,9 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
             }
             powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" QUIT FORM NCTOOLPATH");
-            //powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" FILENAME FILESAVE\r'{AppContext.BaseDirectory}Project\\{nc}\\ncprograms\\{nc}.tap'");
+            string path = powerMILL.ExecuteEx($"print par terse \"entity('ncprogram', '{nc}').filename\"").ToString();
+            path = path.Insert(path.IndexOf("{ncprogram}"), cbxOpt.Text + nc + "/");
+            powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" FILENAME FILESAVE\r'{path}'");
             powerMILL.Execute($"EDIT NCPROGRAM '{nc}' SET WORKPLANE \" \"");           
             powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TAPEOPTIONS \"{AppContext.BaseDirectory + "Pmoptz\\" + (cbxOpt.SelectedItem as ComboBoxItem).Tag}\" FORM ACCEPT SelectOptionFile");
             if (cbxOpt.Text == "Fidia")

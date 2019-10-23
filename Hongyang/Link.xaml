@@ -42,11 +42,11 @@
                             <ComboBoxItem Tag="azimuth">方位角</ComboBoxItem>
                             <ComboBoxItem Tag="elevation">仰角</ComboBoxItem>
                         </ComboBox>
-                        <ComboBox Width="50" Grid.Column="2" Height="21" Margin="5,5,5,0" VerticalAlignment="Top" Tag="0" SelectedIndex="0" SelectionChanged="ComboBox_SelectionChanged" IsEnabled="{Binding ElementName=cbx1stLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ResourceKey=ConstraintConverter}}">
+                        <ComboBox Name="cbx11S" Width="50" Grid.Column="2" Height="21" Margin="5,5,5,0" VerticalAlignment="Top" Tag="0" SelectedIndex="0" SelectionChanged="ComboBox_SelectionChanged" IsEnabled="{Binding ElementName=cbx1stLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ResourceKey=ConstraintConverter}}">
                             <ComboBoxItem Tag="less_than">&lt;</ComboBoxItem>
                             <ComboBoxItem Tag="greater_than">&gt;</ComboBoxItem>
                         </ComboBox>
-                        <TextBox Width="50" Grid.Column="3" HorizontalAlignment="Left" Text="0.0" Margin="5,5,0,5" Tag="0" SelectionChanged="TextBox_SelectionChanged" Visibility="{Binding ElementName=cbx1stLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}"/>
+                        <TextBox Name="tbx11S" Width="50" Grid.Column="3" HorizontalAlignment="Left" Text="0.0" Margin="5,5,0,5" Tag="0" SelectionChanged="TextBox_SelectionChanged" Visibility="{Binding ElementName=cbx1stLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}"/>
                         <ComboBox Width="100" Grid.Row="1" Tag="1" SelectedIndex="0" SelectionChanged="CbxConstraint_SelectionChanged" Grid.ColumnSpan="2" Name="cbx1stLink2ndConstraint" Visibility="{Binding ElementName=cbx1stLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}">
                             <ComboBoxItem Tag="unspecified">&#160;</ComboBoxItem>
                             <ComboBoxItem Tag="distance">距离</ComboBoxItem>
@@ -55,11 +55,11 @@
                             <ComboBoxItem Tag="azimuth">方位角</ComboBoxItem>
                             <ComboBoxItem Tag="elevation">仰角</ComboBoxItem>
                         </ComboBox>
-                        <ComboBox Width="50" Grid.Row="1" Grid.Column="2" Tag="1" SelectedIndex="0" SelectionChanged="ComboBox_SelectionChanged" Visibility="{Binding ElementName=cbx1stLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}" IsEnabled="{Binding ElementName=cbx1stLink2ndConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}">
+                        <ComboBox Name="cbx12S" Width="50" Grid.Row="1" Grid.Column="2" Tag="1" SelectedIndex="0" SelectionChanged="ComboBox_SelectionChanged" Visibility="{Binding ElementName=cbx1stLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}" IsEnabled="{Binding ElementName=cbx1stLink2ndConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}">
                             <ComboBoxItem Tag="less_than">&lt;</ComboBoxItem>
                             <ComboBoxItem Tag="greater_than">&gt;</ComboBoxItem>
                         </ComboBox>
-                        <TextBox Width="50" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Left" Text="0.0" Tag="1" Margin="5,5,0,5"  SelectionChanged="TextBox_SelectionChanged" Visibility="{Binding ElementName=cbx1stLink2ndConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}"/>
+                        <TextBox Name="tbx12S" Width="50" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Left" Text="0.0" Tag="1" Margin="5,5,0,5"  SelectionChanged="TextBox_SelectionChanged" Visibility="{Binding ElementName=cbx1stLink2ndConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}"/>
                     </Grid>
 
                 </GroupBox>
@@ -96,11 +96,11 @@
                             <ComboBoxItem Tag="azimuth">方位角</ComboBoxItem>
                             <ComboBoxItem Tag="elevation">仰角</ComboBoxItem>
                         </ComboBox>
-                        <ComboBox Width="50" Grid.Column="2" Height="21" Margin="5,5,5,0" VerticalAlignment="Top" Tag="0" SelectedIndex="0" SelectionChanged="ComboBox_SelectionChanged" IsEnabled="{Binding ElementName=cbx2ndLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ResourceKey=ConstraintConverter}}">
+                        <ComboBox Name="cbx21S" Width="50" Grid.Column="2" Height="21" Margin="5,5,5,0" VerticalAlignment="Top" Tag="0" SelectedIndex="0" SelectionChanged="ComboBox_SelectionChanged" IsEnabled="{Binding ElementName=cbx2ndLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ResourceKey=ConstraintConverter}}">
                             <ComboBoxItem Tag="less_than">&lt;</ComboBoxItem>
                             <ComboBoxItem Tag="greater_than">&gt;</ComboBoxItem>
                         </ComboBox>
-                        <TextBox Width="50" Grid.Column="3" HorizontalAlignment="Left" Text="0.0" Margin="5,5,0,5" Tag="0"  SelectionChanged="TextBox_SelectionChanged" Visibility="{Binding ElementName=cbx2ndLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}"/>
+                        <TextBox Name="tbx21S" Width="50" Grid.Column="3" HorizontalAlignment="Left" Text="0.0" Margin="5,5,0,5" Tag="0"  SelectionChanged="TextBox_SelectionChanged" Visibility="{Binding ElementName=cbx2ndLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}"/>
                         <ComboBox Width="100" Grid.Row="1" Tag="1" SelectedIndex="0" SelectionChanged="CbxConstraint_SelectionChanged" Grid.ColumnSpan="2" Name="cbx2ndLink2ndConstraint" Visibility="{Binding ElementName=cbx2ndLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}">
                             <ComboBoxItem Tag="unspecified">&#160;</ComboBoxItem>
                             <ComboBoxItem Tag="distance">距离</ComboBoxItem>
@@ -109,11 +109,11 @@
                             <ComboBoxItem Tag="azimuth">方位角</ComboBoxItem>
                             <ComboBoxItem Tag="elevation">仰角</ComboBoxItem>
                         </ComboBox>
-                        <ComboBox Width="50" Grid.Row="1" Grid.Column="2" SelectedIndex="0" Tag="1" SelectionChanged="ComboBox_SelectionChanged" Visibility="{Binding ElementName=cbx2ndLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}" IsEnabled="{Binding ElementName=cbx2ndLink2ndConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}">
+                        <ComboBox Name="cbx22S" Width="50" Grid.Row="1" Grid.Column="2" SelectedIndex="0" Tag="1" SelectionChanged="ComboBox_SelectionChanged" Visibility="{Binding ElementName=cbx2ndLink1stConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}" IsEnabled="{Binding ElementName=cbx2ndLink2ndConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}">
                             <ComboBoxItem Tag="less_than">&lt;</ComboBoxItem>
                             <ComboBoxItem Tag="greater_than">&gt;</ComboBoxItem>
                         </ComboBox>
-                        <TextBox Width="50" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Left" Text="0.0" Margin="5,5,0,5" Tag="1" SelectionChanged="TextBox_SelectionChanged" Visibility="{Binding ElementName=cbx2ndLink2ndConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}"/>
+                        <TextBox Name="tbx22S" Width="50" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Left" Text="0.0" Margin="5,5,0,5" Tag="1" SelectionChanged="TextBox_SelectionChanged" Visibility="{Binding ElementName=cbx2ndLink2ndConstraint, Path=SelectedItem.Tag, Converter={StaticResource ConstraintConverter}}"/>
                     </Grid>
                 </GroupBox>
             </StackPanel>

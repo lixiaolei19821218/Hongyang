@@ -31,7 +31,55 @@ namespace Hongyang
             powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
             session = powerMILL.ActiveProject;
 
-            Refresh();
+            //Refresh();
+        }
+
+        public void Apply()
+        {
+            if (chxUseSetting.IsChecked ?? false)
+            {
+                powerMILL.Execute("EDIT PAR 'Connections.PointDistribution.UseToolpathSettings' 1");
+            }
+            else
+            {
+                powerMILL.Execute("EDIT PAR 'Connections.PointDistribution.UseToolpathSettings' 0");
+            }
+            if (chxDist.IsChecked ?? false)
+            {
+                powerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.Active' 1");
+                powerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.Rapid.Filter.Type' '{(cbxType.SelectedItem as ComboBoxItem).Tag}'");
+                powerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.Rapid.Filter.Factor' \"{tbxFactor.Text}\"");
+                if (chxDistance.IsChecked ?? false)
+                {
+                    powerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.MaxDistanceBetweenPoints.Active' 1");
+                    powerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.Rapid.MaxDistanceBetweenPoints.Value' \"{tbxDistance.Text}\"");
+                }
+                else
+                {
+                    powerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.MaxDistanceBetweenPoints.Active' 0");
+                }
+                if (chxAngle.IsChecked ?? false)
+                {
+                    powerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.MaxAngleBetweenPoints.Active' 1");
+                    powerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.Rapid.MaxAngleBetweenPoints.Value' \"{tbxAngle.Text}\"");
+                }
+                else
+                {
+                    powerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.MaxAngleBetweenPoints.Active' 0");
+                }
+            }
+            else
+            {
+                powerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.Active' 0");
+            }
+            if (chxGouge.IsChecked ?? false)
+            {
+                powerMILL.Execute("EDIT TOOLPATH LEADS GOUGECHECK Y");
+            }
+            else
+            {
+                powerMILL.Execute("EDIT TOOLPATH LEADS GOUGECHECK N");
+            }
         }
 
         public void Refresh()

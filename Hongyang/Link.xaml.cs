@@ -31,7 +31,69 @@ namespace Hongyang
             PowerMILL = (Application.Current.MainWindow as MainWindow).PowerMILL;
             Session = (Application.Current.MainWindow as MainWindow).Session;
 
-            Refresh();
+            //Refresh();
+        }
+
+        public void Apply()
+        {
+            PowerMILL.Execute($"EDIT PAR 'Connections.Link[0].ProbingType' '{(cbxType0.SelectedItem as ComboBoxItem).Tag}'");
+            if (chx1stConstraint.IsChecked ?? false)
+            {
+                PowerMILL.Execute($"EDIT PAR 'Connections.Link[0].ApplyConstraints' '1'");
+                string tag = (cbx1stLink1stConstraint.SelectedItem as ComboBoxItem).Tag.ToString();
+                PowerMILL.Execute($"EDIT PAR 'Connections.Link[0].Constraint[0].Type' '{tag}'");
+                if (tag != "unspecified")
+                {
+                    PowerMILL.Execute($"EDIT PAR 'Toolpath.Connections.Link.First.Constraint[0].{tag.Replace("_", "")}.Function' '{(cbx11S.SelectedItem as ComboBoxItem).Tag}'");
+                    PowerMILL.Execute($"EDIT PAR 'Toolpath.Connections.Link.First.Constraint[0].{tag.Replace("_", "")}.Value' \"{tbx11S.Text}\"");
+                    tag = (cbx1stLink2ndConstraint.SelectedItem as ComboBoxItem).Tag.ToString();
+                    PowerMILL.Execute($"EDIT PAR 'Connections.Link[0].Constraint[1].Type' '{tag}'");
+                    if (tag != "unspecified")
+                    {
+                        PowerMILL.Execute($"EDIT PAR 'Toolpath.Connections.Link.First.Constraint[1].{tag.Replace("_", "")}.Function' '{(cbx12S.SelectedItem as ComboBoxItem).Tag}'");
+                        PowerMILL.Execute($"EDIT PAR 'Toolpath.Connections.Link.First.Constraint[1].{tag.Replace("_", "")}.Value' \"{tbx12S.Text}\"");
+                    }
+                }                 
+            }
+            else
+            {
+                PowerMILL.Execute($"EDIT PAR 'Connections.Link[0].ApplyConstraints' '0'");
+            }
+
+            PowerMILL.Execute($"EDIT PAR 'Connections.Link[1].ProbingType' '{(cbxType1.SelectedItem as ComboBoxItem).Tag}'");
+            if (chx2ndConstraint.IsChecked ?? false)
+            {
+                PowerMILL.Execute($"EDIT PAR 'Connections.Link[1].ApplyConstraints' '1'");
+                string tag = (cbx2ndLink1stConstraint.SelectedItem as ComboBoxItem).Tag.ToString();
+                PowerMILL.Execute($"EDIT PAR 'Connections.Link[1].Constraint[0].Type' '{tag}'");
+                if (tag != "unspecified")
+                {
+                    PowerMILL.Execute($"EDIT PAR 'Toolpath.Connections.Link.Second.Constraint[0].{tag.Replace("_", "")}.Function' '{(cbx21S.SelectedItem as ComboBoxItem).Tag}'");
+                    PowerMILL.Execute($"EDIT PAR 'Toolpath.Connections.Link.Second.Constraint[0].{tag.Replace("_", "")}.Value' \"{tbx21S.Text}\"");
+                    tag = (cbx2ndLink2ndConstraint.SelectedItem as ComboBoxItem).Tag.ToString();
+                    PowerMILL.Execute($"EDIT PAR 'Connections.Link[1].Constraint[1].Type' '{tag}'");
+                    if (tag != "unspecified")
+                    {
+                        PowerMILL.Execute($"EDIT PAR 'Toolpath.Connections.Link.Second.Constraint[1].{tag.Replace("_", "")}.Function' '{(cbx22S.SelectedItem as ComboBoxItem).Tag}'");
+                        PowerMILL.Execute($"EDIT PAR 'Toolpath.Connections.Link.Second.Constraint[1].{tag.Replace("_", "")}.Value' \"{tbx22S.Text}\"");
+                    }
+                }
+            }
+            else
+            {
+                PowerMILL.Execute($"EDIT PAR 'Connections.Link[1].ApplyConstraints' '0'");
+            }
+
+            PowerMILL.Execute($"EDIT PAR 'Connections.DefaultLink[0].ProbingType' '{(cbxTypeDef.SelectedItem as ComboBoxItem).Tag}'");
+
+            if (chxGouge.IsChecked ?? false)
+            {
+                PowerMILL.Execute("EDIT TOOLPATH LEADS GOUGECHECK Y");
+            }
+            else
+            {
+                PowerMILL.Execute("EDIT TOOLPATH LEADS GOUGECHECK N");
+            }
         }
 
         public void Refresh()

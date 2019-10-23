@@ -25,7 +25,12 @@ namespace Hongyang
             InitializeComponent();
             //print par  "entity('toolpath', 'CAO1').Rapid.CalculateDimensions.RapidClearance 快进间隙
             //print par  "entity('toolpath', 'CAO1').Rapid.Plane.Distance" 快进高度
-            Refresh();
+            //Refresh();
+        }
+
+        public void Apply()
+        {
+
         }
 
         public void Refresh()

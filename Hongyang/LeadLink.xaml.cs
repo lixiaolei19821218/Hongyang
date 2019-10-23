@@ -24,7 +24,12 @@ namespace Hongyang
         {
             InitializeComponent();
 
-            Refresh();
+            //Refresh();
+        }
+
+        public void Apply()
+        {
+
         }
 
         public void Refresh()

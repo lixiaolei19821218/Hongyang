@@ -31,7 +31,44 @@ namespace Hongyang
             powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
             session = powerMILL.ActiveProject;
 
-            Refresh();
+            //Refresh();
+        }
+
+        public void Apply()
+        {
+            if (imgLock.Source.ToString().Contains("unlock"))
+            {
+                powerMILL.Execute("EDIT TOOLPATH START MODE AUTOMATIC");
+                powerMILL.Execute($"EDIT TOOLPATH START {cbxType.Tag} {(cbxType.SelectedItem as ComboBoxItem).Tag}");
+                if ((cbxType.SelectedItem as ComboBoxItem).Tag.ToString() == "ABSOLUTE")
+                {
+                    if (chxMove.IsChecked ?? false)
+                    {
+                        powerMILL.Execute("EDIT TOOLPATH START DIRECT_MOVE Y");
+                    }
+                    else
+                    {
+                        powerMILL.Execute("EDIT TOOLPATH START DIRECT_MOVE N");
+                    }
+                    powerMILL.Execute($"EDIT TOOLPATH START {tbxX.Tag} \"{tbxX.Text}\"");
+                    powerMILL.Execute($"EDIT TOOLPATH START {tbxY.Tag} \"{tbxY.Text}\"");
+                    powerMILL.Execute($"EDIT TOOLPATH START {tbxZ.Tag} \"{tbxZ.Text}\"");
+                }
+                if (chxSeparate.IsChecked ?? false)
+                {
+                    powerMILL.Execute("EDIT TOOLPATH START SEPARATE Y");
+                    powerMILL.Execute($"EDIT TOOLPATH START {cbxDir.Tag} {(cbxDir.SelectedItem as ComboBoxItem).Tag}");
+                    powerMILL.Execute($"EDIT TOOLPATH START {tbxDir.Tag} \"{tbxDir.Text}\"");
+                }
+                else
+                {
+                    powerMILL.Execute("EDIT TOOLPATH START SEPARATE N");
+                }
+            }
+            else
+            {
+                powerMILL.Execute("EDIT TOOLPATH START MODE FIXED");
+            }
         }
 
         public void Refresh()

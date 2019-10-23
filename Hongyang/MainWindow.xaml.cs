@@ -30,15 +30,15 @@ namespace Hongyang
 
         private List<TreeItem> treeItems = new List<TreeItem>();
 
-        private Toolpath Toolpath;
-        private ToolAxOVec ToolAxOVec;
-        private ToolRapidMv ToolRapidMv;
-        private ToolRapidMvClear ToolRapidMvClear;
-        private LeadLink LeadLink;
-        private Link Link;
-        private LinkFilter LinkFilter;
-        private SPoint SPoint;
-        private EPoint EPoint;
+        public Toolpath Toolpath;
+        public ToolAxOVec ToolAxOVec;
+        public ToolRapidMv ToolRapidMv;
+        public ToolRapidMvClear ToolRapidMvClear;
+        public LeadLink LeadLink;
+        public Link Link;
+        public LinkFilter LinkFilter;
+        public SPoint SPoint;
+        public EPoint EPoint;
 
         public ObservableCollection<string> Toolpaths = new ObservableCollection<string>();
 
@@ -152,6 +152,12 @@ namespace Hongyang
 
         private void BtnCalculate_Click(object sender, RoutedEventArgs e)
         {
+            if (string.IsNullOrEmpty(cbxToolpaths.Text))
+            {
+                MessageBox.Show("无可用刀路。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+            PowerMILL.Execute($"ACTIVATE Toolpath \"{cbxToolpaths.Text}\"");
             PowerMILL.Execute($"EDIT TOOLPATH \"{cbxToolpaths.Text}\" CALCULATE");
         }
 
@@ -162,6 +168,8 @@ namespace Hongyang
 
         private void CbxToolpaths_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+
+            /*
             ToolAxOVec.Refresh();
             ToolRapidMv.Refresh();
             ToolRapidMvClear.Refresh();
@@ -170,6 +178,7 @@ namespace Hongyang
             LinkFilter.Refresh();
             SPoint.Refresh();
             EPoint.Refresh();
+            */
         }
     }
 }

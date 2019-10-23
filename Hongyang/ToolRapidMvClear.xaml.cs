@@ -31,7 +31,35 @@ namespace Hongyang
             PowerMILL = (Application.Current.MainWindow as MainWindow).PowerMILL;
             Session = (Application.Current.MainWindow as MainWindow).Session;
 
-            Refresh();
+            //Refresh();
+        }
+
+        public void Apply()
+        {
+            PowerMILL.Execute($"EDIT TOOLPATH LEADS LINK MOVE_DIR {(cbxMoveDir.SelectedItem as ComboBoxItem).Tag}");
+            PowerMILL.Execute($"EDIT TOOLPATH LEADS RETRACTDIST \"{tbxRetract.Text}\"");
+            PowerMILL.Execute($"EDIT TOOLPATH LEADS APPROACHDIST \"{tbxApproach.Text}\"" );
+            if (cbxExtend.IsChecked ?? false)
+            {
+                PowerMILL.Execute("EDIT TOOLPATH LEADS LINK EXTEND_MOVE Y");
+                PowerMILL.Execute($"EDIT TOOLPATH LEADS LINK MAX_EXTENSION \"{txtMaxExtension.Text}\"");
+            }
+            else
+            {
+                PowerMILL.Execute("EDIT TOOLPATH LEADS LINK EXTEND_MOVE N");
+            }
+            PowerMILL.Execute($"EDIT TOOLPATH LEADS SKIMPLANE TYPE {(cbxSkimPlane.SelectedItem as ComboBoxItem).Tag}");
+            if (cbxArcFit.IsChecked ?? false)
+            {
+                PowerMILL.Execute("EDIT TOOLPATH LEADS LINK ARCFIT Y");
+                PowerMILL.Execute($"EDIT TOOLPATH LEADS LINK ARCFIT_RAD \"{txtArcFit.Text}\"");
+            }
+            else
+            {
+                PowerMILL.Execute("EDIT TOOLPATH LEADS LINK ARCFIT N");
+            }
+            PowerMILL.Execute($"EDIT TOOLPATH LEADS SKIMDIST \"{txtSkimDir.Text}\"");
+            PowerMILL.Execute($"EDIT TOOLPATH LEADS RADIAL_CLEARANCE {txtClearance.Text}");
         }
 
         public void Refresh()
