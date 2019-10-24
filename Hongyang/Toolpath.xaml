@@ -5,7 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Hongyang"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="550" d:DesignWidth="800"
       Title="Tool">
 
     <Grid>
@@ -40,7 +40,7 @@
         </GroupBox>
         <GroupBox Margin="5" Grid.Row="1" Grid.ColumnSpan="2">
             <GroupBox.Header>
-                <CheckBox Name="ckbManul">手动设置偏移</CheckBox>
+                <CheckBox Name="ckbManul" IsChecked="{Binding ElementName=chxAdjust, Path=IsChecked, Mode=OneWay}">手动设置偏移</CheckBox>
             </GroupBox.Header>
             <StackPanel Orientation="Horizontal" IsEnabled="{Binding ElementName=ckbManul, Path=IsChecked}">
                 <Label Margin="5">X</Label>
@@ -48,19 +48,31 @@
                 <Label Margin="5">Y</Label>
                 <TextBox Margin="5" Name="tbxY" Width="50" Text="0"></TextBox>
                 <Label Margin="5">Z</Label>
-                <TextBox Margin="5" Name="tbxZ" Width="50" Text="-10"></TextBox>
+                <TextBox Margin="5" Name="tbxZ" Width="50" Text="0"></TextBox>
             </StackPanel>
         </GroupBox>
         <Label Margin="5" Grid.Row="2">点数</Label>
-        <TextBox Margin="5" Grid.Row="2" Grid.Column="1" Name="tbxPoints" Width="100" HorizontalAlignment="Left" Text="16"></TextBox>
-        <Label Margin="5" Grid.Row="3">检测层</Label>
-        <DockPanel Grid.Row="3" Grid.Column="1">
-            <ComboBox Name="cbxLevel" Width="150" SelectedIndex="0" HorizontalAlignment="Left" SelectionChanged="CbxLevel_SelectionChanged"/>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <CheckBox Name="chxAdjust" Margin="10" VerticalAlignment="Center"  Checked="ChxAdjust_Checked">调整偏移</CheckBox>
-                <CheckBox Name="chxNewTP" Margin="10" IsEnabled="{Binding ElementName=chxAdjust, Path=IsChecked}">新建刀路</CheckBox>
-            </StackPanel>
-        </DockPanel>
+        <TextBox Grid.Row="2" Grid.Column="1" Margin="5" Name="tbxPoints" Width="100" HorizontalAlignment="Left" Text="16"></TextBox>
+        <GroupBox Margin="5" Grid.Row="3" Grid.ColumnSpan="2" Header="检测层">
+            <DockPanel Grid.Row="3" Grid.Column="1">
+                <GroupBox Header="所有层">
+                    <ListBox Name="lstAllLevel" Width="130" Height="120" DisplayMemberPath="Name"></ListBox>
+                </GroupBox>
+                <StackPanel VerticalAlignment="Center">
+                    <Button Name="btnL2R" Click="BtnTo_Click">&gt;</Button>
+                    <Button Name="btnL2L" Click="BtnTo_Click">&lt;</Button>
+                </StackPanel>
+                <GroupBox Header="已选层">
+                    <ListBox Name="lstSelectedLevel" Width="130" Height="120" DisplayMemberPath="Name"></ListBox>
+                </GroupBox>
+                <!--<ComboBox Visibility="Collapsed" Name="cbxLevel" Width="150" SelectedIndex="0" HorizontalAlignment="Left" SelectionChanged="CbxLevel_SelectionChanged"/>-->
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Right">
+                    <CheckBox Name="chxAdjust" Margin="10" VerticalAlignment="Top">调整偏移</CheckBox>
+                    <CheckBox Name="chxNewTP" Margin="10" VerticalAlignment="Top" IsEnabled="{Binding ElementName=chxAdjust, Path=IsChecked}">新建刀路</CheckBox>
+                </StackPanel>
+            </DockPanel>
+        </GroupBox>
+
         <Button Margin="5" Grid.Row="4" Grid.ColumnSpan="2" Name="btnCalculate" Click="BtnCalculate_Click">计算</Button>
         <GroupBox Grid.Row="5" Grid.ColumnSpan="2" Header="输出NC程序">
             <StackPanel Orientation="Horizontal">

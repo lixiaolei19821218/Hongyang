@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Hongyang"
         mc:Ignorable="d"
-        Title="湖北三江航天红阳机电有限公司" Height="640" Width="600" ResizeMode="CanMinimize" Icon="icon/Surface-Inspection.ico">
+        Title="湖北三江航天红阳机电有限公司" Height="760" Width="630" ResizeMode="CanMinimize" Icon="icon/Surface-Inspection.ico">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>

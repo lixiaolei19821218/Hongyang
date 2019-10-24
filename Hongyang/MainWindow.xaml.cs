@@ -168,7 +168,7 @@ namespace Hongyang
 
         private void CbxToolpaths_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-
+            PowerMILL.Execute($"ACTIVATE Toolpath \"{cbxToolpaths.SelectedValue}\"");
             /*
             ToolAxOVec.Refresh();
             ToolRapidMv.Refresh();
