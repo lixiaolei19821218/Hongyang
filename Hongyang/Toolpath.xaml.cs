@@ -32,13 +32,53 @@ namespace Hongyang
             powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
             session = powerMILL.ActiveProject;
 
-            cbxLevel.ItemsSource = session.LevelsAndSets.Select(l => l.Name);
-            cbxLevel.SelectedItem = "CAO1";
+            cbxLevel.ItemsSource = session.LevelsAndSets.Select(l => l.Name);           
 
             CreateTool();
             cbxTool.ItemsSource = session.Tools.Select(t => t.Name);
 
             RefreshToolpaths();
+
+            Style itemContainerStyle = new Style(typeof(ListBoxItem));
+            itemContainerStyle.Setters.Add(new Setter(ListBoxItem.AllowDropProperty, true));
+            itemContainerStyle.Setters.Add(new EventSetter(ListBoxItem.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(s_PreviewMouseLeftButtonDown)));
+            itemContainerStyle.Setters.Add(new EventSetter(ListBoxItem.DropEvent, new DragEventHandler(listbox_Drop)));
+            lstSelected.ItemContainerStyle = itemContainerStyle;
+        }
+
+        void s_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+
+            if (sender is ListBoxItem)
+            {
+                ListBoxItem draggedItem = sender as ListBoxItem;
+                DragDrop.DoDragDrop(draggedItem, draggedItem.DataContext, DragDropEffects.Move);
+                draggedItem.IsSelected = true;
+            }
+        }
+
+        void listbox_Drop(object sender, DragEventArgs e)
+        {
+            PMToolpath droppedData = e.Data.GetData(typeof(PMToolpath)) as PMToolpath;
+            PMToolpath target = ((ListBoxItem)(sender)).DataContext as PMToolpath;
+
+            int removedIdx = lstSelected.Items.IndexOf(droppedData);
+            int targetIdx = lstSelected.Items.IndexOf(target);
+
+            if (removedIdx < targetIdx)
+            {
+                lstSelected.Items.Insert(targetIdx + 1, droppedData);
+                lstSelected.Items.RemoveAt(removedIdx);
+            }
+            else
+            {
+                int remIdx = removedIdx + 1;
+                if (lstSelected.Items.Count + 1 > remIdx)
+                {
+                    lstSelected.Items.Insert(targetIdx, droppedData);
+                    lstSelected.Items.RemoveAt(remIdx);
+                }
+            }
         }
 
         private void BtnCalculate_Click(object sender, RoutedEventArgs e)
