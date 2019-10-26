@@ -209,7 +209,9 @@
   <ItemGroup>
     <Resource Include="Icon\lock.gif" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Report\" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Icon\tooltipdiscu.png" />
   </ItemGroup>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+//=============================================================================
+//
+//D 
+//
+// ============================================================================
+// COPYRIGHT 2004 DELCAM PLC., BIRMINGHAM, ENGLAND.                
+// ============================================================================
+//
+//History.
+// DICC  Who When     What
+// ====== === ======== ========================================================
+//        DDG 2003     Written.
+//        DDG 17/09/04 Added the DisplayEmpty and the DisplayNotMeasured flags
+//                     Related to pinspect#2306.
+//        DDG 04/11/04 Corrected to use the style sheet file.
+//        PML 10/10/07 pinspect#6091 - changed inspection group template to
+//                     idInspectionGroupTemplate.
+//  95158 AEK 24/01/12 Added explicit portrait orientation.
+// 100618 SNB 04/10/12 Ability to hide Inspection Group's Graph and Statistics 
+//                     as well as Geometric Item's "Number of probed points"
+//                     sections via options(attributes) in PXM
+// 104861 SNB 21/05/13 Added version information.
+// 128568 MIC 13/06/16 Delcam -> Autodesk
+//=============================================================================
+-->
+<Report xmlns="http://powerinspect.delcam.com/HTMLReport/ReportConfig" 
+        xmlns:pic="http://powerinspect.delcam.com/XMLOutput/Common" 
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+        xsi:schemaLocation="http://powerinspect.delcam.com/HTMLReport/ReportConfig
+P:\devel\libraries\source\ReportBrowser.dev\source\XML\pwiReport.xsd">
+
+  <Version number="2" />
+
+  <CSSFiles>
+    <CSSFile>Styles.css</CSSFile>
+  </CSSFiles>
+  
+  <Page Orientation="Portrait">
+  </Page>
+  
+  <Header TemplateID="idHeaderTemplate_Delcam2003">
+    <Logo location="AutodeskLogo.gif"/>
+  </Header>
+  
+  <GeometricGroup TemplateID="idGroupTemplate">
+    <GeometricGroupHeader TemplateID="idGeometricGroupHeaderTemplate"/>
+    
+    <GeometricItem TemplateID="idGeometricItemTemplate" DisplayEmpty="false" DisplayNotMeasured="false" DisplayNumberOfProbedPoints="true">
+      <GeometricProperties TemplateID="idGeometricPropertiesTemplate">
+        <GeomProperty1D TemplateID="idGeomProperty1DTemplate"/>
+        <GeomProperty3D TemplateID="idGeomProperty3DTemplate"/>
+        <GeomPropertyTolerance TemplateID="idGeomPropertyToleranceTemplate"/>
+      </GeometricProperties>
+    </GeometricItem>
+    
+    <GDTItem TemplateID="idGDTTemplate">
+      <GDTFeature TemplateID="idGDTFeatureTemplate"/>
+      <GDTResultDimension TemplateID="idGDTResultDimensionTemplate"/>
+      <GDTResultTolerancezone TemplateID="idGDTResultTolerancezoneTemplate"/>
+    </GDTItem>
+    
+  </GeometricGroup>
+
+  <InspectionGroup TemplateID="idInspectionGroupTemplate" DisplayGraph="true" DisplayStatistics="true">
+    <InspectionGroupHeader TemplateID="idInspectionGroupHeaderTemplate"/>
+    <InspectionPoint TemplateID="idInspectionPointTemplate"/>
+    <GraphTolerance TemplateID="idGraphToleranceTemplate"/>
+    <Statistics TemplateID="idStatisticsTemplate"/>
+  </InspectionGroup>
+  
+  <CADView TemplateID="idCADViewTemplate"/>
+  
+</Report>

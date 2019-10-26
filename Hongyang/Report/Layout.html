@@ -1,0 +1,269 @@
+<html>
+<!--
+//=============================================================================
+//
+//D The default HTML report layout templates.
+//
+// ----------------------------------------------------------------------------
+// COPYRIGHT 2014 DELCAM LTD, BIRMINGHAM, ENGLAND.                
+// ----------------------------------------------------------------------------
+//
+// History.
+// DICC   Who When     What
+// ------ --- -------- --------------------------------------------------------
+//        DDG    2003  Written.
+//        DDG 17/09/04 Corrected the layout of the inspection group table.
+//                     Corrected the inspection point template.
+//                     Corrected the Geometric tolerance template.
+//                     Related to pinspect#2306.
+//        DDG 04/11/04 Applied the changes done by GJM. Removed the obsolete
+//                     templates. Removed the default templates.
+//        DDG 20/01/05 Added templates for a group and a geom item that support
+//                     outputting of comments. See pinspect#2874.
+//        DDG 22/02/05 Allow to output Measure name, pinspect#3023.
+//        SNB 18/08/06 pinspect#4809. Datum information now displayed next to 
+//                     the feature name.
+//        SNB 14/09/06 pinspect#4948. References items (links) information in 
+//                     the HTML report.
+//        BLK 23/08/07 Fixed idGeometricItemTemplate. pinspect#5891
+//        SNB 12/05/08 pinspect#7004. Future-proof against Internet Explorer 8 
+//                     rendering engine.
+//  73048 VVS 14/07/08 pinspect#7313. Changed style of group comments
+//  75104 TRW 18/11/08 pinspect#7561. Output number of probed points
+//  75482 TRW 18/11/08 pinspect#7561. Removed geometric item template since it
+//                     it is same as default one, so should use default
+//  77194 AEK 06/04/09 pinspect#8258. Removed compatibility mode.
+//  87299 AEK 01/10/10 Added commented out CAD View template example.
+//  89348 AEK 17/02/11 Changed measure name tag in commented out example report.
+//  89729 GJM 28/01/11 Changed Header Logo, footer, and font to Verdana to  
+//                     reflect marketing request
+//  90197 AEK 07/06/11 Replaced <thead> with <tbody> for in example 
+//                     CAD View template.
+//  91931 AEK 13/07/11 Fixed rowspan number in idGeomProperty3DTemplate.
+//  98176 AEK 15/05/12 Minor changes in header styles.
+// 101321 AEK 13/11/12 Removed idStatisticsTemplate.
+// 101631 AEK 29/11/12 Removed duplicated template.
+// 102097 AEK 24/12/12 Removed duplicated templates.
+// 106530 AEK 09/08/13 Fixed CVR templates.
+// 112356 AEK 15/05/14 Changed "Delcam plc" with "Delcam Ltd".
+// 128568 MIC 13/06/16 Delcam -> Autodesk
+//-----------------------------------------------------------------------------
+-->
+<head>
+  <link rel="stylesheet" type="text/css" href="PWI_Report.css" />
+  <title>My title</title>  
+</head>
+
+<body>
+  <div id="idAllTemplates">
+        
+    <!-- Header for Delcam 2003 template -->
+    <table id="idHeaderTemplate_Delcam2003" class="cl_invisible_table" style="table-layout:fixed; margin-bottom: 10px;">
+      <col width="25%">
+      <col width="10%">
+      <col width="17%">
+      <col width="23%">
+      <col width="25%">
+      
+      <tbody id="idHeaderTemplate">
+          <tr>
+              <td colspan=5 align="center" valign="middle">
+                  <img style="width:100%;" id="idCompanyLogoIMG" alt="Company Logo">
+              </td>
+          </tr>
+          <tr style="height:20px;"><td colspan=5></td></tr>
+          <tr>
+              <td class="cl_header_print" style="border-top: solid 2px black; border-left: solid 2px black; border-bottom: solid 1px black;">
+                  <span id="idReportVariable" m_name="Customer" m_is_value="false">产品名称</span>
+              </td>
+              <td class="cl_header_print" style="font-weight: bold; border-top: solid 2px black; border-right: solid 2px black; border-bottom: solid 1px black;" colspan=2>
+                  <span id="idReportVariable" m_name="Customer" m_is_value="true">产品名称</span>
+              </td>
+              <td class="cl_header_print" style="border-top: solid 2px black; border-bottom: solid 1px black; border-left: solid 2px black">
+                  <span id="idReportVariable" m_name="Inspector" m_is_value="false">产品图号</span>
+              </td>
+              <td class="cl_header_print" style="font-weight: bold; border-top: solid 2px black; border-right: solid 2px black; border-bottom: solid 1px black;">
+                  <span id="idReportVariable" m_name="Inspector" m_is_value="true">产品图号</span>
+              </td>
+          </tr>
+          <tr>
+              <td class="cl_header_print" style="border-color: black; border-left: solid 2px black; border-bottom: solid 1px black;">
+                  <span id="idReportVariable" m_name="Description" m_is_value="false">产品批次</span>
+              </td>
+              <td colspan=2 class="cl_header_print_b" style="font-size: 10pt; border-bottom: solid 1px black; border-right: solid 2px black;">
+                  <span id="idReportVariable" m_name="Description" m_is_value="true">产品批次</span>
+              </td>
+              <td class="cl_header_print" style="border-bottom: solid 1px black; border-bottom: solid 1px black;">
+                  <span id="idReportVariable" m_name="Customer contact" m_is_value="false">产品编号</span>
+              </td>
+              <td class="cl_header_print_b" style="border-bottom: solid 1px black; border-right: solid 2px black;">
+                  <span id="idReportVariable" m_name="Customer contact" m_is_value="true">产品编号</span>
+              </td>
+          </tr>
+          <tr>
+              <td class="cl_header_print" style="border-left: solid 2px black; border-bottom: solid 1px black;">
+                  <span id="idReportVariable" m_name="Part No." m_is_value="false">检测设备</span>
+              </td>
+              <td colspan=2 class="cl_header_print_b" style="border-bottom: solid 1px black; border-right: solid 2px black;">
+                  <span id="idReportVariable" m_name="Part No." m_is_value="true">检测设备</span>
+              </td>
+              <td class="cl_header_print" style="border-bottom: solid 1px black;">
+                  <span id="idReportVariable" m_name="Customer phone No." m_is_value="false">设备精度</span>
+              </td>
+              <td class="cl_header_print_b" style="border-bottom: solid 1px black; border-right: solid 2px black;">
+                  <span id="idReportVariable" m_name="Customer phone No." m_is_value="true">设备精度</span>
+              </td>
+          </tr>
+          <tr>
+              <td class="cl_header_print" style="border-left: solid 2px black; border-bottom: solid 1px black;">
+                  <span id="idReportVariable" m_name="Drawing number" m_is_value="false">委托单位</span>
+              </td>
+              <td colspan=2 class="cl_header_print_b" style="border-bottom: solid 1px black; border-right: solid 2px black;">
+                  <span id="idReportVariable" m_name="Drawing number" m_is_value="true">委托单位</span>
+              </td>
+              <td class="cl_header_print" style="border-bottom: solid 1px black;">
+                  <span id="idReportVariable" m_name="Customer fax No." m_is_value="false">报告日期</span>
+              </td>
+              <td class="cl_header_print_b" style="border-bottom: solid 1px black; border-right: solid 2px black;">
+                  <span id="idReportVariable" m_name="Customer fax No." m_is_value="true">报告日期</span>
+              </td>
+          </tr>
+          <tr>
+              <td class="cl_header_print" style="border-left: solid 2px black; border-bottom: solid 1px black;">
+                  <span id="idReportVariable" m_name="Drawing number1" m_is_value="false">对齐方式</span>
+              </td>
+              <td colspan=2 class="cl_header_print_b" style="border-bottom: solid 1px black; border-right: solid 2px black;">
+                  <span id="idReportVariable" m_name="Drawing number1" m_is_value="true">对齐方式</span>
+              </td>
+              <td class="cl_header_print" style="border-bottom: solid 1px black;">
+                  <span id="idReportVariable" m_name="Customer fax No.1" m_is_value="false">操作者</span>
+              </td>
+              <td class="cl_header_print_b" style="border-bottom: solid 1px black; border-right: solid 2px black;">
+                  <span id="idReportVariable" m_name="Customer fax No.1" m_is_value="true">操作者</span>
+              </td>
+          </tr>
+          <tr>
+              <td class="cl_header_print" style="border-left: solid 2px black; border-bottom: solid 2px black;">
+                  <span id="idReportVariable" m_name="Datum" m_is_value="false">报告编制</span>
+              </td>
+              <td colspan=2 class="cl_header_print_b" style="border-bottom: solid 2px black; border-right: solid 2px black;">
+                  <span id="idReportVariable" m_name="Datum" m_is_value="true">报告编制</span>
+              </td>
+              <td class="cl_header_print" style="border-bottom: solid 2px black;">
+                  <span id="idReportVariable" m_name="Report Type" m_is_value="false">校对</span>
+              </td>
+              <td class="cl_header_print_b" style="border-bottom: solid 2px black; border-right: solid 2px black;">
+                  <span id="idReportVariable" m_name="Report Type" m_is_value="true">校对</span>
+              </td>
+          </tr>
+          <tr>
+          <tr>
+              <td colspan="3" class="cl_header_print_b" style="font-size: 12pt; border-left: solid 2px black; border-bottom: solid 2px black; text-align:right;">
+                  Measure:
+              </td>
+              <td colspan="2" class="cl_header_print_b" style="font-size: 12pt; border-bottom: solid 2px black; border-right: solid 2px black;">
+                  <span id="idMeasureName">Master part</span>
+              </td>
+          </tr>
+      </tbody>
+    </table>
+    
+    <!-- Footers-->
+    <table id="idFooterTemplate" class="cl_invisible_table" style="table-layout:fixed; margin-bottom: 10px;">
+      <col width="33%">
+      <col width="34%">
+      <col width="33%">
+      <tbody>
+        <tr style="height:15px;">
+          <td colspan=3 style="border-bottom: solid 1px #777777;"></td>
+        </tr>
+        <tr style="height:6px;">
+          <td colspan=3></td>
+        </tr>
+        <tr>
+          <td align="left" class="cl_footer_small_print_info">Autodesk</td>
+          <td align="middle" class="cl_footer_small_print_info">www.powerinspect.com</td>
+          <td align="right" class="cl_footer_small_print_info">www.autodesk.com</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+    <!-- CAD View Template example with header and footer -->
+    <!-- Replace values like %VALUE% with your owns -->
+<!--<div id="idCADViewReport%TEMPLATE_UNIQUE_NAME%Template" displayed_name="%SOME_DISPLAYED_NAME%" class="cl_table_cad_view_template">
+      <div id="idCADViewAlignElement">
+        <table id="idCADViewInnerTable" class="cl_table_report_no_width" cellpadding="0">
+          <tr>
+            <td>
+              <table id="idHorizontalTable" width="100%" class="cl_invisible_table" style="table-layout:fixed;">
+                <colgroup>
+                  <col width="13%"/>
+                  <col width="19%"/>
+                  <col width="13%"/>
+                  <col width="19%"/>
+                  <col width="36%"/>
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td class="cl_header_small_print_info" style="border-bottom: solid 2px black; border-right: solid 2px black;">Measurement Report:</td>
+                    <td class="cl_header_small_print_info" style="border-bottom: solid 2px black; border-right: solid 2px black;"><b><span id="idReportVariable" m_name="Measurement report" m_is_value="true">Report number</span></b></td>
+                    <td class="cl_header_small_print_info" style="border-bottom: solid 2px black; border-right: solid 2px black;">Customer:</td>
+                    <td class="cl_header_small_print_info" style="border-bottom: solid 2px black; border-right: solid 2px black;"><b><span id="idReportVariable" m_name="Customer" m_is_value="true">Customer name</span></b></td>
+                    <td class="cl_header_small_print_info" style="border-bottom: solid 2px black;" rowspan="3"><img width="100%" src="images/AutodeskLogo.gif"/></td>
+                  </tr>
+                  <tr>
+                    <td class="cl_header_small_print_info" style="border-bottom: solid 2px black; border-right: solid 2px black;">Description:</td>
+                    <td class="cl_header_small_print_info" style="border-bottom: solid 2px black; border-right: solid 2px black;"><b><span id="idReportVariable" m_name="Description" m_is_value="true">Component description</span></b></td>
+                    <td class="cl_header_small_print_info" style="border-bottom: solid 2px black; border-right: solid 2px black;">Inspector:</td>
+                    <td class="cl_header_small_print_info" style="border-bottom: solid 2px black; border-right: solid 2px black;"><b><span id="idReportVariable" m_name="Inspector" m_is_value="true">Inspector name</span></b></td>
+                  </tr>
+                  <tr>
+                    <td class="cl_header_small_print_info" style="border-bottom: solid 2px black; border-right: solid 2px black;">Component number:</td>
+                    <td class="cl_header_small_print_info" style="border-bottom: solid 2px black; border-right: solid 2px black;"><b><span id="idReportVariable" m_name="Component number" m_is_value="true">Enter component number</span></b></td>
+                    <td class="cl_header_small_print_info" style="border-bottom: solid 2px black; border-right: solid 2px black;">CMM:</td>
+                    <td class="cl_header_small_print_info" style="border-bottom: solid 2px black; border-right: solid 2px black;"><b><span id="idReportVariable" m_name="CMM" m_is_value="true">CMM type</span></b></td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">
+                <div style="overflow:hidden"><img id="idPicture" style="position:relative;top:0;left:0;"></img></div>                   
+            </td>
+          </tr>
+          <tr>
+            <td id="idCADViewAlignElementCaption"style="overflow:hidden">
+              <table id="idHorizontalTable" width="100%" class="cl_invisible_table" style="table-layout:fixed;">
+                <tr><td><span id="idName">CAD</span></td></tr>
+              </table>
+            </td>
+
+          </tr>
+          <tr>
+            <td>
+              <table id="idHorizontalTable" width="100%" class="cl_invisible_table" style="table-layout:fixed;">
+                <colgroup>
+                  <col width="15%"/>
+                  <col width="35%"/>
+                  <col width="15%"/>
+                  <col width="35%"/>
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td class="cl_header_small_print_info" style="border-top: solid 2px black; border-right: solid 2px black;">Measure:</td>
+                    <td class="cl_header_small_print_info" style="border-top: solid 2px black; border-right: solid 2px black;"><b><span id="idMeasureName">Simulated measure</span></b></td>
+                    <td class="cl_header_small_print_info" style="border-top: solid 2px black; border-right: solid 2px black;">Measure date:</td>
+                    <td class="cl_header_small_print_info" style="border-top: solid 2px black;"><b><span id="idReportVariable" m_name="Date" m_is_value="true">Wednesday, 16, December 2009 12:10:25</span></b></td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>-->
+
+</body>
+</html>
