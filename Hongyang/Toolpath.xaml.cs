@@ -79,6 +79,10 @@ namespace Hongyang
                     PMToolpath target = ((ListBoxItem)(sender)).DataContext as PMToolpath;
 
                     int removedIdx = lstSelected.Items.IndexOf(droppedData);
+                    if (removedIdx == -1)
+                    {
+                        return;
+                    }
                     int targetIdx = lstSelected.Items.IndexOf(target);
 
                     if (removedIdx < targetIdx)
@@ -676,6 +680,7 @@ namespace Hongyang
             
             powerMILL.Execute($"NCTOOLPATH ACCEPT FORM ACCEPT NCTOOLPATHLIST FORM ACCEPT NCTOOLLIST FORM ACCEPT PROBINGNCOPTS");
             powerMILL.Execute("TEXTINFO ACCEPT");
+            MessageBox.Show("NC程序生成完成。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
             Application.Current.MainWindow.WindowState = WindowState.Normal;
         }
     }
