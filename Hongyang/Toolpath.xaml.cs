@@ -39,23 +39,28 @@ namespace Hongyang
 
             RefreshToolpaths();
             RefreshLevels();
-
+            
             Style itemContainerStyle = new Style(typeof(ListBoxItem));
             itemContainerStyle.Setters.Add(new Setter(ListBoxItem.AllowDropProperty, true));
             itemContainerStyle.Setters.Add(new EventSetter(ListBoxItem.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(s_PreviewMouseLeftButtonDown)));
             itemContainerStyle.Setters.Add(new EventSetter(ListBoxItem.DropEvent, new DragEventHandler(listbox_Drop)));
             lstSelected.ItemContainerStyle = itemContainerStyle;
+
+            itemContainerStyle = new Style(typeof(ListBoxItem));            
+            itemContainerStyle.Setters.Add(new EventSetter(ListBoxItem.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(s_PreviewMouseLeftButtonDown)));
+            lstToolpath.ItemContainerStyle = itemContainerStyle;
+            lstAllLevel.ItemContainerStyle = itemContainerStyle;
+            lstSelectedLevel.ItemContainerStyle = itemContainerStyle;
         }
 
         private void RefreshLevels()
         {
             session.Refresh();
-            lstAllLevel.ItemsSource = session.LevelsAndSets;
+            lstAllLevel.ItemsSource = session.LevelsAndSets.OrderBy(l => l.Name);
         }
 
-        void s_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void s_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-
             if (sender is ListBoxItem)
             {
                 ListBoxItem draggedItem = sender as ListBoxItem;
@@ -64,30 +69,70 @@ namespace Hongyang
             }
         }
 
-        void listbox_Drop(object sender, DragEventArgs e)
-        {
+        private void listbox_Drop(object sender, DragEventArgs e)
+        {            
             PMToolpath droppedData = e.Data.GetData(typeof(PMToolpath)) as PMToolpath;
-            PMToolpath target = ((ListBoxItem)(sender)).DataContext as PMToolpath;
-
-            int removedIdx = lstSelected.Items.IndexOf(droppedData);
-            int targetIdx = lstSelected.Items.IndexOf(target);
-
-            if (removedIdx < targetIdx)
+            if (droppedData != null)
             {
-                lstSelected.Items.Insert(targetIdx + 1, droppedData);
-                lstSelected.Items.RemoveAt(removedIdx);
-            }
-            else
-            {
-                int remIdx = removedIdx + 1;
-                if (lstSelected.Items.Count + 1 > remIdx)
+                if (sender is ListBoxItem)
                 {
-                    lstSelected.Items.Insert(targetIdx, droppedData);
-                    lstSelected.Items.RemoveAt(remIdx);
+                    PMToolpath target = ((ListBoxItem)(sender)).DataContext as PMToolpath;
+
+                    int removedIdx = lstSelected.Items.IndexOf(droppedData);
+                    int targetIdx = lstSelected.Items.IndexOf(target);
+
+                    if (removedIdx < targetIdx)
+                    {
+                        lstSelected.Items.Insert(targetIdx + 1, droppedData);
+                        lstSelected.Items.RemoveAt(removedIdx);
+                    }
+                    else
+                    {
+                        int remIdx = removedIdx + 1;
+                        if (lstSelected.Items.Count + 1 > remIdx)
+                        {
+                            lstSelected.Items.Insert(targetIdx, droppedData);
+                            lstSelected.Items.RemoveAt(remIdx);
+                        }
+                    }
+                }
+                else
+                {
+                    ListBox listBox = sender as ListBox;
+                    if (listBox.Name == "lstSelected")
+                    {
+                        if (!lstSelected.Items.Contains(droppedData))
+                        {
+                            lstSelected.Items.Add(droppedData);
+                        }
+                    }
+                    else if (listBox.Name == "lstToolpath")
+                    {
+                        lstSelected.Items.Remove(droppedData);
+                    }
                 }
             }
         }
 
+        private void listboxLevel_Drop(object sender, DragEventArgs e)
+        {
+            PMLevelOrSet droppedData = e.Data.GetData(typeof(PMLevelOrSet)) as PMLevelOrSet;
+            if (droppedData != null)
+            {
+                ListBox listBox = sender as ListBox;
+                if (listBox.Name == "lstSelectedLevel")
+                {
+                    if (!lstSelectedLevel.Items.Contains(droppedData))
+                    {
+                        lstSelectedLevel.Items.Add(droppedData);
+                    }
+                }
+                else
+                {
+                    lstSelectedLevel.Items.Remove(droppedData);
+                }
+            }
+        }
         private void BtnCalculate_Click(object sender, RoutedEventArgs e)
         {
             if (chxAdjust.IsChecked ?? false)
@@ -398,12 +443,13 @@ namespace Hongyang
             string output = powerMILL.ExecuteEx("SIZE MODEL").ToString();
             string[] min = output.Split('\r')[8].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             string[] max = output.Split('\r')[9].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] length = output.Split('\r')[10].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             double x = (double.Parse(min[1]) + double.Parse(max[1])) / 2;
             double y = (double.Parse(min[2]) + double.Parse(max[2])) / 2;
             double z = (double.Parse(min[3]) + double.Parse(max[3])) / 2;
             double a = Math.Atan2(y, x) * 180 / Math.PI;
             double b;
-            if (level.Substring(level.Length - 2, 2).ToLower() == "_h")
+            if (level.Length >= 2 && level.Substring(level.Length - 2, 2).ToLower() == "_h")
             {
                 b = 90;
             }
@@ -411,25 +457,33 @@ namespace Hongyang
             {
                 b = x > 0 ? Math.Atan2(x, z) * 180 / Math.PI : 90 + Math.Atan2(x, z) * 180 / Math.PI;
             }
-            powerMILL.Execute("MODE WORKPLANE_CREATE ; SELECTION CENTRE");
-            session.Refresh();
+
             PMWorkplane workplane = session.Workplanes.FirstOrDefault(w => w.Name == level);
             if (workplane != null)
             {
                 workplane.Delete();
             }
+            powerMILL.Execute("MODE WORKPLANE_CREATE ; SELECTION CENTRE");
+            session.Refresh();
+            workplane = session.Workplanes.FirstOrDefault(w => w.Name == level);          
             workplane = session.Workplanes.Last();
             workplane.Name = level;
-            powerMILL.Execute($"MODE WORKPLANE_EDIT START \"{workplane.Name}\"");
-            powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Z");
-            powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{a}\"");
-            powerMILL.Execute("WPETWIST ACCEPT");
-            powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Y");
-            powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{b}\"");
-            powerMILL.Execute("WPETWIST ACCEPT");
-            powerMILL.Execute("MODE WORKPLANE_EDIT FINISH ACCEPT");
-            
-            powerMILL.Execute($"EXPLORER SELECT Workplane \"Workplane\\{workplane.Name}\" NEW");
+            if (double.Parse(length[3]) == 0.0)
+            {
+
+            }
+            else
+            {
+                powerMILL.Execute($"MODE WORKPLANE_EDIT START \"{workplane.Name}\"");
+                powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Z");
+                powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{a}\"");
+                powerMILL.Execute("WPETWIST ACCEPT");
+                powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Y");
+                powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{b}\"");
+                powerMILL.Execute("WPETWIST ACCEPT");
+                powerMILL.Execute("MODE WORKPLANE_EDIT FINISH ACCEPT");
+                powerMILL.Execute($"EXPLORER SELECT Workplane \"Workplane\\{workplane.Name}\" NEW");                
+            }
             powerMILL.Execute($"ACTIVATE Workplane \"{workplane.Name}\"");
             return workplane;
         }

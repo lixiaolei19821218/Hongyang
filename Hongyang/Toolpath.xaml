@@ -56,14 +56,14 @@
         <GroupBox Margin="5" Grid.Row="3" Grid.ColumnSpan="2" Header="检测层">
             <DockPanel Grid.Row="3" Grid.Column="1">
                 <GroupBox Header="所有层">
-                    <ListBox Name="lstAllLevel" Width="130" Height="120" DisplayMemberPath="Name"></ListBox>
+                    <ListBox Name="lstAllLevel" Width="130" Height="120" DisplayMemberPath="Name" Drop="listboxLevel_Drop" AllowDrop="True"></ListBox>
                 </GroupBox>
                 <StackPanel VerticalAlignment="Center">
                     <Button Name="btnL2R" Click="BtnTo_Click">&gt;</Button>
                     <Button Name="btnL2L" Click="BtnTo_Click">&lt;</Button>
                 </StackPanel>
                 <GroupBox Header="已选层">
-                    <ListBox Name="lstSelectedLevel" Width="130" Height="120" DisplayMemberPath="Name"></ListBox>
+                    <ListBox Name="lstSelectedLevel" Width="130" Height="120" DisplayMemberPath="Name" Drop="listboxLevel_Drop" AllowDrop="True"></ListBox>
                 </GroupBox>
                 <!--<ComboBox Visibility="Collapsed" Name="cbxLevel" Width="150" SelectedIndex="0" HorizontalAlignment="Left" SelectionChanged="CbxLevel_SelectionChanged"/>-->
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Right">
@@ -77,14 +77,14 @@
         <GroupBox Grid.Row="5" Grid.ColumnSpan="2" Header="输出NC程序">
             <StackPanel Orientation="Horizontal">
                 <GroupBox Header="所有刀路">
-                    <ListBox Width="100" Height="120" Name="lstToolpath" DisplayMemberPath="Name"></ListBox>
+                    <ListBox Width="100" Height="120" Name="lstToolpath" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop"></ListBox>
                 </GroupBox>
                 <StackPanel VerticalAlignment="Center">
                     <Button Name="btnToRight" Click="BtnTo_Click">&gt;</Button>
                     <Button Name="btnToLeft" Click="BtnTo_Click">&lt;</Button>
                 </StackPanel>
                 <GroupBox Header="已选刀路">
-                    <ListBox Width="100" Height="120" Name="lstSelected" DisplayMemberPath="Name"></ListBox>
+                    <ListBox Width="100" Height="120" Name="lstSelected" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop"></ListBox>
                 </GroupBox>
                 <StackPanel>
                     <Label HorizontalAlignment="Left">机床文件</Label>
