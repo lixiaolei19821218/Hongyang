@@ -42,7 +42,7 @@ namespace Hongyang
             
             Style itemContainerStyle = new Style(typeof(ListBoxItem));
             itemContainerStyle.Setters.Add(new Setter(ListBoxItem.AllowDropProperty, true));
-            itemContainerStyle.Setters.Add(new EventSetter(ListBoxItem.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(s_PreviewMouseLeftButtonDown)));
+            itemContainerStyle.Setters.Add(new EventSetter(ListBoxItem.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(s_PreviewMouseLeftButtonDown)));            
             itemContainerStyle.Setters.Add(new EventSetter(ListBoxItem.DropEvent, new DragEventHandler(listbox_Drop)));
             lstSelected.ItemContainerStyle = itemContainerStyle;
 
@@ -644,6 +644,35 @@ namespace Hongyang
                 {
                     lstSelectedLevel.Items.Remove(level);
                 }
+            }
+            else if (button.Name == "btnL2RAll")
+            {
+                lstSelectedLevel.Items.Clear();
+                foreach (var l in lstAllLevel.Items)
+                {
+                    lstSelectedLevel.Items.Add(l);
+                }
+
+            }
+            else if (button.Name == "btnL2LAll")
+            {
+                MessageBoxResult result = MessageBox.Show("确实要移除所有已选层吗？这样将导致已计算刀路不能调整偏移。", "Warming", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.Yes, MessageBoxOptions.DefaultDesktopOnly);
+                if (result == MessageBoxResult.Yes)
+                {
+                    lstSelectedLevel.Items.Clear();
+                }
+            }
+            else if (button.Name == "btnToRightAll")
+            {
+                lstSelected.Items.Clear();
+                foreach (var tp in lstToolpath.Items)
+                {
+                    lstSelected.Items.Add(tp);
+                }
+            }
+            else if (button.Name == "btnToLeftAll")
+            {
+                lstSelected.Items.Clear();                
             }
         }
 

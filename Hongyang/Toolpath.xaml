@@ -59,8 +59,10 @@
                     <ListBox Name="lstAllLevel" Width="130" Height="120" DisplayMemberPath="Name" Drop="listboxLevel_Drop" AllowDrop="True"></ListBox>
                 </GroupBox>
                 <StackPanel VerticalAlignment="Center">
+                    <Button Name="btnL2RAll" Click="BtnTo_Click">&gt;&gt;</Button>
                     <Button Name="btnL2R" Click="BtnTo_Click">&gt;</Button>
                     <Button Name="btnL2L" Click="BtnTo_Click">&lt;</Button>
+                    <Button Name="btnL2LAll" Click="BtnTo_Click">&lt;&lt;</Button>
                 </StackPanel>
                 <GroupBox Header="已选层">
                     <ListBox Name="lstSelectedLevel" Width="130" Height="120" DisplayMemberPath="Name" Drop="listboxLevel_Drop" AllowDrop="True"></ListBox>
@@ -80,8 +82,10 @@
                     <ListBox Width="100" Height="120" Name="lstToolpath" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop"></ListBox>
                 </GroupBox>
                 <StackPanel VerticalAlignment="Center">
+                    <Button Name="btnToRightAll" Click="BtnTo_Click">&gt;&gt;</Button>
                     <Button Name="btnToRight" Click="BtnTo_Click">&gt;</Button>
                     <Button Name="btnToLeft" Click="BtnTo_Click">&lt;</Button>
+                    <Button Name="btnToLeftAll" Click="BtnTo_Click">&lt;&lt;</Button>
                 </StackPanel>
                 <GroupBox Header="已选刀路">
                     <ListBox Width="100" Height="120" Name="lstSelected" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop"></ListBox>
