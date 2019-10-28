@@ -41,7 +41,7 @@ P:\devel\libraries\source\ReportBrowser.dev\source\XML\pwiReport.xsd">
   </Page>
   
   <Header TemplateID="idHeaderTemplate_Delcam2003">
-    <Logo location="AutodeskLogo.gif"/>
+    <Logo location="Hongyang.png"/>
   </Header>
   
   <GeometricGroup TemplateID="idGroupTemplate">
