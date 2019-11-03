@@ -105,9 +105,12 @@ namespace Hongyang
                     ListBox listBox = sender as ListBox;
                     if (listBox.Name == "lstSelected")
                     {
-                        if (!lstSelected.Items.Contains(droppedData))
+                        foreach (PMToolpath toolpath in lstToolpath.SelectedItems)
                         {
-                            lstSelected.Items.Add(droppedData);
+                            if (!lstSelected.Items.Contains(toolpath))
+                            {
+                                lstSelected.Items.Add(toolpath);
+                            }
                         }
                     }
                     else if (listBox.Name == "lstToolpath")
@@ -126,9 +129,12 @@ namespace Hongyang
                 ListBox listBox = sender as ListBox;
                 if (listBox.Name == "lstSelectedLevel")
                 {
-                    if (!lstSelectedLevel.Items.Contains(droppedData))
+                    foreach (PMLevelOrSet level in lstAllLevel.SelectedItems)
                     {
-                        lstSelectedLevel.Items.Add(droppedData);
+                        if (!lstSelectedLevel.Items.Contains(level))
+                        {
+                            lstSelectedLevel.Items.Add(level);
+                        }
                     }
                 }
                 else
@@ -528,6 +534,27 @@ namespace Hongyang
 
         private void CreateTool()
         {
+            session.Refresh();
+            PMTool tool = session.Tools.FirstOrDefault(t => t.Name == "D6-R3-L50");
+            if (tool != null)
+            {
+                tool.Delete();
+            }
+            session.Refresh();
+            tool = session.Tools.FirstOrDefault(t => t.Name == "D4-R2-L50");
+            if (tool != null)
+            {
+                tool.Delete();
+            }
+            session.Refresh();
+            tool = session.Tools.FirstOrDefault(t => t.Name == "D3-R1.5-L50");
+            if (tool != null)
+            {
+                tool.Delete();
+            }
+            string ptf = AppContext.BaseDirectory + @"Ptf\Tools2019.ptf";
+            powerMILL.Execute($"FORM RIBBON BACKSTAGE CLOSE IMPORT TEMPLATE PROJECT FILEOPEN\r '{ptf}'");
+            /*
             string toolName = "D6-R3-L50";
             PMTool tool = session.Tools.FirstOrDefault(t => t.Name == toolName);
             string pmlth = AppContext.BaseDirectory + @"Macro\HKS-A-63-toolholder.pmlth";
@@ -581,7 +608,7 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT TOOL \"{tool.Name}\" OVERHANG \"50\"");
                 powerMILL.Execute("TOOL ACCEPT");
             }
-
+            */
             session.Refresh();
             session.Tools.First().IsActive = true;
         }
@@ -711,6 +738,15 @@ namespace Hongyang
             powerMILL.Execute("TEXTINFO ACCEPT");
             MessageBox.Show("NC程序生成完成。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
             Application.Current.MainWindow.WindowState = WindowState.Normal;
+        }
+
+        private void BtnImportModel_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Forms.OpenFileDialog fileDialog = new System.Windows.Forms.OpenFileDialog();
+            if (fileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                powerMILL.Execute($"IMPORT MODEL FILEOPEN '{fileDialog.FileName}'");
+            }
         }
     }
 }

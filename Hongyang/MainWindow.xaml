@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Hongyang"
         mc:Ignorable="d"
-        Title="湖北三江航天红阳机电有限公司" Height="760" Width="630" ResizeMode="CanMinimize" Icon="icon/Surface-Inspection.ico">
+        Title="湖北三江航天红阳机电有限公司" Height="800" Width="630" ResizeMode="CanMinimize" Icon="icon/Surface-Inspection.ico">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
@@ -28,7 +28,7 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <Label HorizontalAlignment="Stretch"  Margin="0" Grid.Row="0" Name="lblBanner" FontSize="18" FontWeight="Bold" Background="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}">刀路</Label>
+            <Label HorizontalAlignment="Stretch"  Margin="0" Grid.Row="0" Name="lblBanner" FontSize="18" FontWeight="Bold" Background="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}">曲面检测</Label>
             <GroupBox Grid.Row="1" Margin="5" Header="当前刀路">
                 <StackPanel Margin="5" Orientation="Horizontal">
                     <Image Width="15" Source="Icon\Toolpath.ico"></Image>
@@ -37,7 +37,7 @@
                 </StackPanel>
             </GroupBox>
             <Frame Grid.Row="2" Name="frame" NavigationUIVisibility="Hidden" Grid.ColumnSpan="2"></Frame>
-            <Grid Grid.Row="3">
+            <Grid Grid.Row="3" Visibility="Collapsed">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>

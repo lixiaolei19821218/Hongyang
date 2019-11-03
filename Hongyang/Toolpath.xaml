@@ -5,7 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Hongyang"
       mc:Ignorable="d" 
-      d:DesignHeight="550" d:DesignWidth="800"
+      d:DesignHeight="650" d:DesignWidth="800"
       Title="Tool">
 
     <Grid>
@@ -31,14 +31,20 @@
         <Label Margin="5" Grid.Row="2">伸出长度</Label>
         <TextBox Margin="5" Grid.Row="2" Grid.Column="1" Name="tbxOverhang" Width="100" HorizontalAlignment="Left" Text="100"></TextBox>
         -->
-        <GroupBox Header="当前刀具" Grid.ColumnSpan="2">
+        <GroupBox Header="导入模型" Grid.ColumnSpan="2">
+            <StackPanel Margin="5">
+                <Button HorizontalAlignment="Right" Margin="5" Name="btnImportModel" Click="BtnImportModel_Click" Background="#FFDDDDDD">导入模型..
+                </Button>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox Header="当前刀具" Grid.Row="1" Grid.ColumnSpan="2">
             <StackPanel Margin="5" Orientation="Horizontal">
                 <Image Width="15" Source="Icon\tooltipdiscu.png"></Image>
                 <Label>当前刀具</Label>
                 <ComboBox Name="cbxTool" SelectedIndex="0" Width="150" SelectionChanged="CbxTool_SelectionChanged"/>
             </StackPanel>
         </GroupBox>
-        <GroupBox Margin="5" Grid.Row="1" Grid.ColumnSpan="2">
+        <GroupBox Margin="5" Grid.Row="2" Grid.ColumnSpan="2">
             <GroupBox.Header>
                 <CheckBox Name="ckbManul" IsChecked="{Binding ElementName=chxAdjust, Path=IsChecked, Mode=OneWay}">手动设置偏移</CheckBox>
             </GroupBox.Header>
@@ -51,12 +57,12 @@
                 <TextBox Margin="5" Name="tbxZ" Width="50" Text="0"></TextBox>
             </StackPanel>
         </GroupBox>
-        <Label Margin="5" Grid.Row="2">点数</Label>
-        <TextBox Grid.Row="2" Grid.Column="1" Margin="5" Name="tbxPoints" Width="100" HorizontalAlignment="Left" Text="16"></TextBox>
-        <GroupBox Margin="5" Grid.Row="3" Grid.ColumnSpan="2" Header="检测层">
+        <Label Margin="5" Grid.Row="3">点数</Label>
+        <TextBox Grid.Row="3" Grid.Column="1" Margin="5" Name="tbxPoints" Width="100" HorizontalAlignment="Left" Text="16"></TextBox>
+        <GroupBox Margin="5" Grid.Row="4" Grid.ColumnSpan="2" Header="检测层">
             <DockPanel Grid.Row="3" Grid.Column="1">
                 <GroupBox Header="所有层">
-                    <ListBox Name="lstAllLevel" Width="130" Height="120" DisplayMemberPath="Name" Drop="listboxLevel_Drop" AllowDrop="True"></ListBox>
+                    <ListBox Name="lstAllLevel" Width="130" Height="120" DisplayMemberPath="Name" Drop="listboxLevel_Drop" AllowDrop="True" SelectionMode="Extended"></ListBox>
                 </GroupBox>
                 <StackPanel VerticalAlignment="Center">
                     <Button Name="btnL2RAll" Click="BtnTo_Click">&gt;&gt;</Button>
@@ -75,11 +81,11 @@
             </DockPanel>
         </GroupBox>
 
-        <Button Margin="5" Grid.Row="4" Grid.ColumnSpan="2" Name="btnCalculate" Click="BtnCalculate_Click">计算</Button>
-        <GroupBox Grid.Row="5" Grid.ColumnSpan="2" Header="输出NC程序">
+        <Button Margin="5" Grid.Row="5" Grid.ColumnSpan="2" Name="btnCalculate" Click="BtnCalculate_Click">计算</Button>
+        <GroupBox Grid.Row="6" Grid.ColumnSpan="2" Header="输出NC程序">
             <StackPanel Orientation="Horizontal">
                 <GroupBox Header="所有刀路">
-                    <ListBox Width="100" Height="120" Name="lstToolpath" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop"></ListBox>
+                    <ListBox Width="100" Height="120" Name="lstToolpath" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop" SelectionMode="Extended"></ListBox>
                 </GroupBox>
                 <StackPanel VerticalAlignment="Center">
                     <Button Name="btnToRightAll" Click="BtnTo_Click">&gt;&gt;</Button>

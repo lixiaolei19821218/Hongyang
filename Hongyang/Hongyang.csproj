@@ -210,6 +210,7 @@
     <Resource Include="Icon\lock.gif" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Ptf\" />
     <Folder Include="Report\" />
   </ItemGroup>
   <ItemGroup>

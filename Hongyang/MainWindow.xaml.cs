@@ -88,7 +88,7 @@ namespace Hongyang
         {
             TreeItem treeItem;
 
-            treeItem = new TreeItem() { Icon = @"\Icon\Toolpath.ico", Name = "刀路" };
+            treeItem = new TreeItem() { Icon = @"\Icon\Toolpath.ico", Name = "曲面检测" };
             treeItems.Add(treeItem);
 
             treeItem = new TreeItem() { Icon = @"\Icon\Bore-Finishing.ico", Name = "加工轴控制" };
@@ -117,7 +117,7 @@ namespace Hongyang
             TreeItem treeItem = e.NewValue as TreeItem;
             switch (treeItem.Name)
             {
-                case "刀路":
+                case "曲面检测":
                     frame.Navigate(Toolpath);
                     break;
                 case "加工轴控制":
