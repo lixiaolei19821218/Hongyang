@@ -2,6 +2,7 @@
 using Autodesk.ProductInterface.PowerMILL;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,6 +40,7 @@ namespace Hongyang
 
             RefreshToolpaths();
             RefreshLevels();
+            LoadPmoptz();
             
             Style itemContainerStyle = new Style(typeof(ListBoxItem));
             itemContainerStyle.Setters.Add(new Setter(ListBoxItem.AllowDropProperty, true));
@@ -51,6 +53,14 @@ namespace Hongyang
             lstToolpath.ItemContainerStyle = itemContainerStyle;
             lstAllLevel.ItemContainerStyle = itemContainerStyle;
             lstSelectedLevel.ItemContainerStyle = itemContainerStyle;
+        }
+
+        private void LoadPmoptz()
+        {
+            foreach (string file in Directory.GetFiles(AppContext.BaseDirectory + "Pmoptz\\", "*.pmoptz"))
+            {
+                cbxOpt.Items.Add(new ComboBoxItem { Content = System.IO.Path.GetFileNameWithoutExtension(file), Tag = System.IO.Path.GetFileName(file) });
+            }
         }
 
         private void RefreshLevels()
@@ -724,7 +734,7 @@ namespace Hongyang
             powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" FILENAME FILESAVE\r'{path}'");
             powerMILL.Execute($"EDIT NCPROGRAM '{nc}' SET WORKPLANE \" \"");           
             powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TAPEOPTIONS \"{AppContext.BaseDirectory + "Pmoptz\\" + (cbxOpt.SelectedItem as ComboBoxItem).Tag}\" FORM ACCEPT SelectOptionFile");
-            if (cbxOpt.Text == "Fidia")
+            if (cbxOpt.Text.ToLower().Contains("fidia"))
             {
                 powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TOOLCOORDS CENTRE");
             }
@@ -746,6 +756,7 @@ namespace Hongyang
             if (fileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 powerMILL.Execute($"IMPORT MODEL FILEOPEN '{fileDialog.FileName}'");
+                RefreshLevels();
             }
         }
     }

@@ -32,14 +32,14 @@
         <TextBox Margin="5" Grid.Row="2" Grid.Column="1" Name="tbxOverhang" Width="100" HorizontalAlignment="Left" Text="100"></TextBox>
         -->
         <GroupBox Header="导入模型" Grid.ColumnSpan="2">
-            <StackPanel Margin="5">
-                <Button HorizontalAlignment="Right" Margin="5" Name="btnImportModel" Click="BtnImportModel_Click" Background="#FFDDDDDD">导入模型..
-                </Button>
+            <StackPanel Margin="5" Orientation="Horizontal">
+                <Image Source="Icon\file.gif" Width="25"/>
+                <Button HorizontalAlignment="Right" Margin="5" Name="btnImportModel" Width="80" Height="26" Click="BtnImportModel_Click">导入模型..</Button>
             </StackPanel>
         </GroupBox>
         <GroupBox Header="当前刀具" Grid.Row="1" Grid.ColumnSpan="2">
             <StackPanel Margin="5" Orientation="Horizontal">
-                <Image Width="15" Source="Icon\tooltipdiscu.png"></Image>
+                <Image Width="25" Source="Icon\tooltipdiscu.png"></Image>
                 <Label>当前刀具</Label>
                 <ComboBox Name="cbxTool" SelectedIndex="0" Width="150" SelectionChanged="CbxTool_SelectionChanged"/>
             </StackPanel>
@@ -49,12 +49,15 @@
                 <CheckBox Name="ckbManul" IsChecked="{Binding ElementName=chxAdjust, Path=IsChecked, Mode=OneWay}">手动设置偏移</CheckBox>
             </GroupBox.Header>
             <StackPanel Orientation="Horizontal" IsEnabled="{Binding ElementName=ckbManul, Path=IsChecked}">
+                <Image Width="45" Source="Icon\xyz.gif" Margin="5"></Image>
+                <StackPanel Orientation="Horizontal" Height="35">
                 <Label Margin="5">X</Label>
                 <TextBox Margin="5" Name="tbxX" Width="50" Text="0"></TextBox>
                 <Label Margin="5">Y</Label>
                 <TextBox Margin="5" Name="tbxY" Width="50" Text="0"></TextBox>
                 <Label Margin="5">Z</Label>
                 <TextBox Margin="5" Name="tbxZ" Width="50" Text="0"></TextBox>
+                </StackPanel>
             </StackPanel>
         </GroupBox>
         <Label Margin="5" Grid.Row="3">点数</Label>
@@ -75,13 +78,22 @@
                 </GroupBox>
                 <!--<ComboBox Visibility="Collapsed" Name="cbxLevel" Width="150" SelectedIndex="0" HorizontalAlignment="Left" SelectionChanged="CbxLevel_SelectionChanged"/>-->
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Right">
-                    <CheckBox Name="chxAdjust" Margin="10" VerticalAlignment="Top">调整偏移</CheckBox>
-                    <CheckBox Name="chxNewTP" Margin="10" VerticalAlignment="Top" IsEnabled="{Binding ElementName=chxAdjust, Path=IsChecked}">新建刀路</CheckBox>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="Icon\move.gif" Width="20"/>
+                        <CheckBox Name="chxAdjust" Margin="10" VerticalAlignment="Top">调整偏移</CheckBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="Icon\new.gif" Width="20"/>
+                        <CheckBox Name="chxNewTP" Margin="10" VerticalAlignment="Top" IsEnabled="{Binding ElementName=chxAdjust, Path=IsChecked}">新建刀路</CheckBox>
+                    </StackPanel>
                 </StackPanel>
             </DockPanel>
         </GroupBox>
-
-        <Button Margin="5" Grid.Row="5" Grid.ColumnSpan="2" Name="btnCalculate" Click="BtnCalculate_Click">计算</Button>
+        <DockPanel Margin="5" Grid.Row="5" Grid.ColumnSpan="2">
+            <Image Source="Icon\calculate.gif" Width="25"/>
+            <Button  Name="btnCalculate" Click="BtnCalculate_Click">计算</Button>
+        </DockPanel>
+        
         <GroupBox Grid.Row="6" Grid.ColumnSpan="2" Header="输出NC程序">
             <StackPanel Orientation="Horizontal">
                 <GroupBox Header="所有刀路">
@@ -98,11 +110,11 @@
                 </GroupBox>
                 <StackPanel>
                     <Label HorizontalAlignment="Left">机床文件</Label>
-                    <ComboBox Width="100" SelectedIndex="0" Name="cbxOpt">
-                        <ComboBoxItem Tag="Fidia_KR199_OMV_V3.pmoptz">Fidia</ComboBoxItem>
-                        <ComboBoxItem Tag="TNC530_OMV_DMC210P_20141115.pmoptz">TNC</ComboBoxItem>
-                    </ComboBox>
-                    <Button Margin="5" VerticalAlignment="Bottom" Name="btnGenerateNC" Click="BtnGenerateNC_Click">输出</Button>
+                    <ComboBox Width="200" SelectedIndex="0" Name="cbxOpt"/>
+                    <DockPanel>
+                        <Image Source="Icon\keep.gif" Width="25"/>
+                        <Button Margin="5" VerticalAlignment="Bottom" Height="26" Name="btnGenerateNC" Click="BtnGenerateNC_Click">输出</Button>
+                    </DockPanel>
                 </StackPanel>
             </StackPanel>
         </GroupBox>

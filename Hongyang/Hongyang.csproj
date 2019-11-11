@@ -219,5 +219,23 @@
   <ItemGroup>
     <Resource Include="Surface-Inspection.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\move.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\new.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\file.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\xyz.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\calculate.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\keep.gif" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

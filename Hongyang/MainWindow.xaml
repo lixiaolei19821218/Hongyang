@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Hongyang"
         mc:Ignorable="d"
-        Title="湖北三江航天红阳机电有限公司" Height="800" Width="630" ResizeMode="CanMinimize" Icon="icon/Surface-Inspection.ico">
+        Title="湖北三江航天红阳机电有限公司" Height="750" Width="670" ResizeMode="CanMinimize" Icon="icon/Surface-Inspection.ico">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
@@ -29,9 +29,9 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Label HorizontalAlignment="Stretch"  Margin="0" Grid.Row="0" Name="lblBanner" FontSize="18" FontWeight="Bold" Background="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}">曲面检测</Label>
-            <GroupBox Grid.Row="1" Margin="5" Header="当前刀路">
+            <GroupBox Grid.Row="1" Margin="5" Header="当前刀路" Visibility="Collapsed">
                 <StackPanel Margin="5" Orientation="Horizontal">
-                    <Image Width="15" Source="Icon\Toolpath.ico"></Image>
+                    <Image Width="25" Source="Icon\Toolpath.ico"></Image>
                     <Label>当前刀路</Label>
                     <ComboBox Name="cbxToolpaths" Width="150" SelectionChanged="CbxToolpaths_SelectionChanged"></ComboBox>
                 </StackPanel>
