@@ -229,19 +229,63 @@ namespace Hongyang
             }
         }
 
-        private void Calculate(string level)
+        private PMPattern CreatePattern(string level)
         {
-            powerMILL.DialogsOff();
+            PMPattern pattern = session.Patterns.FirstOrDefault(p => p.Name == level);
+            if (pattern != null)
+            {
+                pattern.Delete();
+            }
+            powerMILL.Execute("CREATE PATTERN ;");
             session.Refresh();
-            ClearToolpath(level);
-            CreateWorkplane(level);
+            pattern = session.Patterns.ActiveItem;
+            pattern.Name = level;
+            powerMILL.Execute($"EDIT PATTERN \"{pattern.Name}\" CURVEEDITOR START");
+            powerMILL.Execute("STATUS EDITING_PLANE XY");
+            powerMILL.Execute("CURVEEDITOR MODE OBLIQUE_CURVE");
+            powerMILL.Execute("CURVEEDITOR OBLIQUE SELECTION_MODE SURFACE");
+            powerMILL.Execute("edit model all deselect all");
+            powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
+            if (ckbManul.IsChecked ?? false)
+            {
+                powerMILL.Execute($"EDIT PAR 'powermill.CurveEditor.ObliqueCurve.Origin.X' \"{tbxX.Text}\"");
+                powerMILL.Execute($"EDIT PAR 'powermill.CurveEditor.ObliqueCurve.Origin.Y' \"{tbxY.Text}\"");
+                powerMILL.Execute($"EDIT PAR 'powermill.CurveEditor.ObliqueCurve.Origin.Z' \"{tbxZ.Text}\"");
+            }
+            else
+            {
+                powerMILL.Execute($"EDIT PAR 'powermill.CurveEditor.ObliqueCurve.Origin.X' \"0\"");
+                powerMILL.Execute($"EDIT PAR 'powermill.CurveEditor.ObliqueCurve.Origin.Y' \"0\"");
+                powerMILL.Execute($"EDIT PAR 'powermill.CurveEditor.ObliqueCurve.Origin.Z' \"2\"");
+            }
+            
+            powerMILL.Execute("CURVEEDITOR OBLIQUE CREATE");
+            powerMILL.Execute("CURVEEDITOR OBLIQUE CLOSE");
+            powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
 
-            powerMILL.Execute("STRATEGYSELECTOR CATEGORY 'Probing' NEW");
-            powerMILL.Execute("STRATEGYSELECTOR STRATEGY \"Probing/Surface-Inspection.ptf\" NEW");
-            powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
-            session.Refresh();
-            PMToolpath toolpath = session.Toolpaths.Last();
+            powerMILL.Execute($"EDIT PATTERN \"{pattern.Name}\" CURVEEDITOR START");
+            powerMILL.Execute($"EDIT PATTERN \"{pattern.Name}\" SELECT ALL");
+            powerMILL.Execute("FORM RIBBON TAB \"CurveTools.EditCurve\"");
+            powerMILL.Execute("CURVEEDITOR REPOINT RAISE");
+            powerMILL.Execute($"CURVEEDITOR REPOINT POINTS \"{tbxPoints.Text}\"");
+            powerMILL.Execute("FORM APPLY CEREPOINTCURVE");
+            powerMILL.Execute("FORM CANCEL CEREPOINTCURVE");
+            powerMILL.Execute("CURVEEDITOR POINT NUMBER ON");
+            powerMILL.Execute("VIEW MODEL ; SHADE OFF");
+            powerMILL.Execute("VIEW MODEL ; SHADE NORMAL");
+            powerMILL.Execute("VIEW MODEL ; SHADE OFF");
+            powerMILL.Execute("FORM RIBBON TAB \"CurveEditor.Edit\"");
+            powerMILL.Execute("FORM RIBBON TAB \"CurveTools.EditCurve\"");
+            powerMILL.Execute("CURVEEDITOR FILLET INSERT RAISE");
+            powerMILL.Execute("FORM ACCEPT CEINSERTFILLET");
+            powerMILL.Execute("FORM RIBBON TAB \"CurveEditor.Edit\"");
+            powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
 
+            return pattern;
+        }
+
+        private PMPattern CreatePatternOld(string level)
+        {
             powerMILL.Execute("CREATE PATTERN ; EDIT PATTERN ; CURVEEDITOR START");
             session.Refresh();
             PMPattern pattern1 = session.Patterns.Last();
@@ -327,6 +371,25 @@ namespace Hongyang
             powerMILL.Execute("FORM ACCEPT CEINSERTFILLET");
             powerMILL.Execute("FORM RIBBON TAB \"CurveEditor.Edit\"");
             powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
+            pattern1.Delete();
+
+            return pattern2;
+        }
+
+        private void Calculate(string level)
+        {
+            powerMILL.DialogsOff();
+            session.Refresh();
+            ClearToolpath(level);
+            CreateWorkplane(level);
+
+            powerMILL.Execute("STRATEGYSELECTOR CATEGORY 'Probing' NEW");
+            powerMILL.Execute("STRATEGYSELECTOR STRATEGY \"Probing/Surface-Inspection.ptf\" NEW");
+            powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
+            session.Refresh();
+            PMToolpath toolpath = session.Toolpaths.Last();
+
+            PMPattern pattern2 = rdCurve.IsChecked ?? false ? CreatePatternOld(level) : CreatePattern(level);
 
             powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\"");
             powerMILL.Execute($"EDIT TOOLPATH \"{toolpath.Name}\" CLONE");
@@ -348,7 +411,7 @@ namespace Hongyang
             powerMILL.Execute("FORM ACCEPT SFSurfaceInspect");
             powerMILL.Execute("VIEW MODEL ; SHADE NORMAL");
             toolpath.Delete();
-            pattern1.Delete();
+            
             CollisionCheck(clone.Name, level);
 
             //cbxToolpaths.ItemsSource = session.Toolpaths.Select(t => t.Name);
