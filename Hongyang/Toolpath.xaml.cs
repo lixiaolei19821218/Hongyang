@@ -164,10 +164,12 @@ namespace Hongyang
                 }                
                 session.Refresh();
                 string level = (lstSelectedLevel.SelectedItem as PMLevelOrSet).Name;
-                PMToolpath rcToolpath = session.Toolpaths.FirstOrDefault(t => t.Name == level);
+                string tpName = level + ((rdCurve.IsChecked ?? false) ? "_C" : "_Z");
+                PMToolpath rcToolpath = session.Toolpaths.FirstOrDefault(t => t.Name == tpName);
                 if (rcToolpath == null)
                 {
-                    MessageBox.Show($"层{level}还未计算", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                    string msg = $"没有找到名为{tpName}的刀路，{level}还未用{((rdCurve.IsChecked ?? false) ? "弧度" : "Z值")}计算";
+                    MessageBox.Show(msg, "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                     return;
                 }
                 Application.Current.MainWindow.WindowState = WindowState.Minimized;
@@ -207,7 +209,9 @@ namespace Hongyang
 
                 powerMILL.Execute($"EDIT TOOLPATH \"{rcToolpath.Name}\" CALCULATE");
                 powerMILL.Execute("FORM ACCEPT SFSurfaceInspect");
-                CollisionCheck(rcToolpath.Name, rcToolpath.Name);                
+                CollisionCheck(rcToolpath.Name, rcToolpath.Name);
+                RefreshToolpaths();
+
                 MessageBox.Show("调整完成", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 Application.Current.MainWindow.WindowState = WindowState.Normal;
             }
@@ -229,7 +233,7 @@ namespace Hongyang
             }
         }
 
-        private PMPattern CreatePattern(string level)
+        private PMPattern CreatePattern(string level, string name)
         {
             PMPattern pattern = session.Patterns.FirstOrDefault(p => p.Name == level);
             if (pattern != null)
@@ -239,7 +243,7 @@ namespace Hongyang
             powerMILL.Execute("CREATE PATTERN ;");
             session.Refresh();
             pattern = session.Patterns.ActiveItem;
-            pattern.Name = level;
+            pattern.Name = name;
             powerMILL.Execute($"EDIT PATTERN \"{pattern.Name}\" CURVEEDITOR START");
             powerMILL.Execute("STATUS EDITING_PLANE XY");
             powerMILL.Execute("CURVEEDITOR MODE OBLIQUE_CURVE");
@@ -284,7 +288,7 @@ namespace Hongyang
             return pattern;
         }
 
-        private PMPattern CreatePatternOld(string level)
+        private PMPattern CreatePatternOld(string level, string name)
         {
             powerMILL.Execute("CREATE PATTERN ; EDIT PATTERN ; CURVEEDITOR START");
             session.Refresh();
@@ -309,7 +313,7 @@ namespace Hongyang
                 pattern.Delete();
             }
             PMPattern pattern2 = session.Patterns.Last();
-            pattern2.Name = level;
+            pattern2.Name = name;
             powerMILL.Execute($"EDIT PATTERN \"{pattern2.Name}\" INSERT MODEL");
             powerMILL.Execute("edit model all deselect all");
             powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
@@ -380,8 +384,9 @@ namespace Hongyang
         {
             powerMILL.DialogsOff();
             session.Refresh();
-            ClearToolpath(level);
-            CreateWorkplane(level);
+            string tpName = level + ((rdCurve.IsChecked ?? false) ? "_C" : "_Z");
+            ClearToolpath(tpName);
+            CreateWorkplane(level, tpName);
 
             powerMILL.Execute("STRATEGYSELECTOR CATEGORY 'Probing' NEW");
             powerMILL.Execute("STRATEGYSELECTOR STRATEGY \"Probing/Surface-Inspection.ptf\" NEW");
@@ -389,7 +394,7 @@ namespace Hongyang
             session.Refresh();
             PMToolpath toolpath = session.Toolpaths.Last();
 
-            PMPattern pattern2 = rdCurve.IsChecked ?? false ? CreatePatternOld(level) : CreatePattern(level);
+            PMPattern pattern2 = rdCurve.IsChecked ?? false ? CreatePatternOld(level, tpName) : CreatePattern(level, tpName);
 
             powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\"");
             powerMILL.Execute($"EDIT TOOLPATH \"{toolpath.Name}\" CLONE");
@@ -412,7 +417,7 @@ namespace Hongyang
             powerMILL.Execute("VIEW MODEL ; SHADE NORMAL");
             toolpath.Delete();
             
-            CollisionCheck(clone.Name, level);
+            CollisionCheck(clone.Name, tpName);
 
             //cbxToolpaths.ItemsSource = session.Toolpaths.Select(t => t.Name);
             (Application.Current.MainWindow as MainWindow).RefreshToolpaths();            
@@ -518,7 +523,7 @@ namespace Hongyang
             toolpath.Name = newName;
         }
 
-        private PMWorkplane CreateWorkplane(string level)
+        private PMWorkplane CreateWorkplane(string level, string workplaneName)
         {
             ActivateWorldPlane();
             powerMILL.Execute("edit model all deselect all");
@@ -550,7 +555,7 @@ namespace Hongyang
             session.Refresh();
             workplane = session.Workplanes.FirstOrDefault(w => w.Name == level);          
             workplane = session.Workplanes.Last();
-            workplane.Name = level;
+            workplane.Name = workplaneName;
             if (double.Parse(length[3]) == 0.0)
             {
 
