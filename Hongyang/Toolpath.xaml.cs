@@ -384,42 +384,122 @@ namespace Hongyang
         {
             powerMILL.DialogsOff();
             session.Refresh();
-            string tpName = level + ((rdCurve.IsChecked ?? false) ? "_C" : "_Z");
-            ClearToolpath(tpName);
-            CreateWorkplane(level, tpName);
 
-            powerMILL.Execute("STRATEGYSELECTOR CATEGORY 'Probing' NEW");
-            powerMILL.Execute("STRATEGYSELECTOR STRATEGY \"Probing/Surface-Inspection.ptf\" NEW");
-            powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
-            session.Refresh();
-            PMToolpath toolpath = session.Toolpaths.Last();
-
-            PMPattern pattern2 = rdCurve.IsChecked ?? false ? CreatePatternOld(level, tpName) : CreatePattern(level, tpName);
-
-            powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\"");
-            powerMILL.Execute($"EDIT TOOLPATH \"{toolpath.Name}\" CLONE");
-            powerMILL.Execute($"EDIT PAR 'Pattern' \"{pattern2.Name}\"");
-            session.Refresh();
-            PMToolpath clone = session.Toolpaths.Last();
-
-            MainWindow window = Application.Current.MainWindow as MainWindow;
-            window.EPoint.Apply();
-            window.LeadLink.Apply();
-            window.Link.Apply();
-            window.LinkFilter.Apply();
-            window.SPoint.Apply();
-            window.ToolAxOVec.Apply();
-            window.ToolRapidMv.Apply();
-            window.ToolRapidMvClear.Apply();
-
-            powerMILL.Execute($"EDIT TOOLPATH \"{clone.Name}\" CALCULATE");
-            powerMILL.Execute("FORM ACCEPT SFSurfaceInspect");
-            powerMILL.Execute("VIEW MODEL ; SHADE NORMAL");
-            toolpath.Delete();
+            string tpName;
+            if (rdSwarf.IsChecked == true)
+            {
+                tpName = level + "_S";
+            }
+            else if (rdCurve.IsChecked == true)
+            {
+                tpName = level + "_C";
+            }
+            else//Z值
+            {
+                tpName = level + "_Z";
+            }          
             
-            CollisionCheck(clone.Name, tpName);
+            ClearToolpath(tpName);
+            CreateWorkplane(level, tpName, rdSwarf.IsChecked == true);
 
-            //cbxToolpaths.ItemsSource = session.Toolpaths.Select(t => t.Name);
+            if (rdSwarf.IsChecked == true)
+            {
+                string swarfTpName = tpName + "_Swarf";
+                string patternTpName = tpName + "_Pattern";
+                string probingTpName = tpName + "_Probing";
+                ClearToolpath(swarfTpName);
+                ClearToolpath(patternTpName);
+                ClearToolpath(probingTpName);
+
+                //Swarf刀路            
+                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
+                powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
+                powerMILL.Execute("EDIT BLOCK RESET");
+                powerMILL.Execute("CREATE TOOL ; BALLNOSED");
+                powerMILL.Execute($"DELETE TOOL \"{tpName + "_ENDMILL"}\"");
+                session.Refresh();
+                session.Tools.ActiveItem.Name = tpName + "_ENDMILL";
+                session.Tools.ActiveItem.Diameter = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('tool', '{cbxTool.Text}').Diameter\"").ToString());
+                //powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");
+                //powerMILL.Execute("EDIT TOOLAXIS LEAN \"60\"");
+                powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_up'");
+                powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");
+                powerMILL.Execute("EDIT PAR 'StepdownLimit.Value' \"3\"");
+                powerMILL.Execute("EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"3\"");
+                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
+                session.Refresh();
+                session.Toolpaths.ActiveItem.Name = swarfTpName;
+                session.Toolpaths.ActiveItem.Calculate();
+                powerMILL.Execute("EDIT TOOLPATH SAFEAREA CALCULATE_DIMENSIONS");
+
+                //参考线精加工
+                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Pattern-Finishing.ptf\"");
+                session.Refresh();
+                session.Toolpaths.ActiveItem.Name = patternTpName;
+                powerMILL.Execute("EDIT PAR 'UseToolpathAsPattern' 1");
+                powerMILL.Execute($"EDIT PAR 'ReferenceToolpath' \"{swarfTpName}\"");
+                powerMILL.Execute("EDIT PAR 'PatternBasePosition' 'drive_curve'");
+                powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");
+                session.Toolpaths.ActiveItem.Calculate();
+
+                //参考线
+                powerMILL.Execute("CREATE PATTERN ;");
+                session.Refresh();
+                powerMILL.Execute($"DELETE PATTERN \"{tpName}\"");
+                session.Patterns.ActiveItem.Name = tpName;
+                powerMILL.Execute($"EDIT PATTERN \"{session.Patterns.ActiveItem.Name}\" INSERT TOOLPATH ;");
+                powerMILL.Execute("SET TOOLPATHPOINTS ;");
+
+                //曲面检测刀路               
+                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
+                powerMILL.Execute($"EDIT PAR 'Pattern' \"{session.Patterns.ActiveItem.Name}\"");
+                powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");
+                session.Refresh();
+                session.Toolpaths.ActiveItem.Name = probingTpName;
+                session.Toolpaths.ActiveItem.Calculate();                
+                powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
+                string message = powerMILL.ExecuteEx("EDIT COLLISION APPLY").ToString();
+                if (message != "信息： 找不到过切")
+                {
+                    powerMILL.Execute($"DELETE TOOLPATH \"{probingTpName}\"");
+                    powerMILL.Execute($"DELETE TOOLPATH \"{probingTpName + "_2"}\"");
+                    powerMILL.Execute($"RENAME Toolpath \"{probingTpName + "_1"}\" \"{probingTpName}\"");
+                }
+                powerMILL.Execute("EDIT TOOLPATH REORDER N");
+            }
+            else
+            {
+                powerMILL.Execute("STRATEGYSELECTOR CATEGORY 'Probing' NEW");
+                powerMILL.Execute("STRATEGYSELECTOR STRATEGY \"Probing/Surface-Inspection.ptf\" NEW");
+                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
+                session.Refresh();
+                PMToolpath toolpath = session.Toolpaths.Last();
+
+                PMPattern pattern2 = rdCurve.IsChecked ?? false ? CreatePatternOld(level, tpName) : CreatePattern(level, tpName);
+
+                powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\"");
+                powerMILL.Execute($"EDIT TOOLPATH \"{toolpath.Name}\" CLONE");
+                powerMILL.Execute($"EDIT PAR 'Pattern' \"{pattern2.Name}\"");
+                session.Refresh();
+                PMToolpath clone = session.Toolpaths.Last();
+
+                MainWindow window = Application.Current.MainWindow as MainWindow;
+                window.EPoint.Apply();
+                window.LeadLink.Apply();
+                window.Link.Apply();
+                window.LinkFilter.Apply();
+                window.SPoint.Apply();
+                window.ToolAxOVec.Apply();
+                window.ToolRapidMv.Apply();
+                window.ToolRapidMvClear.Apply();
+
+                powerMILL.Execute($"EDIT TOOLPATH \"{clone.Name}\" CALCULATE");
+                powerMILL.Execute("FORM ACCEPT SFSurfaceInspect");
+                powerMILL.Execute("VIEW MODEL ; SHADE NORMAL");
+                toolpath.Delete();
+
+                CollisionCheck(clone.Name, tpName);
+            }
             (Application.Current.MainWindow as MainWindow).RefreshToolpaths();            
             RefreshToolpaths();
         }       
@@ -497,8 +577,7 @@ namespace Hongyang
             session.Refresh();
             int count = session.Toolpaths.Count;
             PMToolpath toolpath = session.Toolpaths.FirstOrDefault(t => t.Name == toolpathName);
-            powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\"");
-            //powerMILL.Execute("FORM COLLISION");
+            powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\"");            
             powerMILL.Execute("EDIT COLLISION SPLIT_TOOLPATH Y");
             powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
             powerMILL.Execute("EDIT COLLISION HIT_OUTPUT N");
@@ -523,7 +602,7 @@ namespace Hongyang
             toolpath.Name = newName;
         }
 
-        private PMWorkplane CreateWorkplane(string level, string workplaneName)
+        private PMWorkplane CreateWorkplane(string level, string workplaneName, bool isSwarf = false)
         {
             ActivateWorldPlane();
             powerMILL.Execute("edit model all deselect all");
@@ -537,15 +616,22 @@ namespace Hongyang
             double z = (double.Parse(min[3]) + double.Parse(max[3])) / 2;
             double a = Math.Atan2(y, x) * 180 / Math.PI;
             double b;
-            if (level.Length >= 2 && level.Substring(level.Length - 2, 2).ToLower() == "_h")
+            if (isSwarf)
             {
                 b = 90;
             }
             else
             {
-                b = x > 0 ? Math.Atan2(x, z) * 180 / Math.PI : 90 + Math.Atan2(x, z) * 180 / Math.PI;
+                if (level.Length >= 2 && level.Substring(level.Length - 2, 2).ToLower() == "_h")
+                {
+                    b = 90;
+                }
+                else
+                {
+                    b = x > 0 ? Math.Atan2(x, z) * 180 / Math.PI : 90 + Math.Atan2(x, z) * 180 / Math.PI;
+                }
             }
-
+            
             PMWorkplane workplane = session.Workplanes.FirstOrDefault(w => w.Name == level);
             if (workplane != null)
             {

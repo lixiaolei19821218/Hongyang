@@ -64,7 +64,8 @@
         <DockPanel Grid.Row="3" Grid.Column="1">
             <TextBox Margin="5" Name="tbxPoints" Width="100" HorizontalAlignment="Left" Text="16"></TextBox>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Margin="5">
-                <RadioButton  GroupName="Method" Name="rdCurve" VerticalAlignment="Center" Margin="5" IsChecked="True">按弧度</RadioButton>
+                <RadioButton  GroupName="Method" Name="rdSwarf" VerticalAlignment="Center" Margin="5" IsChecked="True">Swarf</RadioButton>
+                <RadioButton  GroupName="Method" Name="rdCurve" VerticalAlignment="Center" Margin="5">按弧度</RadioButton>
                 <RadioButton GroupName="Method" Name="rdZ" VerticalAlignment="Center" Margin="5">按Z值</RadioButton>
             </StackPanel>
         </DockPanel>        
