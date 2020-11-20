@@ -33,8 +33,6 @@ namespace Hongyang
             powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
             session = powerMILL.ActiveProject;
 
-            //cbxLevel.ItemsSource = session.LevelsAndSets.Select(l => l.Name);           
-
             CreateTool();
             cbxTool.ItemsSource = session.Tools.Select(t => t.Name);
 
@@ -165,6 +163,10 @@ namespace Hongyang
                 session.Refresh();
                 string level = (lstSelectedLevel.SelectedItem as PMLevelOrSet).Name;
                 string tpName = level + "_" + (cbxMethod.SelectedItem as ComboBoxItem).Tag;
+                if (cbxMethod.Text == "Swarf" || cbxMethod.Text == "Pattern")
+                {
+                    tpName = tpName + "_Probing";
+                }
                 PMToolpath rcToolpath = session.Toolpaths.FirstOrDefault(t => t.Name == tpName);
                 if (rcToolpath == null)
                 {
@@ -386,24 +388,22 @@ namespace Hongyang
             session.Refresh();
 
             string tag = (cbxMethod.SelectedItem as ComboBoxItem).Tag.ToString();
-            string tpName = level + "_" + tag;            
-            
-            ClearToolpath(tpName);
-            CreateWorkplane(level, tpName, tag == "S" || tag == "P");
+            string tpName = level + "_" + tag;          
 
             if (tag == "S")
             {
                 string swarfTpName = tpName + "_Swarf";               
                 string probingTpName = tpName + "_Probing";
-                ClearToolpath(swarfTpName);               
                 ClearToolpath(probingTpName);
+                ClearToolpath(swarfTpName);       
+
+                CreateWorkplane(level, tpName, true);
 
                 //Swarf刀路            
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
                 powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
                 powerMILL.Execute("EDIT BLOCK RESET");
-                powerMILL.Execute("CREATE TOOL ; BALLNOSED");
-                powerMILL.Execute($"DELETE TOOL \"{tpName + "_BALLNOSED"}\"");
+                powerMILL.Execute("CREATE TOOL ; BALLNOSED");                
                 session.Refresh();
                 session.Tools.ActiveItem.Name = tpName + "_BALLNOSED";
                 session.Tools.ActiveItem.Diameter = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('tool', '{cbxTool.Text}').Diameter\"").ToString());
@@ -423,8 +423,7 @@ namespace Hongyang
 
                 //参考线
                 powerMILL.Execute("CREATE PATTERN ;");
-                session.Refresh();
-                powerMILL.Execute($"DELETE PATTERN \"{tpName}\"");
+                session.Refresh();                
                 session.Patterns.ActiveItem.Name = tpName;
                 powerMILL.Execute($"EDIT PATTERN \"{session.Patterns.ActiveItem.Name}\" INSERT TOOLPATH ;");
                 powerMILL.Execute("SET TOOLPATHPOINTS ;");
@@ -451,16 +450,17 @@ namespace Hongyang
                 string swarfTpName = tpName + "_Swarf";
                 string patternTpName = tpName + "_Pattern";
                 string probingTpName = tpName + "_Probing";
-                ClearToolpath(swarfTpName);
+                ClearToolpath(probingTpName); 
                 ClearToolpath(patternTpName);
-                ClearToolpath(probingTpName);
+                ClearToolpath(swarfTpName);
+
+                CreateWorkplane(level, tpName, true);
 
                 //Swarf刀路            
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
                 powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
                 powerMILL.Execute("EDIT BLOCK RESET");
-                powerMILL.Execute("CREATE TOOL ; ENDMILL");
-                powerMILL.Execute($"DELETE TOOL \"{tpName + "_ENDMILL"}\"");
+                powerMILL.Execute("CREATE TOOL ; ENDMILL");                
                 session.Refresh();
                 session.Tools.ActiveItem.Name = tpName + "_ENDMILL";
                 session.Tools.ActiveItem.Diameter = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('tool', '{cbxTool.Text}').Diameter\"").ToString());
@@ -488,8 +488,7 @@ namespace Hongyang
 
                 //参考线
                 powerMILL.Execute("CREATE PATTERN ;");
-                session.Refresh();
-                powerMILL.Execute($"DELETE PATTERN \"{tpName}\"");
+                session.Refresh();                
                 session.Patterns.ActiveItem.Name = tpName;
                 powerMILL.Execute($"EDIT PATTERN \"{session.Patterns.ActiveItem.Name}\" INSERT TOOLPATH ;");
                 powerMILL.Execute("SET TOOLPATHPOINTS ;");
@@ -513,6 +512,9 @@ namespace Hongyang
             }
             else
             {
+                ClearToolpath(tpName);
+                CreateWorkplane(level, tpName, false);
+
                 powerMILL.Execute("STRATEGYSELECTOR CATEGORY 'Probing' NEW");
                 powerMILL.Execute("STRATEGYSELECTOR STRATEGY \"Probing/Surface-Inspection.ptf\" NEW");
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
@@ -726,17 +728,36 @@ namespace Hongyang
         }
 
         private void ClearToolpath(string toolpathName)
-        {
+        {           
             PMToolpath toolpath = session.Toolpaths.FirstOrDefault(t => t.Name == toolpathName);
             if (toolpath != null)
             {
-                string patternName = powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Pattern.Name\"").ToString();
+                string strategy = powerMILL.ExecuteEx($"PRINT PAR terse \"entity('toolpath', '{toolpath.Name}').Strategy\"").ToString();
+                string workplaneName = powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Workplane.Name\"").ToString();
+                string patternName = powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Pattern.Name\"").ToString();          
+                string toolName = powerMILL.ExecuteEx($"PRINT PAR terse \"entity('toolpath', '{toolpath.Name}').Tool.Name\"").ToString();
                 toolpath.Delete();
-                PMPattern pattern = session.Patterns.FirstOrDefault(p => p.Name == patternName);
-                if (pattern != null)
+                if (strategy == "swarf")
                 {
-                    pattern.Delete();
+                    PMTool tool = session.Tools.FirstOrDefault(t => t.Name == toolName);
+                    if (tool != null)
+                    {
+                        session.Tools.Remove(tool, true);
+                    }
                 }
+                else//检测路径删除参考线
+                {
+                    PMPattern pattern = session.Patterns.FirstOrDefault(p => p.Name == patternName);
+                    if (pattern != null)
+                    {                        
+                        session.Patterns.Remove(pattern, true);
+                    }
+                }                
+                PMWorkplane workplane = session.Workplanes.FirstOrDefault(w => w.Name == workplaneName);
+                if (workplane != null)
+                {
+                    session.Workplanes.Remove(workplane, true);
+                }                
             }
         }
 

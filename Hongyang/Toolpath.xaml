@@ -37,7 +37,7 @@
                 <Button HorizontalAlignment="Right" Margin="5" Name="btnImportModel" Width="80" Height="26" Click="BtnImportModel_Click">导入模型..</Button>
             </StackPanel>
         </GroupBox>
-        <GroupBox Header="当前刀具" Grid.Row="1" Grid.ColumnSpan="2">
+        <GroupBox Header="当前刀具" Grid.Row="1" Grid.ColumnSpan="2">            
             <StackPanel Margin="5" Orientation="Horizontal">
                 <Image Width="25" Source="Icon\tooltipdiscu.png"></Image>
                 <Label>当前刀具</Label>
@@ -117,14 +117,14 @@
                 <GroupBox Header="所有刀路">
                     <ListBox Width="100" Height="120" Name="lstToolpath" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop" SelectionMode="Extended"></ListBox>
                 </GroupBox>
-                <StackPanel VerticalAlignment="Center">
+                <StackPanel VerticalAlignment="Center" IsEnabled="{Binding ElementName=chxMannul, Path=IsChecked}">
                     <Button Name="btnToRightAll" Click="BtnTo_Click">&gt;&gt;</Button>
                     <Button Name="btnToRight" Click="BtnTo_Click">&gt;</Button>
                     <Button Name="btnToLeft" Click="BtnTo_Click">&lt;</Button>
                     <Button Name="btnToLeftAll" Click="BtnTo_Click">&lt;&lt;</Button>
                 </StackPanel>
-                <GroupBox Header="已选刀路">
-                    <ListBox Width="100" Height="120" Name="lstSelected" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop" IsEnabled="{Binding ElementName=chxMannul, Path=IsChecked}"></ListBox>
+                <GroupBox Header="已选刀路" IsEnabled="{Binding ElementName=chxMannul, Path=IsChecked}">
+                    <ListBox Width="100" Height="120" Name="lstSelected" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop"></ListBox>
                 </GroupBox>
                 <StackPanel>
                     <Label HorizontalAlignment="Left">机床文件</Label>
