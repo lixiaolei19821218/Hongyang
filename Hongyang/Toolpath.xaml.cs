@@ -443,7 +443,7 @@ namespace Hongyang
                     powerMILL.Execute($"DELETE TOOLPATH \"{probingTpName + "_2"}\"");
                     powerMILL.Execute($"RENAME Toolpath \"{probingTpName + "_1"}\" \"{probingTpName}\"");
                 }
-                powerMILL.Execute("EDIT TOOLPATH REORDER N");
+                Keep10Points(probingTpName);
             }
             else if (tag == "P")
             {
@@ -508,7 +508,7 @@ namespace Hongyang
                     powerMILL.Execute($"DELETE TOOLPATH \"{probingTpName + "_2"}\"");
                     powerMILL.Execute($"RENAME Toolpath \"{probingTpName + "_1"}\" \"{probingTpName}\"");
                 }
-                powerMILL.Execute("EDIT TOOLPATH REORDER N");
+                Keep10Points(probingTpName);
             }
             else
             {
@@ -548,7 +548,78 @@ namespace Hongyang
             }
             (Application.Current.MainWindow as MainWindow).RefreshToolpaths();            
             RefreshToolpaths();
-        }       
+        } 
+        
+        /// <summary>
+        /// 10点平均分布
+        /// </summary>
+        /// <param name="tpName"></param>
+        public void Keep10Points(string tpName)
+        {
+            powerMILL.Execute($"ACTIVATE Toolpath \"{tpName}\"");
+            powerMILL.Execute("EDIT TOOLPATH REORDER N");
+            int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{tpName}').Statistics.PlungesIntoStock\"").ToString());//点数
+            int points = int.Parse(System.Configuration.ConfigurationManager.AppSettings["points"]) * 2;
+            int step = count / points;
+            List<int> kept = new List<int>();//要保留的点
+            for (int i = 0; i < points; i++)
+            {
+                kept.Add(i * step);                
+            }
+            for (int i = 0; i < count; i++)
+            {
+                if (!kept.Contains(i))
+                {
+                    powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r {i} TOGGLE");
+                }
+            }
+            powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+        }
+
+        private void Keep5Points(string tpName)
+        {
+            powerMILL.Execute($"ACTIVATE Toolpath \"{tpName}\"");
+            //powerMILL.Execute("EDIT TOOLPATH REORDER N");
+            int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{tpName}').Statistics.PlungesIntoStock\"").ToString());//点数
+            int a = count / 2;//前段数量，这里默认两个面，所以分成段
+            int b = count - a;//后段数量
+            int points = int.Parse(System.Configuration.ConfigurationManager.AppSettings["points"]);
+
+            if (a > points)
+            {
+                int l = (a - points) / 2;//中间5点前面
+                for (int i = 0; i < l; i++)
+                {
+                    if (i == 0)
+                    {
+                        powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r {i} NEW");
+                    }
+                    else
+                    {
+                        powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r {i} TOGGLE");
+                    }
+                }
+                int m = l + points;//中间5点后面
+                for (int i = m; i < a; i++)
+                {
+                    powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r {i} TOGGLE");
+                }                
+            }
+            if (b > points)
+            {
+                int l = a + (b - points) / 2;
+                for (int i = a; i < l; i++)
+                {
+                    powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r {i} TOGGLE");
+                }
+                int m = l + points;
+                for (int i = m; i < count; i++)
+                {
+                    powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r {i} TOGGLE");
+                }
+            }
+            powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+        }
 
         /*
         private void BtnCopy_Click(object sender, RoutedEventArgs e)

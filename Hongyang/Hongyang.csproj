@@ -51,6 +51,7 @@
       <HintPath>..\packages\Autodesk.ProductInterface.PowerMILL.1.0.4\lib\net45\Autodesk.Utilities.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
