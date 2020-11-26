@@ -560,15 +560,22 @@ namespace Hongyang
             powerMILL.Execute("EDIT TOOLPATH REORDER N");
             int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{tpName}').Statistics.PlungesIntoStock\"").ToString());//点数
             int points = int.Parse(System.Configuration.ConfigurationManager.AppSettings["points"]) * 2;
-            int step = count / points;
-            List<int> kept = new List<int>();//要保留的点
-            for (int i = 0; i < points; i++)
+            if (count > points)
             {
-                kept.Add(i * step);                
-            }
-            for (int i = 0; i < count; i++)
-            {
-                if (!kept.Contains(i))
+                int l = (count - points) / 2;//中间10点前面
+                for (int i = 0; i < l; i++)
+                {
+                    if (i == 0)
+                    {
+                        powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r {i} NEW");
+                    }
+                    else
+                    {
+                        powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r {i} TOGGLE");
+                    }
+                }
+                int m = l + points;//中间10点后面
+                for (int i = m; i < count; i++)
                 {
                     powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r {i} TOGGLE");
                 }
