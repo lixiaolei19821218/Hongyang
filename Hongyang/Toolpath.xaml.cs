@@ -429,21 +429,7 @@ namespace Hongyang
                 powerMILL.Execute("SET TOOLPATHPOINTS ;");
 
                 //曲面检测刀路               
-                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
-                powerMILL.Execute($"EDIT PAR 'Pattern' \"{session.Patterns.ActiveItem.Name}\"");
-                powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");
-                session.Refresh();
-                session.Toolpaths.ActiveItem.Name = probingTpName;
-                session.Toolpaths.ActiveItem.Calculate();                
-                powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
-                string message = powerMILL.ExecuteEx("EDIT COLLISION APPLY").ToString();
-                if (message != "信息： 找不到过切")
-                {
-                    powerMILL.Execute($"DELETE TOOLPATH \"{probingTpName}\"");
-                    powerMILL.Execute($"DELETE TOOLPATH \"{probingTpName + "_2"}\"");
-                    powerMILL.Execute($"RENAME Toolpath \"{probingTpName + "_1"}\" \"{probingTpName}\"");
-                }
-                Keep10Points(probingTpName);
+                CalculateProbingPath(probingTpName, session.Patterns.ActiveItem.Name);
             }
             else if (tag == "P")
             {
@@ -494,21 +480,7 @@ namespace Hongyang
                 powerMILL.Execute("SET TOOLPATHPOINTS ;");
 
                 //曲面检测刀路               
-                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
-                powerMILL.Execute($"EDIT PAR 'Pattern' \"{session.Patterns.ActiveItem.Name}\"");
-                powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");
-                session.Refresh();
-                session.Toolpaths.ActiveItem.Name = probingTpName;
-                session.Toolpaths.ActiveItem.Calculate();
-                powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
-                string message = powerMILL.ExecuteEx("EDIT COLLISION APPLY").ToString();
-                if (message != "信息： 找不到过切")
-                {
-                    powerMILL.Execute($"DELETE TOOLPATH \"{probingTpName}\"");
-                    powerMILL.Execute($"DELETE TOOLPATH \"{probingTpName + "_2"}\"");
-                    powerMILL.Execute($"RENAME Toolpath \"{probingTpName + "_1"}\" \"{probingTpName}\"");
-                }
-                Keep10Points(probingTpName);
+                CalculateProbingPath(probingTpName, session.Patterns.ActiveItem.Name);
             }
             else
             {
@@ -549,7 +521,27 @@ namespace Hongyang
             (Application.Current.MainWindow as MainWindow).RefreshToolpaths();            
             RefreshToolpaths();
         } 
-        
+
+        public void CalculateProbingPath(string probingTpName, string patternName)
+        {
+            powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
+            
+            powerMILL.Execute($"EDIT PAR 'Pattern' \"{patternName}\"");
+            powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");
+            session.Refresh();
+            session.Toolpaths.ActiveItem.Name = probingTpName;
+            session.Toolpaths.ActiveItem.Calculate();
+            powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
+            string message = powerMILL.ExecuteEx("EDIT COLLISION APPLY").ToString();
+            if (message != "信息： 找不到过切")
+            {
+                powerMILL.Execute($"DELETE TOOLPATH \"{probingTpName}\"");
+                powerMILL.Execute($"DELETE TOOLPATH \"{probingTpName + "_2"}\"");
+                powerMILL.Execute($"RENAME Toolpath \"{probingTpName + "_1"}\" \"{probingTpName}\"");
+            }
+            Keep10Points(probingTpName);
+        }
+
         /// <summary>
         /// 10点平均分布
         /// </summary>
@@ -845,19 +837,17 @@ namespace Hongyang
             PMTool tool = session.Tools.FirstOrDefault(t => t.Name == "D6-R3-L50");
             if (tool != null)
             {
-                tool.Delete();
-            }
-            session.Refresh();
+                return;
+            }            
             tool = session.Tools.FirstOrDefault(t => t.Name == "D4-R2-L50");
             if (tool != null)
             {
-                tool.Delete();
+                return;
             }
-            session.Refresh();
             tool = session.Tools.FirstOrDefault(t => t.Name == "D3-R1.5-L50");
             if (tool != null)
             {
-                tool.Delete();
+                return;
             }
             string ptf = AppContext.BaseDirectory + @"Ptf\Tools2019.ptf";
             powerMILL.Execute($"FORM RIBBON BACKSTAGE CLOSE IMPORT TEMPLATE PROJECT FILEOPEN\r '{ptf}'");
@@ -1110,6 +1100,73 @@ namespace Hongyang
                 tbxDepth.IsEnabled = false;
                 tbxPoints.IsEnabled = true;
             }
+        }
+
+        private void BtnTransform_Click(object sender, RoutedEventArgs e)
+        {
+            if (lstSelected.Items.Count == 0)
+            {
+                MessageBox.Show("请选要复制的刀路到已选刀路列表。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+
+            Application.Current.MainWindow.WindowState = WindowState.Minimized;
+            int copies = int.Parse(tbxCopies.Text);
+            double angle = double.Parse(tbxAngle.Text);
+                      
+            foreach (PMToolpath toolpath in lstSelected.Items)
+            {
+                ActivateWorldPlane();
+                powerMILL.Execute("STATUS EDITING_PLANE XY");
+                if (toolpath.Name.Contains("Probing"))
+                {
+                    //采用参考线旋转方式
+                    string pattern = powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Pattern.Name\"").ToString();         
+                    powerMILL.Execute($"ACTIVATE Pattern \"{pattern}\"");
+                    powerMILL.Execute("MODE GEOMETRY_TRANSFORM START PATTERN ;");
+                    powerMILL.Execute("MODE TRANSFORM TYPE ROTATE");                    
+                    powerMILL.Execute($"MODE TRANSFORM COPIES {copies}");
+                    powerMILL.Execute($"MODE TRANSFORM ROTATE ANGLE \"{angle}\"");
+                    powerMILL.Execute("MODE GEOMETRY_TRANSFORM FINISH ACCEPT");
+
+                    //复制一个坐标系来旋转，原来刀路的不能直接变换，否则要重制刀路
+                    string workplane = powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Workplane.Name\"").ToString();
+                    powerMILL.Execute($"COPY WORKPLANE \"{workplane}\" ");
+                    string w0 = workplane + "_1";
+                    string w1 = workplane + "_0";
+                    powerMILL.Execute($"RENAME Workplane \"{w0}\" \"{w1}\"");
+                    powerMILL.Execute($"ACTIVATE Workplane \"{w1}\"");
+                    powerMILL.Execute("MODE WORKPLANE_TRANSFORM START ;");
+                    ActivateWorldPlane();
+                    powerMILL.Execute("STATUS EDITING_PLANE XY");
+                    powerMILL.Execute("MODE TRANSFORM TYPE ROTATE");
+                    powerMILL.Execute("MODE TRANSFORM COPY YES");
+                    powerMILL.Execute($"MODE TRANSFORM COPIES {copies}");
+                    powerMILL.Execute($"MODE TRANSFORM ROTATE ANGLE \"{angle}\"");
+                    powerMILL.Execute("MODE WORKPLANE_TRANSFORM FINISH ACCEPT");
+
+                    for (int i = 1; i <= copies; i++)
+                    {
+                        string p0 = pattern + "_" + i;
+                        string p1 = pattern + "_" + i * angle;
+                        powerMILL.Execute($"RENAME Pattern \"{p0}\" \"{p1}\"");
+                        powerMILL.Execute($"ACTIVATE Pattern \"{p1}\"");
+                        string a = w1 + "_" + i;
+                        string b = workplane + "_" + i * angle;
+                        powerMILL.Execute($"RENAME Workplane \"{a}\" \"{b}\"");
+                        powerMILL.Execute($"ACTIVATE Workplane \"{b}\"");
+
+                        CalculateProbingPath(toolpath.Name + "_" + i * angle, p1);
+                    }
+                }               
+                else
+                {
+                    MessageBox.Show($"{toolpath.Name}不是检测刀路。检测刀路带有P_Probing或S_Probing字符。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                    continue;
+                }                
+            }
+            MessageBox.Show("检测路径复制完成。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+            Application.Current.MainWindow.WindowState = WindowState.Normal;
         }
     }
 }

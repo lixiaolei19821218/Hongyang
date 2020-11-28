@@ -100,7 +100,7 @@
                     <StackPanel Orientation="Horizontal">
                         <Image Source="Icon\new.gif" Width="20"/>
                         <CheckBox Name="chxNewTP" Margin="10" VerticalAlignment="Top" IsEnabled="{Binding ElementName=chxAdjust, Path=IsChecked}">新建刀路</CheckBox>
-                    </StackPanel>
+                    </StackPanel>                   
                 </StackPanel>
             </DockPanel>
         </GroupBox>
@@ -127,12 +127,24 @@
                     <ListBox Width="100" Height="120" Name="lstSelected" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop"></ListBox>
                 </GroupBox>
                 <StackPanel>
-                    <Label HorizontalAlignment="Left">机床文件</Label>
-                    <ComboBox Width="200" SelectedIndex="0" Name="cbxOpt"/>
+                    <GroupBox Header="复制">
+                        <DockPanel>
+                            <Label Margin="0" VerticalContentAlignment="Center">角度</Label>
+                            <TextBox Margin="0" Name="tbxAngle" Width="50" Height="25" HorizontalAlignment="Left" Text="90"></TextBox>
+                            <Label Margin="0" VerticalContentAlignment="Center">数量</Label>
+                            <TextBox Grid.Column="1" Margin="0" Name="tbxCopies" Width="50" Height="25" HorizontalAlignment="Left" Text="3"></TextBox>
+                            <Button Name="btnTransform" Margin="5 0" Click="BtnTransform_Click">复制</Button>
+                        </DockPanel>
+                    </GroupBox>
+                    <GroupBox Header="输出">
+                        <StackPanel>
+                    <ComboBox Width="230" SelectedIndex="0" Name="cbxOpt"/>
                     <DockPanel>
                         <Image Source="Icon\keep.gif" Width="25"/>
                         <Button Margin="5" VerticalAlignment="Bottom" Height="26" Name="btnGenerateNC" Click="BtnGenerateNC_Click">输出</Button>
                     </DockPanel>
+                        </StackPanel>
+                    </GroupBox>                    
                 </StackPanel>
             </StackPanel>
         </GroupBox>
