@@ -36,10 +36,42 @@ namespace Hongyang
             CreateTool();
             cbxTool.ItemsSource = session.Tools.Select(t => t.Name);
 
+            //识别层  
+            powerMILL.Execute("CREATE LEVEL Red");
+            powerMILL.Execute("CREATE LEVEL Blue");
+            powerMILL.Execute("CREATE LEVEL Green");
+
+            foreach (PMModel model in session.Models)
+            {
+                powerMILL.DialogsOff();
+                string output = powerMILL.ExecuteEx($"size model '{model.Name}'").ToString();
+                string[] lines = output.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                for (int i = 8; i < lines.Length; i++)
+                {
+                    powerMILL.Execute($"edit model '{model.Name}' deselect all");
+                    string[] items = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                    if (items[3] == "255" && items[4] == "0" && items[5] == "0")
+                    {
+                        powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
+                        powerMILL.Execute($"EDIT LEVEL \"Red\" ACQUIRE SELECTED");
+                    }
+                    if (items[3] == "0" && items[4] == "255" && items[5] == "0")
+                    {
+                        powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
+                        powerMILL.Execute($"EDIT LEVEL \"Green\" ACQUIRE SELECTED");
+                    }
+                    if (items[3] == "0" && items[4] == "0" && items[5] == "255")
+                    {
+                        powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
+                        powerMILL.Execute($"EDIT LEVEL \"Blue\" ACQUIRE SELECTED");
+                    }
+                }
+            }
+
             RefreshToolpaths();
             RefreshLevels();
-            LoadPmoptz();
-            
+            LoadPmoptz();           
+
             Style itemContainerStyle = new Style(typeof(ListBoxItem));
             itemContainerStyle.Setters.Add(new Setter(ListBoxItem.AllowDropProperty, true));
             itemContainerStyle.Setters.Add(new EventSetter(ListBoxItem.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(s_PreviewMouseLeftButtonDown)));            
@@ -57,7 +89,7 @@ namespace Hongyang
         {
             foreach (string file in Directory.GetFiles(AppContext.BaseDirectory + "Pmoptz\\", "*.pmoptz"))
             {
-                cbxOpt.Items.Add(new ComboBoxItem { Content = System.IO.Path.GetFileNameWithoutExtension(file), Tag = System.IO.Path.GetFileName(file) });
+                cbxOpt.Items.Add(new ComboBoxItem { Content = System.IO.Path.GetFileNameWithoutExtension(file), Tag = System.IO.Path.GetFileName(file) });                
             }
         }
 
@@ -224,7 +256,8 @@ namespace Hongyang
                     MessageBox.Show("请至少选择一个要计算的层", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                     return;
                 }
-                Application.Current.MainWindow.WindowState = WindowState.Minimized;
+                Application.Current.MainWindow.WindowState = WindowState.Minimized;                
+
                 foreach (PMLevelOrSet level in lstSelectedLevel.Items)
                 {
                     Calculate(level.Name);
@@ -385,7 +418,7 @@ namespace Hongyang
         private void Calculate(string level)
         {
             powerMILL.DialogsOff();
-            session.Refresh();
+            session.Refresh();           
 
             string tag = (cbxMethod.SelectedItem as ComboBoxItem).Tag.ToString();
             string tpName = level + "_" + tag;          
@@ -397,7 +430,7 @@ namespace Hongyang
                 ClearToolpath(probingTpName);
                 ClearToolpath(swarfTpName);       
 
-                CreateWorkplane(level, tpName, true);
+                CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);
 
                 //Swarf刀路            
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
@@ -440,7 +473,7 @@ namespace Hongyang
                 ClearToolpath(patternTpName);
                 ClearToolpath(swarfTpName);
 
-                CreateWorkplane(level, tpName, true);
+                CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);
 
                 //Swarf刀路            
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
@@ -485,7 +518,7 @@ namespace Hongyang
             else
             {
                 ClearToolpath(tpName);
-                CreateWorkplane(level, tpName, false);
+                CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);
 
                 powerMILL.Execute("STRATEGYSELECTOR CATEGORY 'Probing' NEW");
                 powerMILL.Execute("STRATEGYSELECTOR STRATEGY \"Probing/Surface-Inspection.ptf\" NEW");
@@ -718,7 +751,7 @@ namespace Hongyang
             toolpath.Name = newName;
         }
 
-        private PMWorkplane CreateWorkplane(string level, string workplaneName, bool isSwarf = false)
+        private PMWorkplane CreateWorkplane(string level, string workplaneName, bool isLean = false)
         {
             ActivateWorldPlane();
             powerMILL.Execute("edit model all deselect all");
@@ -732,22 +765,15 @@ namespace Hongyang
             double z = (double.Parse(min[3]) + double.Parse(max[3])) / 2;
             double a = Math.Atan2(y, x) * 180 / Math.PI;
             double b;
-            if (isSwarf)
+            if (isLean)
             {
-                b = 90;
+                b = x > 0 ? Math.Atan2(x, z) * 180 / Math.PI : 90 + Math.Atan2(x, z) * 180 / Math.PI;
             }
             else
             {
-                if (level.Length >= 2 && level.Substring(level.Length - 2, 2).ToLower() == "_h")
-                {
-                    b = 90;
-                }
-                else
-                {
-                    b = x > 0 ? Math.Atan2(x, z) * 180 / Math.PI : 90 + Math.Atan2(x, z) * 180 / Math.PI;
-                }
+                b = 90;
             }
-            
+
             PMWorkplane workplane = session.Workplanes.FirstOrDefault(w => w.Name == level);
             if (workplane != null)
             {

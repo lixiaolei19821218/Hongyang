@@ -106,6 +106,7 @@
         </GroupBox>
         <DockPanel Margin="5" Grid.Row="5" Grid.ColumnSpan="2">
             <Image Source="Icon\calculate.gif" Width="25"/>
+            <CheckBox Name="chxLean" Margin="5" Content="倾斜曲面"></CheckBox>
             <Button  Name="btnCalculate" Click="BtnCalculate_Click">计算</Button>
         </DockPanel>
         
@@ -115,7 +116,7 @@
             </GroupBox.Header>
             <StackPanel Orientation="Horizontal">
                 <GroupBox Header="所有刀路">
-                    <ListBox Width="100" Height="120" Name="lstToolpath" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop" SelectionMode="Extended"></ListBox>
+                    <ListBox Width="120" Height="120" Name="lstToolpath" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop" SelectionMode="Extended"></ListBox>
                 </GroupBox>
                 <StackPanel VerticalAlignment="Center" IsEnabled="{Binding ElementName=chxMannul, Path=IsChecked}">
                     <Button Name="btnToRightAll" Click="BtnTo_Click">&gt;&gt;</Button>
@@ -124,7 +125,7 @@
                     <Button Name="btnToLeftAll" Click="BtnTo_Click">&lt;&lt;</Button>
                 </StackPanel>
                 <GroupBox Header="已选刀路" IsEnabled="{Binding ElementName=chxMannul, Path=IsChecked}">
-                    <ListBox Width="100" Height="120" Name="lstSelected" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop"></ListBox>
+                    <ListBox Width="120" Height="120" Name="lstSelected" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop"></ListBox>
                 </GroupBox>
                 <StackPanel>
                     <GroupBox Header="复制">
