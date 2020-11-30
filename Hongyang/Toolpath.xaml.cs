@@ -1,5 +1,6 @@
 ﻿using Autodesk.Geometry;
 using Autodesk.ProductInterface.PowerMILL;
+using PowerINSPECTAutomation;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,14 +37,14 @@ namespace Hongyang
             CreateTool();
             cbxTool.ItemsSource = session.Tools.Select(t => t.Name);
 
-            //识别层  
+            //识别层 
+            powerMILL.DialogsOff();
             powerMILL.Execute("CREATE LEVEL Red");
             powerMILL.Execute("CREATE LEVEL Blue");
             powerMILL.Execute("CREATE LEVEL Green");
 
             foreach (PMModel model in session.Models)
-            {
-                powerMILL.DialogsOff();
+            {                
                 string output = powerMILL.ExecuteEx($"size model '{model.Name}'").ToString();
                 string[] lines = output.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
                 for (int i = 8; i < lines.Length; i++)
@@ -70,15 +71,15 @@ namespace Hongyang
 
             RefreshToolpaths();
             RefreshLevels();
-            LoadPmoptz();           
+            LoadPmoptz();
 
             Style itemContainerStyle = new Style(typeof(ListBoxItem));
             itemContainerStyle.Setters.Add(new Setter(ListBoxItem.AllowDropProperty, true));
-            itemContainerStyle.Setters.Add(new EventSetter(ListBoxItem.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(s_PreviewMouseLeftButtonDown)));            
+            itemContainerStyle.Setters.Add(new EventSetter(ListBoxItem.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(s_PreviewMouseLeftButtonDown)));
             itemContainerStyle.Setters.Add(new EventSetter(ListBoxItem.DropEvent, new DragEventHandler(listbox_Drop)));
             lstSelected.ItemContainerStyle = itemContainerStyle;
 
-            itemContainerStyle = new Style(typeof(ListBoxItem));            
+            itemContainerStyle = new Style(typeof(ListBoxItem));
             itemContainerStyle.Setters.Add(new EventSetter(ListBoxItem.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(s_PreviewMouseLeftButtonDown)));
             lstToolpath.ItemContainerStyle = itemContainerStyle;
             lstAllLevel.ItemContainerStyle = itemContainerStyle;
@@ -89,7 +90,7 @@ namespace Hongyang
         {
             foreach (string file in Directory.GetFiles(AppContext.BaseDirectory + "Pmoptz\\", "*.pmoptz"))
             {
-                cbxOpt.Items.Add(new ComboBoxItem { Content = System.IO.Path.GetFileNameWithoutExtension(file), Tag = System.IO.Path.GetFileName(file) });                
+                //cbxOpt.Items.Add(new ComboBoxItem { Content = System.IO.Path.GetFileNameWithoutExtension(file), Tag = System.IO.Path.GetFileName(file) });                
             }
         }
 
@@ -110,7 +111,7 @@ namespace Hongyang
         }
 
         private void listbox_Drop(object sender, DragEventArgs e)
-        {            
+        {
             PMToolpath droppedData = e.Data.GetData(typeof(PMToolpath)) as PMToolpath;
             if (droppedData != null)
             {
@@ -191,7 +192,7 @@ namespace Hongyang
                 {
                     MessageBox.Show("请选一个已计算的层", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                     return;
-                }                
+                }
                 session.Refresh();
                 string level = (lstSelectedLevel.SelectedItem as PMLevelOrSet).Name;
                 string tpName = level + "_" + (cbxMethod.SelectedItem as ComboBoxItem).Tag;
@@ -256,7 +257,7 @@ namespace Hongyang
                     MessageBox.Show("请至少选择一个要计算的层", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                     return;
                 }
-                Application.Current.MainWindow.WindowState = WindowState.Minimized;                
+                Application.Current.MainWindow.WindowState = WindowState.Minimized;
 
                 foreach (PMLevelOrSet level in lstSelectedLevel.Items)
                 {
@@ -297,7 +298,7 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT PAR 'powermill.CurveEditor.ObliqueCurve.Origin.Y' \"0\"");
                 powerMILL.Execute($"EDIT PAR 'powermill.CurveEditor.ObliqueCurve.Origin.Z' \"2\"");
             }
-            
+
             powerMILL.Execute("CURVEEDITOR OBLIQUE CREATE");
             powerMILL.Execute("CURVEEDITOR OBLIQUE CLOSE");
             powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
@@ -418,17 +419,17 @@ namespace Hongyang
         private void Calculate(string level)
         {
             powerMILL.DialogsOff();
-            session.Refresh();           
+            session.Refresh();
 
             string tag = (cbxMethod.SelectedItem as ComboBoxItem).Tag.ToString();
-            string tpName = level + "_" + tag;          
+            string tpName = level + "_" + tag;
 
             if (tag == "S")
             {
-                string swarfTpName = tpName + "_Swarf";               
+                string swarfTpName = tpName + "_Swarf";
                 string probingTpName = tpName + "_Probing";
                 ClearToolpath(probingTpName);
-                ClearToolpath(swarfTpName);       
+                ClearToolpath(swarfTpName);
 
                 CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);
 
@@ -436,7 +437,7 @@ namespace Hongyang
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
                 powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
                 powerMILL.Execute("EDIT BLOCK RESET");
-                powerMILL.Execute("CREATE TOOL ; BALLNOSED");                
+                powerMILL.Execute("CREATE TOOL ; BALLNOSED");
                 session.Refresh();
                 session.Tools.ActiveItem.Name = tpName + "_BALLNOSED";
                 session.Tools.ActiveItem.Diameter = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('tool', '{cbxTool.Text}').Diameter\"").ToString());
@@ -452,11 +453,11 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
                 session.Refresh();
                 session.Toolpaths.ActiveItem.Name = swarfTpName;
-                session.Toolpaths.ActiveItem.Calculate();                
+                session.Toolpaths.ActiveItem.Calculate();
 
                 //参考线
                 powerMILL.Execute("CREATE PATTERN ;");
-                session.Refresh();                
+                session.Refresh();
                 session.Patterns.ActiveItem.Name = tpName;
                 powerMILL.Execute($"EDIT PATTERN \"{session.Patterns.ActiveItem.Name}\" INSERT TOOLPATH ;");
                 powerMILL.Execute("SET TOOLPATHPOINTS ;");
@@ -469,7 +470,7 @@ namespace Hongyang
                 string swarfTpName = tpName + "_Swarf";
                 string patternTpName = tpName + "_Pattern";
                 string probingTpName = tpName + "_Probing";
-                ClearToolpath(probingTpName); 
+                ClearToolpath(probingTpName);
                 ClearToolpath(patternTpName);
                 ClearToolpath(swarfTpName);
 
@@ -479,7 +480,7 @@ namespace Hongyang
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
                 powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
                 powerMILL.Execute("EDIT BLOCK RESET");
-                powerMILL.Execute("CREATE TOOL ; ENDMILL");                
+                powerMILL.Execute("CREATE TOOL ; ENDMILL");
                 session.Refresh();
                 session.Tools.ActiveItem.Name = tpName + "_ENDMILL";
                 session.Tools.ActiveItem.Diameter = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('tool', '{cbxTool.Text}').Diameter\"").ToString());
@@ -507,7 +508,7 @@ namespace Hongyang
 
                 //参考线
                 powerMILL.Execute("CREATE PATTERN ;");
-                session.Refresh();                
+                session.Refresh();
                 session.Patterns.ActiveItem.Name = tpName;
                 powerMILL.Execute($"EDIT PATTERN \"{session.Patterns.ActiveItem.Name}\" INSERT TOOLPATH ;");
                 powerMILL.Execute("SET TOOLPATHPOINTS ;");
@@ -517,7 +518,8 @@ namespace Hongyang
             }
             else
             {
-                ClearToolpath(tpName);
+                string probingTpName = tpName + "_Probing";
+                ClearToolpath(probingTpName);
                 CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);
 
                 powerMILL.Execute("STRATEGYSELECTOR CATEGORY 'Probing' NEW");
@@ -549,16 +551,16 @@ namespace Hongyang
                 powerMILL.Execute("VIEW MODEL ; SHADE NORMAL");
                 toolpath.Delete();
 
-                CollisionCheck(clone.Name, tpName);
+                CollisionCheck(clone.Name, probingTpName);
             }
-            (Application.Current.MainWindow as MainWindow).RefreshToolpaths();            
+            (Application.Current.MainWindow as MainWindow).RefreshToolpaths();
             RefreshToolpaths();
-        } 
+        }
 
         public void CalculateProbingPath(string probingTpName, string patternName)
         {
             powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
-            
+
             powerMILL.Execute($"EDIT PAR 'Pattern' \"{patternName}\"");
             powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");
             session.Refresh();
@@ -572,7 +574,11 @@ namespace Hongyang
                 powerMILL.Execute($"DELETE TOOLPATH \"{probingTpName + "_2"}\"");
                 powerMILL.Execute($"RENAME Toolpath \"{probingTpName + "_1"}\" \"{probingTpName}\"");
             }
-            Keep10Points(probingTpName);
+            string tag = probingTpName.Split('_')[1];
+            if (tag == "P" || tag == "S")
+            {
+                Keep10Points(probingTpName);
+            }
         }
 
         /// <summary>
@@ -635,7 +641,7 @@ namespace Hongyang
                 for (int i = m; i < a; i++)
                 {
                     powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r {i} TOGGLE");
-                }                
+                }
             }
             if (b > points)
             {
@@ -726,7 +732,7 @@ namespace Hongyang
             session.Refresh();
             int count = session.Toolpaths.Count;
             PMToolpath toolpath = session.Toolpaths.FirstOrDefault(t => t.Name == toolpathName);
-            powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\"");            
+            powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath.Name}\"");
             powerMILL.Execute("EDIT COLLISION SPLIT_TOOLPATH Y");
             powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
             powerMILL.Execute("EDIT COLLISION HIT_OUTPUT N");
@@ -781,7 +787,7 @@ namespace Hongyang
             }
             powerMILL.Execute("MODE WORKPLANE_CREATE ; SELECTION CENTRE");
             session.Refresh();
-            workplane = session.Workplanes.FirstOrDefault(w => w.Name == level);          
+            workplane = session.Workplanes.FirstOrDefault(w => w.Name == level);
             workplane = session.Workplanes.Last();
             workplane.Name = workplaneName;
             if (double.Parse(length[3]) == 0.0)
@@ -798,7 +804,7 @@ namespace Hongyang
                 powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{b}\"");
                 powerMILL.Execute("WPETWIST ACCEPT");
                 powerMILL.Execute("MODE WORKPLANE_EDIT FINISH ACCEPT");
-                powerMILL.Execute($"EXPLORER SELECT Workplane \"Workplane\\{workplane.Name}\" NEW");                
+                powerMILL.Execute($"EXPLORER SELECT Workplane \"Workplane\\{workplane.Name}\" NEW");
             }
             powerMILL.Execute($"ACTIVATE Workplane \"{workplane.Name}\"");
             return workplane;
@@ -824,13 +830,13 @@ namespace Hongyang
         }
 
         private void ClearToolpath(string toolpathName)
-        {           
+        {
             PMToolpath toolpath = session.Toolpaths.FirstOrDefault(t => t.Name == toolpathName);
             if (toolpath != null)
             {
                 string strategy = powerMILL.ExecuteEx($"PRINT PAR terse \"entity('toolpath', '{toolpath.Name}').Strategy\"").ToString();
                 string workplaneName = powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Workplane.Name\"").ToString();
-                string patternName = powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Pattern.Name\"").ToString();          
+                string patternName = powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Pattern.Name\"").ToString();
                 string toolName = powerMILL.ExecuteEx($"PRINT PAR terse \"entity('toolpath', '{toolpath.Name}').Tool.Name\"").ToString();
                 toolpath.Delete();
                 if (strategy == "swarf")
@@ -845,15 +851,15 @@ namespace Hongyang
                 {
                     PMPattern pattern = session.Patterns.FirstOrDefault(p => p.Name == patternName);
                     if (pattern != null)
-                    {                        
+                    {
                         session.Patterns.Remove(pattern, true);
                     }
-                }                
+                }
                 PMWorkplane workplane = session.Workplanes.FirstOrDefault(w => w.Name == workplaneName);
                 if (workplane != null)
                 {
                     session.Workplanes.Remove(workplane, true);
-                }                
+                }
             }
         }
 
@@ -864,7 +870,7 @@ namespace Hongyang
             if (tool != null)
             {
                 return;
-            }            
+            }
             tool = session.Tools.FirstOrDefault(t => t.Name == "D4-R2-L50");
             if (tool != null)
             {
@@ -939,7 +945,7 @@ namespace Hongyang
         private void RefreshToolpaths()
         {
             session.Refresh();
-            lstToolpath.ItemsSource = session.Toolpaths.Where(t => t.IsCalculated);
+            lstToolpath.ItemsSource = session.Toolpaths.Where(t => t.IsCalculated && t.Name.EndsWith("Probing"));
         }
 
         private void CbxTool_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1022,7 +1028,7 @@ namespace Hongyang
             }
             else if (button.Name == "btnToLeftAll")
             {
-                lstSelected.Items.Clear();                
+                lstSelected.Items.Clear();
             }
         }
 
@@ -1033,72 +1039,75 @@ namespace Hongyang
                 MessageBox.Show("请先保存PowerMILL项目。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
             }
-            Application.Current.MainWindow.WindowState = WindowState.Minimized;           
-            powerMILL.DialogsOff();           
-           
-            if (chxMannul.IsChecked == true)
+            Application.Current.MainWindow.WindowState = WindowState.Minimized;
+
+            powerMILL.DialogsOff();
+            ActivateWorldPlane();            
+            powerMILL.Execute($"CREATE NCPROGRAM 'U0'");
+            powerMILL.Execute($"CREATE NCPROGRAM 'U90'");
+            powerMILL.Execute($"CREATE NCPROGRAM 'U180'");
+            powerMILL.Execute($"CREATE NCPROGRAM 'U270'");
+            foreach (PMToolpath toolpath in session.Toolpaths.Where(tp => tp.IsCalculated))
             {
-                string nc = DateTime.Now.ToString("yyyyMMdd_HHmmss");                
-                powerMILL.Execute($"CREATE NCPROGRAM '{nc}'");
-                foreach (PMToolpath toolpath in lstSelected.Items)
+                string strategy = powerMILL.ExecuteEx($"PRINT PAR terse \"entity('toolpath', '{toolpath.Name}').Strategy\"").ToString();
+                if (strategy == "surface_inspection")
+                {
+                    double azimuth = double.Parse(powerMILL.ExecuteEx($"PRINT PAR terse \"entity('workplane', '{toolpath.WorkplaneName}').Azimuth\"").ToString());
+                    if (azimuth <= 90)
+                    {
+                        powerMILL.Execute("ACTIVATE NCProgram \"U0\"");
+                    }
+                    else if (azimuth <= 180)
+                    {
+                        powerMILL.Execute("ACTIVATE NCProgram \"U90\"");
+                    }
+                    else if (azimuth <= 270)
+                    {
+                        powerMILL.Execute("ACTIVATE NCProgram \"U180\"");
+                    }
+                    else
+                    {
+                        powerMILL.Execute("ACTIVATE NCProgram \"U270\"");
+                    }
+                    powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
+                }
+            }
+
+            string opt = AppContext.BaseDirectory + "Pmoptz\\Fidia_KR199_OMV_V4.pmoptz";
+            ExportNC("U0", opt);
+            ExportNC("U90", opt);
+            ExportNC("U180", opt);
+            ExportNC("U270", opt);
+
+            powerMILL.Execute($"CREATE NCPROGRAM 'Total'");
+            foreach (PMNCProgram program in session.NCPrograms)
+            {
+                foreach (PMToolpath toolpath in program.Toolpaths)
                 {
                     powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
                 }
-                powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" QUIT FORM NCTOOLPATH");
-                string path = powerMILL.ExecuteEx($"print par terse \"entity('ncprogram', '{nc}').filename\"").ToString();
-                path = path.Insert(path.IndexOf("{ncprogram}"), cbxOpt.Text + nc + "/");
-                powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" FILENAME FILESAVE\r'{path}'");
-                powerMILL.Execute($"EDIT NCPROGRAM '{nc}' SET WORKPLANE \" \"");
-                powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TAPEOPTIONS \"{AppContext.BaseDirectory + "Pmoptz\\" + (cbxOpt.SelectedItem as ComboBoxItem).Tag}\" FORM ACCEPT SelectOptionFile");
-                if (cbxOpt.Text.ToLower().Contains("fidia"))
-                {
-                    powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TOOLCOORDS CENTRE");
-                }
-                else
-                {
-                    powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TOOLCOORDS TIP");
-                }
-                powerMILL.Execute($"ACTIVATE NCPROGRAM \"{nc}\" KEEP NCPROGRAM ;\rYes\rYes");
+            }
+            opt = AppContext.BaseDirectory + "Pmoptz\\Results_Output_Generator_OMV2015.pmoptz";
+            ExportNC("Total", opt);
 
-                powerMILL.Execute($"NCTOOLPATH ACCEPT FORM ACCEPT NCTOOLPATHLIST FORM ACCEPT NCTOOLLIST FORM ACCEPT PROBINGNCOPTS");
-                powerMILL.Execute("TEXTINFO ACCEPT");
-            }
-            else
-            {
-                ActivateWorldPlane();               
-                powerMILL.Execute($"CREATE NCPROGRAM 'U0'");
-                powerMILL.Execute($"CREATE NCPROGRAM 'U90'");
-                powerMILL.Execute($"CREATE NCPROGRAM 'U180'");
-                powerMILL.Execute($"CREATE NCPROGRAM 'U270'");
-                foreach (PMToolpath toolpath in session.Toolpaths.Where(tp => tp.IsCalculated))
-                {
-                    string strategy = powerMILL.ExecuteEx($"PRINT PAR terse \"entity('toolpath', '{toolpath.Name}').Strategy\"").ToString();
-                    if (strategy == "surface_inspection")
-                    {
-                        double azimuth = double.Parse(powerMILL.ExecuteEx($"PRINT PAR terse \"entity('workplane', '{toolpath.WorkplaneName}').Azimuth\"").ToString());
-                        if (azimuth <= 90)
-                        {
-                            powerMILL.Execute("ACTIVATE NCProgram \"U0\"");
-                        }
-                        else if (azimuth <= 180)
-                        {
-                            powerMILL.Execute("ACTIVATE NCProgram \"U90\"");
-                        }
-                        else if (azimuth <= 270)
-                        {
-                            powerMILL.Execute("ACTIVATE NCProgram \"U180\"");
-                        }
-                        else
-                        {
-                            powerMILL.Execute("ACTIVATE NCProgram \"U270\"");
-                        }
-                        powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
-                    }
-                }
-            }
-            
             MessageBox.Show("NC程序生成完成。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
             Application.Current.MainWindow.WindowState = WindowState.Normal;
+        }
+
+        public void ExportNC(string nc, string opt)
+        {
+            powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" QUIT FORM NCTOOLPATH");
+            string path = powerMILL.ExecuteEx($"print par terse \"entity('ncprogram', '{nc}').filename\"").ToString();            
+            path = path.Insert(path.IndexOf("{ncprogram}"), nc + "/");
+            powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" FILENAME FILESAVE\r'{path}'");
+            powerMILL.Execute($"EDIT NCPROGRAM '{nc}' SET WORKPLANE \" \"");
+            powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TAPEOPTIONS \"{opt}\" FORM ACCEPT SelectOptionFile");
+
+            powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TOOLCOORDS CENTRE");
+            powerMILL.Execute($"ACTIVATE NCPROGRAM \"{nc}\" KEEP NCPROGRAM ;\rYes\rYes");
+
+            powerMILL.Execute($"NCTOOLPATH ACCEPT FORM ACCEPT NCTOOLPATHLIST FORM ACCEPT NCTOOLLIST FORM ACCEPT PROBINGNCOPTS");
+            powerMILL.Execute("TEXTINFO ACCEPT");
         }
 
         private void BtnImportModel_Click(object sender, RoutedEventArgs e)
@@ -1139,7 +1148,7 @@ namespace Hongyang
             Application.Current.MainWindow.WindowState = WindowState.Minimized;
             int copies = int.Parse(tbxCopies.Text);
             double angle = double.Parse(tbxAngle.Text);
-                      
+
             foreach (PMToolpath toolpath in lstSelected.Items)
             {
                 ActivateWorldPlane();
@@ -1147,10 +1156,10 @@ namespace Hongyang
                 if (toolpath.Name.Contains("Probing"))
                 {
                     //采用参考线旋转方式
-                    string pattern = powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Pattern.Name\"").ToString();         
+                    string pattern = powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Pattern.Name\"").ToString();
                     powerMILL.Execute($"ACTIVATE Pattern \"{pattern}\"");
                     powerMILL.Execute("MODE GEOMETRY_TRANSFORM START PATTERN ;");
-                    powerMILL.Execute("MODE TRANSFORM TYPE ROTATE");                    
+                    powerMILL.Execute("MODE TRANSFORM TYPE ROTATE");
                     powerMILL.Execute($"MODE TRANSFORM COPIES {copies}");
                     powerMILL.Execute($"MODE TRANSFORM ROTATE ANGLE \"{angle}\"");
                     powerMILL.Execute("MODE GEOMETRY_TRANSFORM FINISH ACCEPT");
@@ -1184,15 +1193,30 @@ namespace Hongyang
 
                         CalculateProbingPath(toolpath.Name + "_" + i * angle, p1);
                     }
-                }               
+                }
                 else
                 {
                     MessageBox.Show($"{toolpath.Name}不是检测刀路。检测刀路带有P_Probing或S_Probing字符。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                     continue;
-                }                
+                }
             }
             MessageBox.Show("检测路径复制完成。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
             Application.Current.MainWindow.WindowState = WindowState.Normal;
+        }
+
+        private void BtnReport_Click(object sender, RoutedEventArgs e)
+        {
+            IApplication application = new PIApplication() as IApplication;
+            IPIDocument doc = application.ActiveDocument;
+            ISequenceGroup geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
+            geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_);
+            geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_);
+            geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Meas_Angle2Lines_);
+            geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_);
+            geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_);
+            geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_SimplMeas_Distance2Planes_);
+            
+            doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_EdgePointsCNC);
         }
     }
 }

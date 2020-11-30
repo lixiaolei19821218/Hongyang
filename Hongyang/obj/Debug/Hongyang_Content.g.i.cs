@@ -8,6 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("icon/keep.gif")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("icon/powerinspect.ico")]
 
 
