@@ -1206,17 +1206,58 @@ namespace Hongyang
 
         private void BtnReport_Click(object sender, RoutedEventArgs e)
         {
+            Application.Current.MainWindow.WindowState = WindowState.Minimized;
+
             IApplication application = new PIApplication() as IApplication;
             IPIDocument doc = application.ActiveDocument;
-            ISequenceGroup geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
-            geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_);
-            geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_);
-            geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Meas_Angle2Lines_);
-            geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_);
-            geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_);
-            geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_SimplMeas_Distance2Planes_);
             
-            doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_EdgePointsCNC);
+            ISequenceGroup geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
+            ISequenceItem plane1 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_);
+            ISequenceItem plane2 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_);
+            
+            
+            PowerINSPECTAutomation.IMeas_Angle2LinesItem angle = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Meas_Angle2Lines_) as IMeas_Angle2LinesItem;
+            ISequenceSimpleLink link = angle.ReferencePlane;
+            string m = angle.Name;
+            m = link.Name;
+            IFeature feature = null;
+            foreach (IFeature ft in link.PossibleFeatures)
+            {
+                if (ft.Name == plane1.Name)
+                {
+                    feature = ft;
+                    break;
+                }
+            }
+            link.Feature = feature;
+
+            geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_);
+            geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_);
+            IMeas_Distance2PlanesItem distance = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_SimplMeas_Distance2Planes_) as IMeas_Distance2PlanesItem;
+            
+            ISurfaceGroup inspect1 = doc.SequenceItems[4] as ISurfaceGroup;
+            IBagOfPoints points = inspect1.BagOfPoints[doc.get_ActiveMeasure()];
+            int count = points.Count;
+            int[] indices = new int[32];
+            int[] f = points.FittingIndices as int[];
+            for (int i = 0; i < 32; i++)
+            {
+                indices[i] = 1;
+            }
+            indices[1] = 2;
+            points.CopyToClipboard(indices);
+            string name = plane1.Name;
+            PowerINSPECTAutomation.IPlane_ProbedItem plane = plane1 as IPlane_ProbedItem;
+            plane.BagOfPoints[doc.get_ActiveMeasure()].PasteFromClipboard();
+
+
+
+
+            ISurfaceGroup inspect2 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_EdgePointsCNC) as ISurfaceGroup;
+            name = inspect2.Name;
+            inspect2.BagOfPoints[doc.get_ActiveMeasure()].PasteFromClipboard();
+
+            Application.Current.MainWindow.WindowState = WindowState.Normal;
         }
     }
 }
