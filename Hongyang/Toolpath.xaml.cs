@@ -1042,11 +1042,13 @@ namespace Hongyang
             Application.Current.MainWindow.WindowState = WindowState.Minimized;
 
             powerMILL.DialogsOff();
-            ActivateWorldPlane();            
+            ActivateWorldPlane();
+            powerMILL.Execute($"DELETE NCPROGRAM ALL");            
             powerMILL.Execute($"CREATE NCPROGRAM 'U0'");
             powerMILL.Execute($"CREATE NCPROGRAM 'U90'");
             powerMILL.Execute($"CREATE NCPROGRAM 'U180'");
             powerMILL.Execute($"CREATE NCPROGRAM 'U270'");
+            session.Refresh();
             foreach (PMToolpath toolpath in session.Toolpaths.Where(tp => tp.IsCalculated))
             {
                 string strategy = powerMILL.ExecuteEx($"PRINT PAR terse \"entity('toolpath', '{toolpath.Name}').Strategy\"").ToString();
@@ -1078,8 +1080,9 @@ namespace Hongyang
             ExportNC("U90", opt);
             ExportNC("U180", opt);
             ExportNC("U270", opt);
-
+            
             powerMILL.Execute($"CREATE NCPROGRAM 'Total'");
+            session.Refresh();
             foreach (PMNCProgram program in session.NCPrograms)
             {
                 foreach (PMToolpath toolpath in program.Toolpaths)
@@ -1096,18 +1099,23 @@ namespace Hongyang
 
         public void ExportNC(string nc, string opt)
         {
-            powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" QUIT FORM NCTOOLPATH");
-            string path = powerMILL.ExecuteEx($"print par terse \"entity('ncprogram', '{nc}').filename\"").ToString();            
-            path = path.Insert(path.IndexOf("{ncprogram}"), nc + "/");
-            powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" FILENAME FILESAVE\r'{path}'");
-            powerMILL.Execute($"EDIT NCPROGRAM '{nc}' SET WORKPLANE \" \"");
-            powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TAPEOPTIONS \"{opt}\" FORM ACCEPT SelectOptionFile");
+            session.Refresh();
+            PMNCProgram program = session.NCPrograms.FirstOrDefault(n => n.Name == nc);
+            if (program != null && program.Toolpaths.Count > 0)
+            {
+                powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" QUIT FORM NCTOOLPATH");
+                string path = powerMILL.ExecuteEx($"print par terse \"entity('ncprogram', '{nc}').filename\"").ToString();
+                path = path.Insert(path.IndexOf("{ncprogram}"), nc + "/");
+                powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" FILENAME FILESAVE\r'{path}'");
+                powerMILL.Execute($"EDIT NCPROGRAM '{nc}' SET WORKPLANE \" \"");
+                powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TAPEOPTIONS \"{opt}\" FORM ACCEPT SelectOptionFile");
 
-            powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TOOLCOORDS CENTRE");
-            powerMILL.Execute($"ACTIVATE NCPROGRAM \"{nc}\" KEEP NCPROGRAM ;\rYes\rYes");
+                powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TOOLCOORDS CENTRE");
+                powerMILL.Execute($"ACTIVATE NCPROGRAM \"{nc}\" KEEP NCPROGRAM ;\rYes\rYes");
 
-            powerMILL.Execute($"NCTOOLPATH ACCEPT FORM ACCEPT NCTOOLPATHLIST FORM ACCEPT NCTOOLLIST FORM ACCEPT PROBINGNCOPTS");
-            powerMILL.Execute("TEXTINFO ACCEPT");
+                powerMILL.Execute($"NCTOOLPATH ACCEPT FORM ACCEPT NCTOOLPATHLIST FORM ACCEPT NCTOOLLIST FORM ACCEPT PROBINGNCOPTS");
+                powerMILL.Execute("TEXTINFO ACCEPT");
+            }
         }
 
         private void BtnImportModel_Click(object sender, RoutedEventArgs e)
@@ -1206,57 +1214,174 @@ namespace Hongyang
 
         private void BtnReport_Click(object sender, RoutedEventArgs e)
         {
+            session.Refresh();
+            PMNCProgram program = session.NCPrograms.FirstOrDefault(n => n.Name == "Total");
+            if (program == null)
+            {
+                MessageBox.Show("没有在PowerMILL中找到名为Total的NC程序。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+
             Application.Current.MainWindow.WindowState = WindowState.Minimized;
 
             IApplication application = new PIApplication() as IApplication;
             IPIDocument doc = application.ActiveDocument;
-            
+            IMeasure measure = doc.get_ActiveMeasure();
+
             ISequenceGroup geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
-            ISequenceItem plane1 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_);
-            ISequenceItem plane2 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_);
-            
-            
-            PowerINSPECTAutomation.IMeas_Angle2LinesItem angle = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Meas_Angle2Lines_) as IMeas_Angle2LinesItem;
-            ISequenceSimpleLink link = angle.ReferencePlane;
-            string m = angle.Name;
-            m = link.Name;
-            IFeature feature = null;
-            foreach (IFeature ft in link.PossibleFeatures)
+            //存检测角度的两个平面，红面
+            IPlane_ProbedItem plane1 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+            IPlane_ProbedItem plane2 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;          
+            IMeas_Angle2LinesItem angle = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Meas_Angle2Lines_) as IMeas_Angle2LinesItem;     
+            foreach (IFeature feature in angle.ReferencePlane.PossibleFeatures)
             {
-                if (ft.Name == plane1.Name)
+                if (feature.Name == plane1.Name)
                 {
-                    feature = ft;
+                    angle.ReferencePlane.Feature = feature;
                     break;
                 }
             }
-            link.Feature = feature;
-
-            geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_);
-            geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_);
-            IMeas_Distance2PlanesItem distance = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_SimplMeas_Distance2Planes_) as IMeas_Distance2PlanesItem;
-            
-            ISurfaceGroup inspect1 = doc.SequenceItems[4] as ISurfaceGroup;
-            IBagOfPoints points = inspect1.BagOfPoints[doc.get_ActiveMeasure()];
-            int count = points.Count;
-            int[] indices = new int[32];
-            int[] f = points.FittingIndices as int[];
-            for (int i = 0; i < 32; i++)
+            foreach (IFeature feature in angle.ReferenceLine1.PossibleFeatures)
             {
-                indices[i] = 1;
+                if (feature.Name == plane2.Name)
+                {
+                    angle.ReferenceLine1.Feature = feature;
+                    break;
+                }
             }
-            indices[1] = 2;
-            points.CopyToClipboard(indices);
-            string name = plane1.Name;
-            PowerINSPECTAutomation.IPlane_ProbedItem plane = plane1 as IPlane_ProbedItem;
-            plane.BagOfPoints[doc.get_ActiveMeasure()].PasteFromClipboard();
+            foreach (IFeature feature in angle.ReferenceLine2.PossibleFeatures)
+            {
+                if (feature.Name == "测量设备原点::平面 X(YOZ)")
+                {
+                    angle.ReferenceLine2.Feature = feature;
+                    break;
+                }
+            }
 
+            //存检测距离的两个平面，蓝面
+            IPlane_ProbedItem plane3 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+            IPlane_ProbedItem plane4 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+            IMeas_Distance2PlanesItem distance = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_SimplMeas_Distance2Planes_) as IMeas_Distance2PlanesItem;
+            foreach (IFeature feature in distance.ReferencePlane1.PossibleFeatures)
+            {
+                if (feature.Name == plane3.Name)
+                {
+                    distance.ReferencePlane1.Feature = feature;
+                    break;
+                }
+            }
+            foreach (IFeature feature in distance.ReferencePlane1.PossibleFeatures)
+            {
+                if (feature.Name == plane4.Name)
+                {
+                    distance.ReferencePlane2.Feature = feature;
+                    break;
+                }
+            }
 
+            //存绿面
+            ISurfaceGroup inspect2 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_SurfPointsCNC) as ISurfaceGroup;
 
+            ISurfaceGroup inspect1 = doc.SequenceItems[4] as ISurfaceGroup;//导入Total NC的初始检测组
+            IBagOfPoints points = inspect1.BagOfPoints[measure];
 
-            ISurfaceGroup inspect2 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_EdgePointsCNC) as ISurfaceGroup;
-            name = inspect2.Name;
-            inspect2.BagOfPoints[doc.get_ActiveMeasure()].PasteFromClipboard();
+            int index = 1;
+            foreach (PMToolpath toolpath in program.Toolpaths)
+            {
+                int n = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Statistics.PlungesIntoStock\"").ToString());//点数
+                int a = n / 2;//前面一半
+                int b = n - a;//后面一半
+                int[] indices;
 
+                if (toolpath.Name.StartsWith("Red"))//角度
+                {
+                    indices = new int[points.Count];
+                    for (int i = 0; i < points.Count; i++)
+                    {
+                        if (i < a)
+                        {
+                            indices[i] = index + i;
+                        }
+                        else
+                        {
+                            indices[i] = index;
+                        }
+                    }
+                    index += a;
+                    points.CopyToClipboard(indices);
+                    plane1.BagOfPoints[measure].PasteFromClipboard();
+
+                    indices = new int[points.Count];
+                    for (int i = 0; i < points.Count; i++)
+                    {
+                        if (i < b)
+                        {
+                            indices[i] = index + i;
+                        }
+                        else
+                        {
+                            indices[i] = index;
+                        }
+                    }
+                    index += b;
+                    points.CopyToClipboard(indices);
+                    plane2.BagOfPoints[measure].PasteFromClipboard();
+                }
+                else if (toolpath.Name.StartsWith("Blue"))//距离
+                {
+                    indices = new int[points.Count];
+                    for (int i = 0; i < points.Count; i++)
+                    {
+                        if (i < a)
+                        {
+                            indices[i] = index + i;
+                        }
+                        else
+                        {
+                            indices[i] = index;
+                        }
+                    }
+                    index += a;
+                    points.CopyToClipboard(indices);
+                    plane3.BagOfPoints[measure].PasteFromClipboard();
+
+                    indices = new int[points.Count];
+                    for (int i = 0; i < points.Count; i++)
+                    {
+                        if (i < b)
+                        {
+                            indices[i] = index + i;
+                        }
+                        else
+                        {
+                            indices[i] = index;
+                        }
+                    }
+                    index += b;
+                    points.CopyToClipboard(indices);
+                    plane4.BagOfPoints[measure].PasteFromClipboard();
+                }
+                else if (toolpath.Name.StartsWith("Green"))
+                {
+                    indices = new int[points.Count];
+                    for (int i = 0; i < points.Count; i++)
+                    {
+                        if (i < n)
+                        {
+                            indices[i] = index + i;
+                        }
+                        else
+                        {
+                            indices[i] = index;
+                        }
+                    }
+                    index += n;
+                    points.CopyToClipboard(indices);
+                    inspect2.BagOfPoints[measure].PasteFromClipboard();
+                }
+            }
+
+            MessageBox.Show("检测完成。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
             Application.Current.MainWindow.WindowState = WindowState.Normal;
         }
     }
