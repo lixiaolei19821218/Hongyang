@@ -68,16 +68,16 @@
             <Label Margin="0" VerticalContentAlignment="Center">点数</Label>
             <TextBox Margin="0" Name="tbxPoints" Width="50" Height="25" HorizontalAlignment="Left" Text="16"></TextBox>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Margin="0">
-                <Label Margin="5">测量方法</Label>
-                <ComboBox Name="cbxMethod" Width="80" SelectionChanged="CbxMethod_SelectionChanged" SelectedIndex="0">
+                <CheckBox Margin="10" Name="chxSelectMethod">手工选取测量方法</CheckBox>
+                <ComboBox Name="cbxMethod" Width="80" SelectionChanged="CbxMethod_SelectionChanged" SelectedIndex="0" IsEnabled="{Binding ElementName=chxSelectMethod, Path=IsChecked}">
                     <ComboBoxItem Content="Swarf" Tag="S" />
                     <ComboBoxItem Content="Pattern" Tag="P"/>
                     <ComboBoxItem Content="弧度" Tag="C"/>
                     <ComboBoxItem Content="Z值" Tag="Z"/>
                 </ComboBox>                
             </StackPanel>
-        </DockPanel>        
-        <GroupBox Margin="5" Grid.Row="4" Grid.ColumnSpan="2" Header="检测层">
+        </DockPanel>
+        <GroupBox Margin="5" Grid.Row="4" Grid.ColumnSpan="2" Header="检测层"  IsEnabled="{Binding ElementName=chxSelectMethod, Path=IsChecked}">
             <DockPanel Grid.Row="3" Grid.Column="1">
                 <GroupBox Header="所有层">
                     <ListBox Name="lstAllLevel" Width="130" Height="120" DisplayMemberPath="Name" Drop="listboxLevel_Drop" AllowDrop="True" SelectionMode="Extended"></ListBox>

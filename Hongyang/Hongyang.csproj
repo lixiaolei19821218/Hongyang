@@ -252,15 +252,6 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
-    <COMReference Include="PowerINSPECT">
-      <Guid>{AE1AD1B4-74BB-4AF4-811B-81C1FBA99848}</Guid>
-      <VersionMajor>2</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
     <COMReference Include="PowerINSPECTAutomation">
       <Guid>{1609CF60-4A50-11D2-8410-C0FD0D000000}</Guid>
       <VersionMajor>2</VersionMajor>

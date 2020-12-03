@@ -37,38 +37,7 @@ namespace Hongyang
             CreateTool();
             cbxTool.ItemsSource = session.Tools.Select(t => t.Name);
 
-            //识别层 
             powerMILL.DialogsOff();
-            powerMILL.Execute("CREATE LEVEL Red");
-            powerMILL.Execute("CREATE LEVEL Blue");
-            powerMILL.Execute("CREATE LEVEL Green");
-
-            foreach (PMModel model in session.Models)
-            {                
-                string output = powerMILL.ExecuteEx($"size model '{model.Name}'").ToString();
-                string[] lines = output.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
-                for (int i = 8; i < lines.Length; i++)
-                {
-                    powerMILL.Execute($"edit model '{model.Name}' deselect all");
-                    string[] items = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                    if (items[3] == "255" && items[4] == "0" && items[5] == "0")
-                    {
-                        powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
-                        powerMILL.Execute($"EDIT LEVEL \"Red\" ACQUIRE SELECTED");
-                    }
-                    if (items[3] == "0" && items[4] == "255" && items[5] == "0")
-                    {
-                        powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
-                        powerMILL.Execute($"EDIT LEVEL \"Green\" ACQUIRE SELECTED");
-                    }
-                    if (items[3] == "0" && items[4] == "0" && items[5] == "255")
-                    {
-                        powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
-                        powerMILL.Execute($"EDIT LEVEL \"Blue\" ACQUIRE SELECTED");
-                    }
-                }
-            }
-
             RefreshToolpaths();
             RefreshLevels();
             LoadPmoptz();
@@ -252,16 +221,30 @@ namespace Hongyang
             }
             else
             {
-                if (lstSelectedLevel.Items.Count == 0)
+                if (chxSelectMethod.IsChecked == true)
                 {
-                    MessageBox.Show("请至少选择一个要计算的层", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
-                    return;
-                }
-                Application.Current.MainWindow.WindowState = WindowState.Minimized;
+                    if (lstSelectedLevel.Items.Count == 0)
+                    {
+                        MessageBox.Show("请至少选择一个要计算的层", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                        return;
+                    }
+                    Application.Current.MainWindow.WindowState = WindowState.Minimized;
 
-                foreach (PMLevelOrSet level in lstSelectedLevel.Items)
+                    foreach (PMLevelOrSet level in lstSelectedLevel.Items)
+                    {
+                        Calculate(level.Name);
+                    }
+                }
+                else
                 {
-                    Calculate(level.Name);
+                    Application.Current.MainWindow.WindowState = WindowState.Minimized;
+                    foreach (PMLevelOrSet level in lstAllLevel.Items)
+                    {
+                        if (level.Name == "Red" || level.Name == "Blue" || level.Name == "Green")
+                        {
+                            Calculate(level.Name);
+                        }
+                    }
                 }
                 //(Application.Current.MainWindow as MainWindow).RefreshToolpaths();
                 MessageBox.Show("计算完成", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
@@ -421,7 +404,31 @@ namespace Hongyang
             powerMILL.DialogsOff();
             session.Refresh();
 
-            string tag = (cbxMethod.SelectedItem as ComboBoxItem).Tag.ToString();
+            string tag;
+            if (chxSelectMethod.IsChecked == true)
+            {
+                tag = (cbxMethod.SelectedItem as ComboBoxItem).Tag.ToString();
+            }
+            else
+            {
+                if (level == "Red")
+                {
+                    tag = "P";
+                }
+                else if (level == "Blue")
+                {
+                    tag = "S";
+                }
+                else if (level == "Green")
+                {
+                    tag = "C";
+                }
+                else
+                {
+                    MessageBox.Show($"自动计算的层必须以Red，Blue或Green命名。当前层：{level}。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                    return;
+                }
+            }
             string tpName = level + "_" + tag;
 
             if (tag == "S")
@@ -1039,11 +1046,12 @@ namespace Hongyang
                 MessageBox.Show("请先保存PowerMILL项目。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
             }
+
             Application.Current.MainWindow.WindowState = WindowState.Minimized;
 
             powerMILL.DialogsOff();
             ActivateWorldPlane();
-            powerMILL.Execute($"DELETE NCPROGRAM ALL");            
+            powerMILL.Execute($"DELETE NCPROGRAM ALL");
             powerMILL.Execute($"CREATE NCPROGRAM 'U0'");
             powerMILL.Execute($"CREATE NCPROGRAM 'U90'");
             powerMILL.Execute($"CREATE NCPROGRAM 'U180'");
@@ -1080,15 +1088,23 @@ namespace Hongyang
             ExportNC("U90", opt);
             ExportNC("U180", opt);
             ExportNC("U270", opt);
-            
+
             powerMILL.Execute($"CREATE NCPROGRAM 'Total'");
             session.Refresh();
-            foreach (PMNCProgram program in session.NCPrograms)
+            foreach (PMNCProgram program in session.NCPrograms.Where(n => n.Name != "Total"))
             {
+                string output = powerMILL.ExecuteEx($"EDIT NCPROGRAM '{program.Name}' LIST").ToString();
+                string[] toolpaths = output.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                for (int i = 2; i < toolpaths.Length - 1; i++)
+                {
+                    powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpaths[i]}\"");
+                }
+                /* 此方法有bug， program.Toolpaths包含的刀路是乱的
                 foreach (PMToolpath toolpath in program.Toolpaths)
                 {
                     powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
                 }
+                */
             }
             opt = AppContext.BaseDirectory + "Pmoptz\\Results_Output_Generator_OMV2015.pmoptz";
             ExportNC("Total", opt);
@@ -1124,12 +1140,45 @@ namespace Hongyang
             if (fileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 powerMILL.Execute($"IMPORT MODEL FILEOPEN '{fileDialog.FileName}'");
+                powerMILL.Execute("CREATE LEVEL Red");
+                powerMILL.Execute("CREATE LEVEL Blue");
+                powerMILL.Execute("CREATE LEVEL Green");
+
+                session.Refresh();
+                //识别层
+                foreach (PMModel model in session.Models)
+                {
+                    string output = powerMILL.ExecuteEx($"size model '{model.Name}'").ToString();
+                    string[] lines = output.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                    for (int i = 8; i < lines.Length; i++)
+                    {
+                        powerMILL.Execute($"edit model '{model.Name}' deselect all");
+                        string[] items = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                        if (items[3] == "255" && items[4] == "0" && items[5] == "0")
+                        {
+                            powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
+                            powerMILL.Execute($"EDIT LEVEL \"Red\" ACQUIRE SELECTED");
+                        }
+                        if (items[3] == "0" && items[4] == "255" && items[5] == "0")
+                        {
+                            powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
+                            powerMILL.Execute($"EDIT LEVEL \"Green\" ACQUIRE SELECTED");
+                        }
+                        if (items[3] == "0" && items[4] == "0" && items[5] == "255")
+                        {
+                            powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
+                            powerMILL.Execute($"EDIT LEVEL \"Blue\" ACQUIRE SELECTED");
+                        }
+                    }
+                }
                 RefreshLevels();
             }
         }
 
         private void CbxMethod_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            //自动计算，下面逻辑不再适用。因为这些数据可能要同时设置
+            /*
             string tag = (cbxMethod.SelectedItem as ComboBoxItem).Tag.ToString();
             if (tag == "S" || tag == "P")
             {
@@ -1142,7 +1191,7 @@ namespace Hongyang
                 tbxStepdown.IsEnabled = false;
                 tbxDepth.IsEnabled = false;
                 tbxPoints.IsEnabled = true;
-            }
+            }*/
         }
 
         private void BtnTransform_Click(object sender, RoutedEventArgs e)
@@ -1226,68 +1275,15 @@ namespace Hongyang
 
             IApplication application = new PIApplication() as IApplication;
             IPIDocument doc = application.ActiveDocument;
-            IMeasure measure = doc.get_ActiveMeasure();
-
-            ISequenceGroup geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
-            //存检测角度的两个平面，红面
-            IPlane_ProbedItem plane1 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
-            IPlane_ProbedItem plane2 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;          
-            IMeas_Angle2LinesItem angle = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Meas_Angle2Lines_) as IMeas_Angle2LinesItem;     
-            foreach (IFeature feature in angle.ReferencePlane.PossibleFeatures)
-            {
-                if (feature.Name == plane1.Name)
-                {
-                    angle.ReferencePlane.Feature = feature;
-                    break;
-                }
-            }
-            foreach (IFeature feature in angle.ReferenceLine1.PossibleFeatures)
-            {
-                if (feature.Name == plane2.Name)
-                {
-                    angle.ReferenceLine1.Feature = feature;
-                    break;
-                }
-            }
-            foreach (IFeature feature in angle.ReferenceLine2.PossibleFeatures)
-            {
-                if (feature.Name == "测量设备原点::平面 X(YOZ)")
-                {
-                    angle.ReferenceLine2.Feature = feature;
-                    break;
-                }
-            }
-
-            //存检测距离的两个平面，蓝面
-            IPlane_ProbedItem plane3 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
-            IPlane_ProbedItem plane4 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
-            IMeas_Distance2PlanesItem distance = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_SimplMeas_Distance2Planes_) as IMeas_Distance2PlanesItem;
-            foreach (IFeature feature in distance.ReferencePlane1.PossibleFeatures)
-            {
-                if (feature.Name == plane3.Name)
-                {
-                    distance.ReferencePlane1.Feature = feature;
-                    break;
-                }
-            }
-            foreach (IFeature feature in distance.ReferencePlane1.PossibleFeatures)
-            {
-                if (feature.Name == plane4.Name)
-                {
-                    distance.ReferencePlane2.Feature = feature;
-                    break;
-                }
-            }
-
-            //存绿面
-            ISurfaceGroup inspect2 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_SurfPointsCNC) as ISurfaceGroup;
+            IMeasure measure = doc.get_ActiveMeasure();            
 
             ISurfaceGroup inspect1 = doc.SequenceItems[4] as ISurfaceGroup;//导入Total NC的初始检测组
             IBagOfPoints points = inspect1.BagOfPoints[measure];
 
+            ISequenceGroup geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
             int index = 1;
             foreach (PMToolpath toolpath in program.Toolpaths)
-            {
+            {                 
                 int n = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Statistics.PlungesIntoStock\"").ToString());//点数
                 int a = n / 2;//前面一半
                 int b = n - a;//后面一半
@@ -1295,6 +1291,35 @@ namespace Hongyang
 
                 if (toolpath.Name.StartsWith("Red"))//角度
                 {
+                    //存检测角度的两个平面，红面
+                    IPlane_ProbedItem plane1 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                    IPlane_ProbedItem plane2 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                    IMeas_Angle2LinesItem angle = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Meas_Angle2Lines_) as IMeas_Angle2LinesItem;
+                    foreach (IFeature feature in angle.ReferencePlane.PossibleFeatures)
+                    {
+                        if (feature.Name == plane1.Name)
+                        {
+                            angle.ReferencePlane.Feature = feature;
+                            break;
+                        }
+                    }
+                    foreach (IFeature feature in angle.ReferenceLine1.PossibleFeatures)
+                    {
+                        if (feature.Name == plane2.Name)
+                        {
+                            angle.ReferenceLine1.Feature = feature;
+                            break;
+                        }
+                    }
+                    foreach (IFeature feature in angle.ReferenceLine2.PossibleFeatures)
+                    {
+                        if (feature.Name == "测量设备原点::平面 X(YOZ)")
+                        {
+                            angle.ReferenceLine2.Feature = feature;
+                            break;
+                        }
+                    }
+
                     indices = new int[points.Count];
                     for (int i = 0; i < points.Count; i++)
                     {
@@ -1329,6 +1354,27 @@ namespace Hongyang
                 }
                 else if (toolpath.Name.StartsWith("Blue"))//距离
                 {
+                    //存检测距离的两个平面，蓝面
+                    IPlane_ProbedItem plane3 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                    IPlane_ProbedItem plane4 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                    IMeas_Distance2PlanesItem distance = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_SimplMeas_Distance2Planes_) as IMeas_Distance2PlanesItem;
+                    foreach (IFeature feature in distance.ReferencePlane1.PossibleFeatures)
+                    {
+                        if (feature.Name == plane3.Name)
+                        {
+                            distance.ReferencePlane1.Feature = feature;
+                            break;
+                        }
+                    }
+                    foreach (IFeature feature in distance.ReferencePlane1.PossibleFeatures)
+                    {
+                        if (feature.Name == plane4.Name)
+                        {
+                            distance.ReferencePlane2.Feature = feature;
+                            break;
+                        }
+                    }
+
                     indices = new int[points.Count];
                     for (int i = 0; i < points.Count; i++)
                     {
@@ -1363,6 +1409,9 @@ namespace Hongyang
                 }
                 else if (toolpath.Name.StartsWith("Green"))
                 {
+                    //存绿面
+                    ISurfaceGroup inspect2 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_SurfPointsCNC) as ISurfaceGroup;
+
                     indices = new int[points.Count];
                     for (int i = 0; i < points.Count; i++)
                     {
