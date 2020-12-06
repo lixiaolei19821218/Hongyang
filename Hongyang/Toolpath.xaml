@@ -5,7 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Hongyang"
       mc:Ignorable="d" 
-      d:DesignHeight="730" d:DesignWidth="800"
+      d:DesignHeight="770" d:DesignWidth="800"
       Title="Tool">
 
     <Grid>
@@ -116,7 +116,7 @@
             </GroupBox.Header>
             <StackPanel Orientation="Horizontal">
                 <GroupBox Header="所有刀路">
-                    <ListBox Width="150" Height="150" Name="lstToolpath" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop" SelectionMode="Extended"></ListBox>
+                    <ListBox Width="150" Height="190" Name="lstToolpath" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop" SelectionMode="Extended"></ListBox>
                 </GroupBox>
                 <StackPanel VerticalAlignment="Center" IsEnabled="{Binding ElementName=chxMannul, Path=IsChecked}">
                     <Button Name="btnToRightAll" Click="BtnTo_Click">&gt;&gt;</Button>
@@ -125,7 +125,7 @@
                     <Button Name="btnToLeftAll" Click="BtnTo_Click">&lt;&lt;</Button>
                 </StackPanel>
                 <GroupBox Header="已选刀路" IsEnabled="{Binding ElementName=chxMannul, Path=IsChecked}">
-                    <ListBox Width="150" Height="150" Name="lstSelected" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop"></ListBox>
+                    <ListBox Width="150" Height="190" Name="lstSelected" DisplayMemberPath="Name" AllowDrop="True" Drop="listbox_Drop"></ListBox>
                 </GroupBox>
                 <StackPanel>
                     <GroupBox Header="复制">
@@ -143,6 +143,10 @@
                             <DockPanel>
                                 <Image Source="Icon\keep.gif" Width="25"/>
                                 <Button Margin="5" VerticalAlignment="Bottom" Height="26" Name="btnGenerateNC" Click="BtnGenerateNC_Click">输出</Button>
+                            </DockPanel>
+                            <DockPanel>
+                                <Image Source="Icon\total.jpg" Width="25"/>
+                                <Button Margin="5" VerticalAlignment="Bottom" Height="26" Name="btnMergeTotal" Click="BtnMergeTotal_Click">整合Total Tap</Button>
                             </DockPanel>
                         </StackPanel>
                     </GroupBox>

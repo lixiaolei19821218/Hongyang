@@ -96,3 +96,5 @@ C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Hongyang.csproj.Co
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Hongyang.exe
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Hongyang.pdb
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Hongyang.csprojAssemblyReference.cache
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Config.g.cs
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Config.baml

@@ -8,6 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("icon/feature-chamfer-milling.ico")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("icon/total.jpg")]
 
 

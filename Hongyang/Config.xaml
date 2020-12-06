@@ -1,0 +1,32 @@
+﻿<Page x:Class="Hongyang.Config"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Hongyang"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="Config">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Label VerticalContentAlignment="Center">项目保存路径</Label>
+        <TextBox Grid.Column="1" Height="30" Text="{Binding ElementName=imgProject, Path=Tag}"></TextBox>
+        <Image Grid.Column="2" Name="imgProject" Source="icon/folder.png" Width="30" Height="30" Margin="10" HorizontalAlignment="Right" MouseLeftButtonUp="ImgProject_MouseLeftButtonUp"/>
+        <Label VerticalContentAlignment="Center" Grid.Row="1">NC程序保存路径</Label>
+        <TextBox Grid.Row="1" Grid.Column="1" Height="30" Text="{Binding ElementName=imgNC, Path=Tag}"></TextBox>
+        <Image Grid.Row="1" Grid.Column="2" Name="imgNC" Source="icon/folder.png" Width="30" Height="30" Margin="10" HorizontalAlignment="Right" MouseLeftButtonUp="ImgNC_MouseLeftButtonUp"/>
+        <Label VerticalContentAlignment="Center" Grid.Row="2">机床文件放置路径</Label>
+        <TextBox Grid.Row="2" Grid.Column="1" Height="30" Text="{Binding ElementName=imgMachine, Path=Tag}"></TextBox>
+        <Image Grid.Row="2" Grid.Column="2" Name="imgMachine" Source="icon/folder.png" Width="30" Height="30" Margin="10" HorizontalAlignment="Right" MouseLeftButtonUp="ImgMachine_MouseLeftButtonUp"/>
+    </Grid>
+</Page>

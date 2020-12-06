@@ -21,15 +21,15 @@ namespace Hongyang
     /// </summary>
     public partial class EPoint : Page
     {
-        private PMAutomation powerMILL;
-        private PMProject session;
+        public PMAutomation PowerMILL;
+        public PMProject Session;
 
         public EPoint()
         {
             InitializeComponent();
 
-            powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
-            session = powerMILL.ActiveProject;
+            PowerMILL = (Application.Current.MainWindow as MainWindow).PowerMILL;
+            Session = (Application.Current.MainWindow as MainWindow).Session;
 
             //Refresh();
         }
@@ -38,42 +38,42 @@ namespace Hongyang
         {
             if (imgLock.Source.ToString().Contains("unlock"))
             {
-                powerMILL.Execute("EDIT TOOLPATH END MODE AUTOMATIC");
-                powerMILL.Execute($"EDIT TOOLPATH END {cbxType.Tag} {(cbxType.SelectedItem as ComboBoxItem).Tag}");
+                PowerMILL.Execute("EDIT TOOLPATH END MODE AUTOMATIC");
+                PowerMILL.Execute($"EDIT TOOLPATH END {cbxType.Tag} {(cbxType.SelectedItem as ComboBoxItem).Tag}");
                 if ((cbxType.SelectedItem as ComboBoxItem).Tag.ToString() == "ABSOLUTE")
                 {
                     if (chxMove.IsChecked ?? false)
                     {
-                        powerMILL.Execute("EDIT TOOLPATH END DIRECT_MOVE Y");
+                        PowerMILL.Execute("EDIT TOOLPATH END DIRECT_MOVE Y");
                     }
                     else
                     {
-                        powerMILL.Execute("EDIT TOOLPATH END DIRECT_MOVE N");
+                        PowerMILL.Execute("EDIT TOOLPATH END DIRECT_MOVE N");
                     }
-                    powerMILL.Execute($"EDIT TOOLPATH END {tbxX.Tag} \"{tbxX.Text}\"");
-                    powerMILL.Execute($"EDIT TOOLPATH END {tbxY.Tag} \"{tbxY.Text}\"");
-                    powerMILL.Execute($"EDIT TOOLPATH END {tbxZ.Tag} \"{tbxZ.Text}\"");
+                    PowerMILL.Execute($"EDIT TOOLPATH END {tbxX.Tag} \"{tbxX.Text}\"");
+                    PowerMILL.Execute($"EDIT TOOLPATH END {tbxY.Tag} \"{tbxY.Text}\"");
+                    PowerMILL.Execute($"EDIT TOOLPATH END {tbxZ.Tag} \"{tbxZ.Text}\"");
                 }
                 if (chxSeparate.IsChecked ?? false)
                 {
-                    powerMILL.Execute("EDIT TOOLPATH END SEPARATE Y");
-                    powerMILL.Execute($"EDIT TOOLPATH END {cbxDir.Tag} {(cbxDir.SelectedItem as ComboBoxItem).Tag}");
-                    powerMILL.Execute($"EDIT TOOLPATH END {tbxDir.Tag} \"{tbxDir.Text}\"");
+                    PowerMILL.Execute("EDIT TOOLPATH END SEPARATE Y");
+                    PowerMILL.Execute($"EDIT TOOLPATH END {cbxDir.Tag} {(cbxDir.SelectedItem as ComboBoxItem).Tag}");
+                    PowerMILL.Execute($"EDIT TOOLPATH END {tbxDir.Tag} \"{tbxDir.Text}\"");
                 }
                 else
                 {
-                    powerMILL.Execute("EDIT TOOLPATH END SEPARATE N");
+                    PowerMILL.Execute("EDIT TOOLPATH END SEPARATE N");
                 }
             }
             else
             {
-                powerMILL.Execute("EDIT TOOLPATH END MODE FIXED");
+                PowerMILL.Execute("EDIT TOOLPATH END MODE FIXED");
             }           
         }
 
         public void Refresh()
         {            
-            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.mode\"").ToString() == "fixed")
+            if (PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.mode\"").ToString() == "fixed")
             {
                 imgLock.Source = new BitmapImage(new Uri(@"Icon\lock.gif", UriKind.Relative));
                 skpMain1.IsEnabled = false;
@@ -86,7 +86,7 @@ namespace Hongyang
                 skpMain2.IsEnabled = true;
             }
 
-            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.directMove\"").ToString() == "1")
+            if (PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.directMove\"").ToString() == "1")
             {
                 chxMove.IsChecked = true;
             }
@@ -95,11 +95,11 @@ namespace Hongyang
                 chxMove.IsChecked = false;
             }
 
-            tbxX.Text = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.position[0]\"").ToString();
-            tbxY.Text = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.position[1]\"").ToString();
-            tbxZ.Text = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.position[2]\"").ToString();
+            tbxX.Text = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.position[0]\"").ToString();
+            tbxY.Text = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.position[1]\"").ToString();
+            tbxZ.Text = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.position[2]\"").ToString();
 
-            string type = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.type\"").ToString();
+            string type = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.type\"").ToString();
             switch (type)
             {
                 case "block_centre":
@@ -116,7 +116,7 @@ namespace Hongyang
                     break;
             }
 
-            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.SeparateFinalRetract\"").ToString() == "1")
+            if (PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.SeparateFinalRetract\"").ToString() == "1")
             {
                 chxSeparate.IsChecked = true;
             }
@@ -125,7 +125,7 @@ namespace Hongyang
                 chxSeparate.IsChecked = false;
             }
 
-            string direction = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.movedirection\"").ToString();
+            string direction = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.movedirection\"").ToString();
             switch (direction)
             {
                 case "tool_axis":
@@ -136,16 +136,16 @@ namespace Hongyang
                     break;               
             }            
 
-            tbxDir.Text = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.Distance\"").ToString();
+            tbxDir.Text = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').endpoint.Distance\"").ToString();
         }
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (powerMILL != null)
+            if (PowerMILL != null)
             {
                 ComboBox comboBox = sender as ComboBox;
                 ComboBoxItem comboBoxItem = comboBox.SelectedItem as ComboBoxItem;
-                powerMILL.Execute($"EDIT TOOLPATH END {comboBox.Tag} {comboBoxItem.Tag}");
+                PowerMILL.Execute($"EDIT TOOLPATH END {comboBox.Tag} {comboBoxItem.Tag}");
 
                 if (comboBox.Tag.ToString() == "TYPE")
                 {
@@ -165,20 +165,20 @@ namespace Hongyang
 
         private void ChxSeparate_Click(object sender, RoutedEventArgs e)
         {
-            if (powerMILL != null)
+            if (PowerMILL != null)
             {
                 CheckBox checkBox = sender as CheckBox;
                 string v = checkBox.IsChecked ?? false ? "Y" : "N";
-                powerMILL.Execute($"EDIT TOOLPATH END {checkBox.Tag} {v}");
+                PowerMILL.Execute($"EDIT TOOLPATH END {checkBox.Tag} {v}");
             }
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (powerMILL != null)
+            if (PowerMILL != null)
             {
                 TextBox textBox = sender as TextBox;
-                powerMILL.Execute($"EDIT TOOLPATH END {textBox.Tag} \"{textBox.Text}\"");
+                PowerMILL.Execute($"EDIT TOOLPATH END {textBox.Tag} \"{textBox.Text}\"");
             }
         }
 
@@ -190,14 +190,14 @@ namespace Hongyang
                 image.Source = new BitmapImage(new Uri(@"Icon\lock.gif", UriKind.Relative));
                 skpMain1.IsEnabled = false;
                 skpMain2.IsEnabled = false;
-                powerMILL.Execute($"EDIT TOOLPATH END MODE FIXED");
+                PowerMILL.Execute($"EDIT TOOLPATH END MODE FIXED");
             }
             else
             {
                 image.Source = new BitmapImage(new Uri(@"Icon\unlock.gif", UriKind.Relative));
                 skpMain1.IsEnabled = true;
                 skpMain2.IsEnabled = true;
-                powerMILL.Execute($"EDIT TOOLPATH END MODE AUTOMATIC");
+                PowerMILL.Execute($"EDIT TOOLPATH END MODE AUTOMATIC");
             }
         }
     }

@@ -39,6 +39,7 @@ namespace Hongyang
         public LinkFilter LinkFilter;
         public SPoint SPoint;
         public EPoint EPoint;
+        public Config Config;
 
         public ObservableCollection<string> Toolpaths = new ObservableCollection<string>();
 
@@ -48,11 +49,11 @@ namespace Hongyang
 
             PowerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
             Session = PowerMILL.ActiveProject;
-            cbxToolpaths.ItemsSource = Toolpaths;
+            //cbxToolpaths.ItemsSource = Toolpaths;
 
             InitPages();
 
-            RefreshToolpaths();
+            //RefreshToolpaths();
             InitTreeView();
             frame.Navigate(Toolpath);
         }
@@ -68,6 +69,7 @@ namespace Hongyang
             LinkFilter = new LinkFilter();
             SPoint = new SPoint();
             EPoint = new EPoint();
+            Config = new Config();
         }
 
         public void RefreshToolpaths()
@@ -90,7 +92,7 @@ namespace Hongyang
 
             treeItem = new TreeItem() { Icon = @"\Icon\Toolpath.ico", Name = "曲面检测" };
             treeItems.Add(treeItem);
-
+            /*
             treeItem = new TreeItem() { Icon = @"\Icon\Bore-Finishing.ico", Name = "加工轴控制" };
             treeItems.Add(treeItem);
 
@@ -107,6 +109,9 @@ namespace Hongyang
             treeItems.Add(treeItem);
 
             treeItem = new TreeItem() { Icon = @"\Icon\Cooling.ico", Name = "结束点" };           
+            treeItems.Add(treeItem);
+            */
+            treeItem = new TreeItem() { Icon = @"\Icon\Config.jpg", Name = "配置" };
             treeItems.Add(treeItem);
 
             treeView.ItemsSource = treeItems;
@@ -143,6 +148,9 @@ namespace Hongyang
                     break;
                 case "结束点":
                     frame.Navigate(EPoint);
+                    break;
+                case "配置":
+                    frame.Navigate(Config);
                     break;
                 default:
                     break;

@@ -21,15 +21,15 @@ namespace Hongyang
     /// </summary>
     public partial class LinkFilter : Page
     {
-        private PMAutomation powerMILL;
-        private PMProject session;
+        private PMAutomation PowerMILL;
+        private PMProject Session;
 
         public LinkFilter()
         {
             InitializeComponent();
 
-            powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
-            session = powerMILL.ActiveProject;
+            PowerMILL = (Application.Current.MainWindow as MainWindow).PowerMILL;
+            Session = (Application.Current.MainWindow as MainWindow).Session;
 
             //Refresh();
         }
@@ -38,53 +38,53 @@ namespace Hongyang
         {
             if (chxUseSetting.IsChecked ?? false)
             {
-                powerMILL.Execute("EDIT PAR 'Connections.PointDistribution.UseToolpathSettings' 1");
+                PowerMILL.Execute("EDIT PAR 'Connections.PointDistribution.UseToolpathSettings' 1");
             }
             else
             {
-                powerMILL.Execute("EDIT PAR 'Connections.PointDistribution.UseToolpathSettings' 0");
+                PowerMILL.Execute("EDIT PAR 'Connections.PointDistribution.UseToolpathSettings' 0");
             }
             if (chxDist.IsChecked ?? false)
             {
-                powerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.Active' 1");
-                powerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.Rapid.Filter.Type' '{(cbxType.SelectedItem as ComboBoxItem).Tag}'");
-                powerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.Rapid.Filter.Factor' \"{tbxFactor.Text}\"");
+                PowerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.Active' 1");
+                PowerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.Rapid.Filter.Type' '{(cbxType.SelectedItem as ComboBoxItem).Tag}'");
+                PowerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.Rapid.Filter.Factor' \"{tbxFactor.Text}\"");
                 if (chxDistance.IsChecked ?? false)
                 {
-                    powerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.MaxDistanceBetweenPoints.Active' 1");
-                    powerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.Rapid.MaxDistanceBetweenPoints.Value' \"{tbxDistance.Text}\"");
+                    PowerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.MaxDistanceBetweenPoints.Active' 1");
+                    PowerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.Rapid.MaxDistanceBetweenPoints.Value' \"{tbxDistance.Text}\"");
                 }
                 else
                 {
-                    powerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.MaxDistanceBetweenPoints.Active' 0");
+                    PowerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.MaxDistanceBetweenPoints.Active' 0");
                 }
                 if (chxAngle.IsChecked ?? false)
                 {
-                    powerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.MaxAngleBetweenPoints.Active' 1");
-                    powerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.Rapid.MaxAngleBetweenPoints.Value' \"{tbxAngle.Text}\"");
+                    PowerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.MaxAngleBetweenPoints.Active' 1");
+                    PowerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.Rapid.MaxAngleBetweenPoints.Value' \"{tbxAngle.Text}\"");
                 }
                 else
                 {
-                    powerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.MaxAngleBetweenPoints.Active' 0");
+                    PowerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.MaxAngleBetweenPoints.Active' 0");
                 }
             }
             else
             {
-                powerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.Active' 0");
+                PowerMILL.Execute("EDIT PAR 'Connections.PointDistribution.Rapid.Active' 0");
             }
             if (chxGouge.IsChecked ?? false)
             {
-                powerMILL.Execute("EDIT TOOLPATH LEADS GOUGECHECK Y");
+                PowerMILL.Execute("EDIT TOOLPATH LEADS GOUGECHECK Y");
             }
             else
             {
-                powerMILL.Execute("EDIT TOOLPATH LEADS GOUGECHECK N");
+                PowerMILL.Execute("EDIT TOOLPATH LEADS GOUGECHECK N");
             }
         }
 
         public void Refresh()
         {
-            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.UseToolpathSettings\"").ToString() == "1")
+            if (PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.UseToolpathSettings\"").ToString() == "1")
             {
                 chxUseSetting.IsChecked = true;
             }
@@ -93,7 +93,7 @@ namespace Hongyang
                 chxUseSetting.IsChecked = false;
             }
 
-            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.active\"").ToString() == "1")
+            if (PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.active\"").ToString() == "1")
             {
                 chxDist.IsChecked = true;
             }
@@ -102,7 +102,7 @@ namespace Hongyang
                 chxDist.IsChecked = false;
             }
 
-            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.MaxAngleBetweenPoints.active\"").ToString() == "1")
+            if (PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.MaxAngleBetweenPoints.active\"").ToString() == "1")
             {
                 chxAngle.IsChecked = true;
             }
@@ -110,10 +110,10 @@ namespace Hongyang
             {
                 chxAngle.IsChecked = false;
             }
-            tbxAngle.Text = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.MaxAngleBetweenPoints.Value\"").ToString();
+            tbxAngle.Text = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.MaxAngleBetweenPoints.Value\"").ToString();
 
-            tbxFactor.Text = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.Filter.Factor\"").ToString();
-            string type = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.Filter.type\"").ToString();
+            tbxFactor.Text = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.Filter.Factor\"").ToString();
+            string type = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.Filter.type\"").ToString();
             for (int i = 0; i < cbxType.Items.Count; i++)
             {
                 ComboBoxItem item = cbxType.Items[i] as ComboBoxItem;
@@ -124,8 +124,8 @@ namespace Hongyang
                 }
             }
 
-            tbxDistance.Text = powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.MaxDistanceBetweenPoints.value\"").ToString();
-            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.MaxDistanceBetweenPoints.active\"").ToString() == "1")
+            tbxDistance.Text = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.MaxDistanceBetweenPoints.value\"").ToString();
+            if (PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.PointDistribution.rapid.MaxDistanceBetweenPoints.active\"").ToString() == "1")
             {
                 chxDistance.IsChecked = true;
             }
@@ -134,7 +134,7 @@ namespace Hongyang
                 chxDistance.IsChecked = false;
             }
 
-            if (powerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.gougecheck\"").ToString() == "1")
+            if (PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.gougecheck\"").ToString() == "1")
             {
                 chxGouge.IsChecked = true;
             }
@@ -150,23 +150,23 @@ namespace Hongyang
             if (checkBox.Tag.ToString() == "GOUGECHECK")
             {
                 string v = checkBox.IsChecked ?? false ? "Y" : "N";
-                powerMILL.Execute($"EDIT TOOLPATH LEADS GOUGECHECK {v}");
+                PowerMILL.Execute($"EDIT TOOLPATH LEADS GOUGECHECK {v}");
             }
             else
             {
                 string v = checkBox.IsChecked ?? false ? "1" : "0";
-                powerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.{checkBox.Tag}' {v}");
+                PowerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.{checkBox.Tag}' {v}");
             }
         }
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {            
-            if (powerMILL != null)
+            if (PowerMILL != null)
             {
                 ComboBox comboBox = sender as ComboBox;
                 string tag = (comboBox.SelectedItem as ComboBoxItem).Tag.ToString();
 
-                powerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.Rapid.Filter.Type' '{tag}'");
+                PowerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.Rapid.Filter.Type' '{tag}'");
 
                 switch (tag)
                 {
@@ -189,10 +189,10 @@ namespace Hongyang
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (powerMILL != null)
+            if (PowerMILL != null)
             {
                 TextBox textBox = sender as TextBox;
-                powerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.Rapid.{textBox.Tag}' \"{textBox.Text}\"");
+                PowerMILL.Execute($"EDIT PAR 'Connections.PointDistribution.Rapid.{textBox.Tag}' \"{textBox.Text}\"");
             }
         }
     }

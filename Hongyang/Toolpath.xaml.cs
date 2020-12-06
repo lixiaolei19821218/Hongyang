@@ -3,6 +3,7 @@ using Autodesk.ProductInterface.PowerMILL;
 using PowerINSPECTAutomation;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -31,16 +32,8 @@ namespace Hongyang
         {
             InitializeComponent();
 
-            powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
-            session = powerMILL.ActiveProject;
-
-            CreateTool();
-            cbxTool.ItemsSource = session.Tools.Select(t => t.Name);
-
-            powerMILL.DialogsOff();
-            RefreshToolpaths();
-            RefreshLevels();
-            LoadPmoptz();
+            powerMILL = (Application.Current.MainWindow as MainWindow).PowerMILL;
+            session = (Application.Current.MainWindow as MainWindow).Session;
 
             Style itemContainerStyle = new Style(typeof(ListBoxItem));
             itemContainerStyle.Setters.Add(new Setter(ListBoxItem.AllowDropProperty, true));
@@ -155,6 +148,12 @@ namespace Hongyang
         }
         private void BtnCalculate_Click(object sender, RoutedEventArgs e)
         {
+            if (powerMILL == null)
+            {
+                MessageBox.Show("未连接PowerMILl，请导入模型开始。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+
             if (chxAdjust.IsChecked ?? false)
             {
                 if (lstSelectedLevel.SelectedItem == null)
@@ -1041,14 +1040,15 @@ namespace Hongyang
 
         private void BtnGenerateNC_Click(object sender, RoutedEventArgs e)
         {
-            if (session.Directory == null)
+            if (powerMILL == null)
             {
-                MessageBox.Show("请先保存PowerMILL项目。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                MessageBox.Show("未连接PowerMILl，请导入模型开始。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
-            }
+            }            
 
             Application.Current.MainWindow.WindowState = WindowState.Minimized;
 
+            powerMILL.Execute("PROJECT SAVE");
             powerMILL.DialogsOff();
             ActivateWorldPlane();
             powerMILL.Execute($"DELETE NCPROGRAM ALL");
@@ -1084,10 +1084,10 @@ namespace Hongyang
             }
 
             string opt = AppContext.BaseDirectory + "Pmoptz\\Fidia_KR199_OMV_V4.pmoptz";
-            ExportNC("U0", opt);
-            ExportNC("U90", opt);
-            ExportNC("U180", opt);
-            ExportNC("U270", opt);
+            ExportNC("U0", opt, "NC");
+            ExportNC("U90", opt, "NC90");
+            ExportNC("U180", opt, "NC180");
+            ExportNC("U270", opt, "NC270");
 
             powerMILL.Execute($"CREATE NCPROGRAM 'Total'");
             session.Refresh();
@@ -1107,72 +1107,127 @@ namespace Hongyang
                 */
             }
             opt = AppContext.BaseDirectory + "Pmoptz\\Results_Output_Generator_OMV2015.pmoptz";
-            ExportNC("Total", opt);
+            ExportNC("Total", opt, "NC");
+            powerMILL.Execute("PROJECT SAVE");
 
             MessageBox.Show("NC程序生成完成。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
             Application.Current.MainWindow.WindowState = WindowState.Normal;
         }
 
-        public void ExportNC(string nc, string opt)
+        public void ExportNC(string nc, string opt, string workplane)
         {
             session.Refresh();
             PMNCProgram program = session.NCPrograms.FirstOrDefault(n => n.Name == nc);
-            if (program != null && program.Toolpaths.Count > 0)
+            if (program != null)
             {
-                powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" QUIT FORM NCTOOLPATH");
-                string path = powerMILL.ExecuteEx($"print par terse \"entity('ncprogram', '{nc}').filename\"").ToString();
-                path = path.Insert(path.IndexOf("{ncprogram}"), nc + "/");
-                powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" FILENAME FILESAVE\r'{path}'");
-                powerMILL.Execute($"EDIT NCPROGRAM '{nc}' SET WORKPLANE \" \"");
-                powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TAPEOPTIONS \"{opt}\" FORM ACCEPT SelectOptionFile");
+                string output = powerMILL.ExecuteEx($"EDIT NCPROGRAM '{program.Name}' LIST").ToString();
+                string[] toolpaths = output.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                if (toolpaths.Length > 3)
+                {
+                    powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" QUIT FORM NCTOOLPATH");
+                    //string path = powerMILL.ExecuteEx($"print par terse \"entity('ncprogram', '{nc}').filename\"").ToString();
+                    //path = path.Insert(path.IndexOf("{ncprogram}"), nc + "/");
+                    string projectName = powerMILL.ExecuteEx("print $project_pathname(1)").ToString().Trim();
+                    string path = ConfigurationManager.AppSettings["ncFolder"] + "\\" + projectName + "\\" + nc;
+                    if (!Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
+                    powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" FILENAME FILESAVE\r'{path}\\{nc}'");
+                    powerMILL.Execute($"EDIT NCPROGRAM '{nc}' SET WORKPLANE \"{workplane}\"");
+                    powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TAPEOPTIONS \"{opt}\" FORM ACCEPT SelectOptionFile");
 
-                powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TOOLCOORDS CENTRE");
-                powerMILL.Execute($"ACTIVATE NCPROGRAM \"{nc}\" KEEP NCPROGRAM ;\rYes\rYes");
+                    powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TOOLCOORDS CENTRE");
+                    powerMILL.Execute($"ACTIVATE NCPROGRAM \"{nc}\" KEEP NCPROGRAM ;\rYes\rYes");
 
-                powerMILL.Execute($"NCTOOLPATH ACCEPT FORM ACCEPT NCTOOLPATHLIST FORM ACCEPT NCTOOLLIST FORM ACCEPT PROBINGNCOPTS");
-                powerMILL.Execute("TEXTINFO ACCEPT");
+                    powerMILL.Execute($"NCTOOLPATH ACCEPT FORM ACCEPT NCTOOLPATHLIST FORM ACCEPT NCTOOLLIST FORM ACCEPT PROBINGNCOPTS");
+                    powerMILL.Execute("TEXTINFO ACCEPT");
+                }
             }
         }
 
         private void BtnImportModel_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.Forms.OpenFileDialog fileDialog = new System.Windows.Forms.OpenFileDialog();
-            if (fileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                powerMILL.Execute($"IMPORT MODEL FILEOPEN '{fileDialog.FileName}'");
-                powerMILL.Execute("CREATE LEVEL Red");
-                powerMILL.Execute("CREATE LEVEL Blue");
-                powerMILL.Execute("CREATE LEVEL Green");
+            Application.Current.MainWindow.WindowState = WindowState.Minimized;
 
-                session.Refresh();
-                //识别层
-                foreach (PMModel model in session.Models)
-                {
-                    string output = powerMILL.ExecuteEx($"size model '{model.Name}'").ToString();
-                    string[] lines = output.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
-                    for (int i = 8; i < lines.Length; i++)
-                    {
-                        powerMILL.Execute($"edit model '{model.Name}' deselect all");
-                        string[] items = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                        if (items[3] == "255" && items[4] == "0" && items[5] == "0")
-                        {
-                            powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
-                            powerMILL.Execute($"EDIT LEVEL \"Red\" ACQUIRE SELECTED");
-                        }
-                        if (items[3] == "0" && items[4] == "255" && items[5] == "0")
-                        {
-                            powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
-                            powerMILL.Execute($"EDIT LEVEL \"Green\" ACQUIRE SELECTED");
-                        }
-                        if (items[3] == "0" && items[4] == "0" && items[5] == "255")
-                        {
-                            powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
-                            powerMILL.Execute($"EDIT LEVEL \"Blue\" ACQUIRE SELECTED");
-                        }
-                    }
-                }
-                RefreshLevels();
+            //powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);            
+            //session = powerMILL.ActiveProject;
+            powerMILL.DialogsOff();
+            string r = powerMILL.ExecuteEx("project reset").ToString();
+
+            if (r.Contains("Cancel"))
+            {
+                MessageBox.Show("未保存或放弃保存当前PowerMILL项目，将不会导入模型。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);                
             }
+            else
+            {
+                System.Windows.Forms.OpenFileDialog fileDialog = new System.Windows.Forms.OpenFileDialog();
+                if (fileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    powerMILL.Execute($"IMPORT MODEL FILEOPEN '{fileDialog.FileName}'");
+                    powerMILL.Execute("CREATE LEVEL Red");
+                    powerMILL.Execute("CREATE LEVEL Blue");
+                    powerMILL.Execute("CREATE LEVEL Green");
+
+                    session.Refresh();
+                    //识别层
+                    foreach (PMModel model in session.Models)
+                    {
+                        string output = powerMILL.ExecuteEx($"size model '{model.Name}'").ToString();
+                        string[] lines = output.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                        for (int i = 8; i < lines.Length; i++)
+                        {
+                            powerMILL.Execute($"edit model '{model.Name}' deselect all");
+                            string[] items = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                            if (items[3] == "255" && items[4] == "0" && items[5] == "0")
+                            {
+                                powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
+                                powerMILL.Execute($"EDIT LEVEL \"Red\" ACQUIRE SELECTED");
+                            }
+                            if (items[3] == "0" && items[4] == "255" && items[5] == "0")
+                            {
+                                powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
+                                powerMILL.Execute($"EDIT LEVEL \"Green\" ACQUIRE SELECTED");
+                            }
+                            if (items[3] == "0" && items[4] == "0" && items[5] == "255")
+                            {
+                                powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
+                                powerMILL.Execute($"EDIT LEVEL \"Blue\" ACQUIRE SELECTED");
+                            }
+                        }
+                    }                   
+
+                    CreateTool();
+                    cbxTool.ItemsSource = session.Tools.Select(t => t.Name);
+
+                    //创建NC坐标系
+                    powerMILL.Execute("DELETE WORKPLANE ALL");
+                    CreateNCWorkplane("NC", 0);
+                    CreateNCWorkplane("NC90", 90);
+                    CreateNCWorkplane("NC180", 180);
+                    CreateNCWorkplane("NC270", 270);
+
+                    string tag = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                    powerMILL.Execute($"PROJECT SAVE AS FILESAVE '{ConfigurationManager.AppSettings["projectFolder"]}\\{tag}\\PM_{tag}'");
+                    
+                    RefreshToolpaths();
+                    RefreshLevels();
+
+                    MessageBox.Show("初始化完成。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                }
+            }
+            Application.Current.MainWindow.WindowState = WindowState.Normal;
+        }
+
+        public void CreateNCWorkplane(string workplane, double angle)
+        {
+            powerMILL.Execute("ACTIVATE WORKPLANE \" \"");
+            powerMILL.Execute($"CREATE WORKPLANE '{workplane}'");
+            powerMILL.Execute($"MODE WORKPLANE_EDIT START \"{workplane}\"");
+            powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Z");
+            powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{angle}\"");
+            powerMILL.Execute("WPETWIST ACCEPT");
+            powerMILL.Execute("MODE WORKPLANE_EDIT FINISH ACCEPT");
         }
 
         private void CbxMethod_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1196,6 +1251,12 @@ namespace Hongyang
 
         private void BtnTransform_Click(object sender, RoutedEventArgs e)
         {
+            if (powerMILL == null)
+            {
+                MessageBox.Show("未连接PowerMILl，请导入模型开始。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+
             if (lstSelected.Items.Count == 0)
             {
                 MessageBox.Show("请选要复制的刀路到已选刀路列表。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
@@ -1263,22 +1324,40 @@ namespace Hongyang
 
         private void BtnReport_Click(object sender, RoutedEventArgs e)
         {
+            powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
+            session = powerMILL.ActiveProject;
+            if (powerMILL == null)
+            {
+                MessageBox.Show("未连接PowerMILl，请导入模型开始。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+
             session.Refresh();
             PMNCProgram program = session.NCPrograms.FirstOrDefault(n => n.Name == "Total");
             if (program == null)
             {
                 MessageBox.Show("没有在PowerMILL中找到名为Total的NC程序。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
+            }            
+
+            IApplication application = new PIApplication() as IApplication;
+            IPIDocument doc = application.ActiveDocument;
+            if (doc == null)
+            {
+                MessageBox.Show("请启动PowerINSPECT并导入检测项目。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+            if (doc.SequenceItems.Count < 4)
+            {
+                MessageBox.Show("请导入检测项目。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
             }
 
             Application.Current.MainWindow.WindowState = WindowState.Minimized;
 
-            IApplication application = new PIApplication() as IApplication;
-            IPIDocument doc = application.ActiveDocument;
-            IMeasure measure = doc.get_ActiveMeasure();            
-
+            IMeasure measure = doc.get_ActiveMeasure();
             ISurfaceGroup inspect1 = doc.SequenceItems[4] as ISurfaceGroup;//导入Total NC的初始检测组
-            IBagOfPoints points = inspect1.BagOfPoints[measure];
+            IBagOfPoints points = inspect1.BagOfPoints[measure];           
 
             ISequenceGroup geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
             int index = 1;
@@ -1430,8 +1509,144 @@ namespace Hongyang
                 }
             }
 
+            string pmFolder = powerMILL.ExecuteEx("print $project_pathname(0)").ToString().Trim();            
+            string file = $"{Directory.GetParent(pmFolder)}\\PI_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pwi";
+            doc.SaveAs(file, false);
+
             MessageBox.Show("检测完成。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
             Application.Current.MainWindow.WindowState = WindowState.Normal;
+        }
+
+        private void BtnMergeTotal_Click(object sender, RoutedEventArgs e)
+        {
+            string folder = ConfigurationManager.AppSettings["msrFolder"];
+            if (!Directory.Exists(folder))
+            {
+                MessageBox.Show($"没有找到mrs文件的存放目录{folder}，请检测设定。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+            }
+            else
+            {
+                Dictionary<string, List<Dictionary<string, double>>> msrFiles = new Dictionary<string, List<Dictionary<string, double>>>();//保存msr文件
+                for (int i = 0; i < 4; i++)
+                {
+                    string file = "OMVu" + 90 * i + ".msr";
+                    string path = folder + "\\" + file;
+                    if (File.Exists(path))
+                    {
+                        List<Dictionary<string, double>> lines = new List<Dictionary<string, double>>();
+                        msrFiles.Add(file, lines);                 
+                        StreamReader reader = new StreamReader(path);
+                        string line = reader.ReadLine();
+                        while (line != null)
+                        {
+                            Dictionary<string, double> values = new Dictionary<string, double>();//保存mrs文件一行的XYZ值
+                            lines.Add(values);
+                            double x = double.Parse(line.Substring(9, 11));
+                            values.Add("X", x);
+                            double y = double.Parse(line.Substring(21, 11));
+                            values.Add("Y", y);
+                            double z = double.Parse(line.Substring(33));
+                            values.Add("Z", z);
+                            line = reader.ReadLine();
+                        }
+                        reader.Close();
+                    }
+                }
+                if (msrFiles.Count == 0)
+                {
+                    MessageBox.Show($"没有找到mrs文件。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                }
+                else
+                {
+                    //int count = msrFiles.Sum(f => f.Value.Count);
+                    powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
+                    string project = powerMILL.ExecuteEx("print $project_pathname(1)").ToString().Trim();
+                    string file = $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total\\Total.tap";
+                    if (!File.Exists(file))
+                    {
+                        MessageBox.Show($"没有找到{file}。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                    }
+                    else
+                    {
+                        //保存并转换msr中的坐标值
+                        List<string> transformed = new List<string>();
+                        int n = 0;
+                        foreach (var f in msrFiles)
+                        {
+                            switch (f.Key)
+                            {
+                                case "OMVu0.msr":
+                                    foreach (var l in f.Value)
+                                    {
+                                        transformed.Add($"G801 N{n} X{l["X"]} Y{l["Y"]} Z{l["Z"]} R3.0");
+                                        n++;
+                                    }
+                                    break;
+                                case "OMVu90.msr":
+                                    foreach (var l in f.Value)
+                                    {
+                                        transformed.Add($"G801 N{n} X{-l["Y"]} Y{l["X"]} Z{l["Z"]} R3.0");
+                                        n++;
+                                    }
+                                    break;
+                                case "OMVu180.msr":
+                                    foreach (var l in f.Value)
+                                    {
+                                        transformed.Add($"G801 N{n} X{-l["X"]} Y{-l["Y"]} Z{l["Z"]} R3.0");
+                                        n++;
+                                    }
+                                    break;
+                                case "OMVu270.msr":
+                                    foreach (var l in f.Value)
+                                    {
+                                        transformed.Add($"G801 N{n} X{l["Y"]} Y{-l["X"]} Z{l["Z"]} R3.0");
+                                        n++;
+                                    }
+                                    break;
+                            }
+                        }
+
+                        //读取total.tap
+                        StreamReader reader = new StreamReader(file);
+                        List<string> totalLines = new List<string>();
+                        string line = reader.ReadLine();
+                        while (line != null)
+                        {
+                            totalLines.Add(line);
+                            line = reader.ReadLine();
+                        }
+                        reader.Close();
+                        if (totalLines.Count - 2 != transformed.Count * 2) //total.tap去掉头尾的Start和End，和名义值
+                        {
+                            MessageBox.Show($"msr文件中的总点数和Total.tap中的不一至。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                        }
+                        else
+                        {
+                            string integrated = $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total\\Total_Integrated.tap";
+                            StreamWriter writer = new StreamWriter(integrated, false);
+
+                            n = 0;
+                            foreach (string l in totalLines)
+                            {
+                                if (l.Contains("R3.0"))
+                                {
+                                    writer.WriteLine(transformed[n++]);
+                                }
+                                else
+                                {
+                                    writer.WriteLine(l);
+                                }
+                            }
+                            writer.Close();
+
+                            if (MessageBox.Show("生成整合文件Total_Integrated.tap完成，是否打开所在文件夹？", "Info", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes, MessageBoxOptions.DefaultDesktopOnly) == MessageBoxResult.Yes)
+                            {
+                                System.Diagnostics.Process.Start("explorer.exe", $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total");
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

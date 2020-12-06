@@ -72,6 +72,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Config.xaml.cs">
+      <DependentUpon>Config.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Converter\ConstraintConverter.cs" />
     <Compile Include="EPoint.xaml.cs">
       <DependentUpon>EPoint.xaml</DependentUpon>
@@ -101,6 +104,10 @@
       <DependentUpon>ToolRapidMvClear.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\TreeItem.cs" />
+    <Page Include="Config.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="EPoint.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -318,6 +325,15 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icon\Feature-Chamfer-Milling.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\config.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\folder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\total.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
