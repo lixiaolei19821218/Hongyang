@@ -400,7 +400,7 @@ namespace Hongyang
 
         private void Calculate(string level)
         {
-            powerMILL.DialogsOff();
+            powerMILL.DialogsOff();            
             session.Refresh();
 
             string tag;
@@ -513,16 +513,76 @@ namespace Hongyang
                 session.Toolpaths.ActiveItem.Calculate();
 
                 //参考线
-                powerMILL.Execute("CREATE PATTERN ;");
-                session.Refresh();
-                session.Patterns.ActiveItem.Name = tpName;
-                powerMILL.Execute($"EDIT PATTERN \"{session.Patterns.ActiveItem.Name}\" INSERT TOOLPATH ;");
+                powerMILL.Execute($"CREATE PATTERN {tpName}");            
+                powerMILL.Execute($"EDIT PATTERN \"{tpName}\" INSERT TOOLPATH ;");
                 powerMILL.Execute("SET TOOLPATHPOINTS ;");
 
                 //曲面检测刀路               
-                CalculateProbingPath(probingTpName, session.Patterns.ActiveItem.Name);
+                CalculateProbingPath(probingTpName, tpName);
             }
-            else
+            else if (tag == "Y")
+            {
+                string swarfTpName = tpName + "_Swarf";
+                string patternTpName = tpName + "_Pattern";
+                string probingTpName = tpName + "_Probing";
+                string endMillTool = tpName + "_ENDMILL";
+                CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);
+
+                //Swarf刀路            
+                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
+                powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
+                powerMILL.Execute("EDIT BLOCK RESET");
+                powerMILL.Execute("CREATE TOOL ; BALLNOSED");
+                session.Refresh();
+                session.Tools.ActiveItem.Name = endMillTool;
+                powerMILL.Execute($"EDIT TOOL \"{session.Tools.ActiveItem.Name}\" LENGTH \"60\"");
+                powerMILL.Execute($"EDIT TOOL \"{session.Tools.ActiveItem.Name}\" DIAMETER \"0.5\"");
+                powerMILL.Execute("EDIT PAR 'Tolerance' \"0.01\"");
+                powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_down'");
+                powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");
+                powerMILL.Execute("EDIT PAR 'StepdownLimit.Value' \"2\"");
+                powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{tbxDepth.Text}\"");                
+                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
+                session.Toolpaths.ActiveItem.Name = swarfTpName;
+                session.Toolpaths.ActiveItem.Calculate();
+                powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r 0 NEW");
+                powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+
+                //参考线精加工
+                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Pattern-Finishing.ptf\"");
+                session.Refresh();
+                session.Toolpaths.ActiveItem.Name = patternTpName;
+                powerMILL.Execute("EDIT PAR 'UseToolpathAsPattern' 1");
+                powerMILL.Execute($"EDIT PAR 'ReferenceToolpath' \"{swarfTpName}\"");
+                powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");
+                powerMILL.Execute("EDIT TOOLAXIS LEAN \"80.0\"");
+                powerMILL.Execute("EDIT PAR 'ToolAxis.LeadLeanMode' 'PM2012R2'");
+                powerMILL.Execute("EDIT PAR 'MaxDistanceBetweenPoints.Active' '1'");
+                powerMILL.Execute("EDIT PAR 'MaxDistanceBetweenPoints.Value' \"5\"");
+                powerMILL.Execute("EDIT PAR 'MultipleCuts' 'off'");
+                session.Toolpaths.ActiveItem.Calculate();
+                powerMILL.Execute("EDIT TOOLPATH SAFEAREA CALCULATE_DIMENSIONS");
+                powerMILL.Execute("PROCESS TPLEADS");
+
+                //参考线
+                powerMILL.Execute($"CREATE PATTERN {tpName}");
+                powerMILL.Execute($"EDIT PATTERN \"{tpName}\" INSERT TOOLPATH ;");
+                powerMILL.Execute($"EDIT PATTERN \"{tpName}\" CURVEEDITOR START");
+                powerMILL.Execute("FORM RIBBON TAB \"CurveTools.EditCurve\"");
+                powerMILL.Execute("CURVEEDITOR REPOINT RAISE");
+                powerMILL.Execute($"CURVEEDITOR REPOINT POINTS \"{tbxPoints.Text}\"");
+                powerMILL.Execute("FORM APPLY CEREPOINTCURVE");
+                powerMILL.Execute("FORM CANCEL CEREPOINTCURVE");
+                powerMILL.Execute("FORM RIBBON TAB \"CurveEditor.Edit\"");
+                powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
+
+                CalculateProbingPath(probingTpName, tpName);
+
+                powerMILL.Execute($"ACTIVATE Toolpath \"{probingTpName}\"");
+                powerMILL.Execute("EDIT PAR 'Connections.Link[0].ProbingType' 'probing_straight'");
+                powerMILL.Execute("PROCESS TPLEADS");
+            }
+            else if (tag == "C" || tag == "Z")
             {
                 string probingTpName = tpName + "_Probing";
                 ClearToolpath(probingTpName);
@@ -558,6 +618,10 @@ namespace Hongyang
                 toolpath.Delete();
 
                 CollisionCheck(clone.Name, probingTpName);
+            }
+            else
+            {
+
             }
             (Application.Current.MainWindow as MainWindow).RefreshToolpaths();
             RefreshToolpaths();
@@ -1168,6 +1232,7 @@ namespace Hongyang
                     powerMILL.Execute("CREATE LEVEL Red");
                     powerMILL.Execute("CREATE LEVEL Blue");
                     powerMILL.Execute("CREATE LEVEL Green");
+                    powerMILL.Execute("CREATE LEVEL Yellow");
 
                     session.Refresh();
                     //识别层
@@ -1193,6 +1258,11 @@ namespace Hongyang
                             {
                                 powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
                                 powerMILL.Execute($"EDIT LEVEL \"Blue\" ACQUIRE SELECTED");
+                            }
+                            if (items[3] == "255" && items[4] == "255" && items[5] == "0")
+                            {
+                                powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
+                                powerMILL.Execute($"EDIT LEVEL \"Yellow\" ACQUIRE SELECTED");
                             }
                         }
                     }                   
@@ -1247,6 +1317,15 @@ namespace Hongyang
                 tbxDepth.IsEnabled = false;
                 tbxPoints.IsEnabled = true;
             }*/
+            string tag = (cbxMethod.SelectedItem as ComboBoxItem).Tag.ToString();
+            if (tag == "Y")
+            {
+                tbxDepth.Text = "5";
+            }
+            else
+            {
+                tbxDepth.Text = "3";
+            }
         }
 
         private void BtnTransform_Click(object sender, RoutedEventArgs e)
@@ -1486,7 +1565,7 @@ namespace Hongyang
                     points.CopyToClipboard(indices);
                     plane4.BagOfPoints[measure].PasteFromClipboard();
                 }
-                else if (toolpath.Name.StartsWith("Green"))
+                else if (toolpath.Name.StartsWith("Green") || toolpath.Name.StartsWith("Yellow"))
                 {
                     //存绿面
                     ISurfaceGroup inspect2 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_SurfPointsCNC) as ISurfaceGroup;

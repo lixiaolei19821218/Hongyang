@@ -72,6 +72,7 @@
                 <ComboBox Name="cbxMethod" Width="80" SelectionChanged="CbxMethod_SelectionChanged" SelectedIndex="0" IsEnabled="{Binding ElementName=chxSelectMethod, Path=IsChecked}">
                     <ComboBoxItem Content="Swarf" Tag="S" />
                     <ComboBoxItem Content="Pattern" Tag="P"/>
+                    <ComboBoxItem Content="SPattern" Tag="Y"/>
                     <ComboBoxItem Content="弧度" Tag="C"/>
                     <ComboBoxItem Content="Z值" Tag="Z"/>
                 </ComboBox>                
