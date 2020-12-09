@@ -34,9 +34,16 @@ namespace Hongyang
             //Refresh();
         }
 
-        public void Apply()
-        {
+        public void Apply(string tpName)
+        {            
             PowerMILL.Execute($"EDIT PAR 'Connections.Link[0].ProbingType' '{(cbxType0.SelectedItem as ComboBoxItem).Tag}'");
+            PowerMILL.Execute("EDIT PAR 'Connections.Link[0].ApplyConstraints' '1'");
+            PowerMILL.Execute("EDIT PAR 'Connections.Link[0].Constraint[0].Type' 'distance'");
+            PowerMILL.Execute("EDIT PAR 'Toolpath.Connections.Link.First.Constraint[0].Distance.Function' 'less_than");
+            PowerMILL.Execute($"EDIT PAR 'Toolpath.Connections.Link.First.Constraint[0].Distance.Value' \"{tbx11S.Text}\"");
+            
+            return;
+            //下面暂时不用
             if (chx1stConstraint.IsChecked ?? false)
             {
                 PowerMILL.Execute($"EDIT PAR 'Connections.Link[0].ApplyConstraints' '1'");
@@ -96,11 +103,16 @@ namespace Hongyang
             }
         }
 
-        public void Refresh()
-        {
+        public void Refresh(string tpName)
+        {  
+            if (string.IsNullOrEmpty(tpName))
+            {
+                return;
+            }
+
             string type;
 
-            type = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.Link[0].ProbingType\"").ToString();
+            type = PowerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{tpName}').Connections.Link[0].ProbingType\"").ToString();
             for (int i = 0; i < cbxType0.Items.Count; i++)
             {
                 ComboBoxItem item = cbxType0.Items[i] as ComboBoxItem;
@@ -110,8 +122,11 @@ namespace Hongyang
                     break;
                 }
             }
+            tbx11S.Text = PowerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{tpName}').Connections.Link.First.Constraint[0].Distance.Value\"").ToString();
 
-            if (PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.Link[0].ApplyConstraints\"").ToString() == "1")
+            return;
+            //下面的暂时不用；
+            if (PowerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{tpName}').Connections.Link[0].ApplyConstraints\"").ToString() == "1")
             {
                 chx1stConstraint.IsChecked = true;
             }
@@ -120,7 +135,7 @@ namespace Hongyang
                 chx1stConstraint.IsChecked = false;
             }
 
-            type = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.Link[0].Constraint[0].Type\"").ToString();
+            type = PowerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{tpName}').Connections.Link[0].Constraint[0].Type\"").ToString();
             for (int i = 0; i < cbx1stLink1stConstraint.Items.Count; i++)
             {
                 ComboBoxItem item = cbx1stLink1stConstraint.Items[i] as ComboBoxItem;
@@ -131,18 +146,18 @@ namespace Hongyang
                 }
             }
 
-            type = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.Link[1].ProbingType\"").ToString();
+            type = PowerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{tpName}').Connections.Link[1].ProbingType\"").ToString();
             for (int i = 0; i < cbxType1.Items.Count; i++)
             {
-                ComboBoxItem item = cbxType0.Items[i] as ComboBoxItem;
+                ComboBoxItem item = cbxType1.Items[i] as ComboBoxItem;
                 if (item.Tag.ToString() == type)
                 {
-                    cbxType0.SelectedIndex = i;
+                    cbxType1.SelectedIndex = i;
                     break;
                 }
             }
 
-            if (PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.Link[1].ApplyConstraints\"").ToString() == "1")
+            if (PowerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{tpName}').Connections.Link[1].ApplyConstraints\"").ToString() == "1")
             {
                 chx2ndConstraint.IsChecked = true;
             }
@@ -151,7 +166,7 @@ namespace Hongyang
                 chx2ndConstraint.IsChecked = false;
             }
 
-            type = PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.Link[1].Constraint[0].Type\"").ToString();
+            type = PowerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{tpName}').Connections.Link[1].Constraint[0].Type\"").ToString();
             for (int i = 0; i < cbx2ndLink1stConstraint.Items.Count; i++)
             {
                 ComboBoxItem item = cbx2ndLink1stConstraint.Items[i] as ComboBoxItem;
@@ -162,7 +177,18 @@ namespace Hongyang
                 }
             }
 
-            if (PowerMILL.ExecuteEx("print par terse \"entity('toolpath', '').Connections.gougecheck\"").ToString() == "1")
+            type = PowerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{tpName}').Connections.DefaultLink[0].ProbingType\"").ToString();
+            for(int i = 0; i < cbxType1.Items.Count; i++)
+            {
+                ComboBoxItem item = cbxTypeDef.Items[i] as ComboBoxItem;
+                if (item.Tag.ToString() == type)
+                {
+                    cbxTypeDef.SelectedIndex = i;
+                    break;
+                }
+            }
+
+            if (PowerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{tpName}').Connections.gougecheck\"").ToString() == "1")
             {
                 chxGouge.IsChecked = true;
             }

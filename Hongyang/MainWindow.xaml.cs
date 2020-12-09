@@ -99,18 +99,22 @@ namespace Hongyang
             treeItem = new TreeItem() { Icon = @"\Icon\Corner-Pencil-Finishing.ico", Name = "快进移动" };
             treeItem.TreeItems.Add(new TreeItem() { Icon = @"\Icon\Corner-Pencil-Finishing.ico", Name = "移动和间隙" });
             treeItems.Add(treeItem);
-
+            
             treeItem = new TreeItem() { Icon = @"\Icon\2D-Curve-Profile.ico", Name = "切入切出和连接" };
             treeItem.TreeItems.Add(new TreeItem() { Icon = @"\Icon\2D-Curve-Profile.ico", Name = "连接" });
             treeItem.TreeItems.Add(new TreeItem() { Icon = @"\Icon\2D-Curve-Profile.ico", Name = "点分布" });
             treeItems.Add(treeItem);
-
+            
             treeItem = new TreeItem() { Icon = @"\Icon\Cooling.ico", Name = "开始点" };           
             treeItems.Add(treeItem);
 
             treeItem = new TreeItem() { Icon = @"\Icon\Cooling.ico", Name = "结束点" };           
             treeItems.Add(treeItem);
             */
+
+            treeItem = new TreeItem() { Icon = @"\Icon\2D-Curve-Profile.ico", Name = "连接" };
+            treeItems.Add(treeItem);
+
             treeItem = new TreeItem() { Icon = @"\Icon\Config.jpg", Name = "配置" };
             treeItems.Add(treeItem);
 
@@ -155,7 +159,14 @@ namespace Hongyang
                 default:
                     break;
             }
-            lblBanner.Content = treeItem.Name;
+            if (Session.Toolpaths.ActiveItem != null)
+            {
+                lblBanner.Content = treeItem.Name + " " + Session.Toolpaths.ActiveItem.Name;
+            }
+            else
+            {
+                lblBanner.Content = treeItem.Name;
+            }
         }
 
         private void BtnCalculate_Click(object sender, RoutedEventArgs e)
@@ -187,6 +198,20 @@ namespace Hongyang
             SPoint.Refresh();
             EPoint.Refresh();
             */
+        }
+
+        private void Frame_Navigated(object sender, NavigationEventArgs e)
+        {
+            /*
+            if (e.Content is Link)
+            {
+                Link link = e.Content as Link;
+                Session.Refresh();
+                if (Session.Toolpaths.ActiveItem != null)
+                {
+                    link.Refresh(Session.Toolpaths.ActiveItem.Name);
+                }                
+            }*/
         }
     }
 }

@@ -35,6 +35,10 @@ namespace Hongyang
             powerMILL = (Application.Current.MainWindow as MainWindow).PowerMILL;
             session = (Application.Current.MainWindow as MainWindow).Session;
 
+            cbxTool.ItemsSource = session.Tools.Select(t => t.Name);
+            RefreshToolpaths();
+            RefreshLevels();
+
             Style itemContainerStyle = new Style(typeof(ListBoxItem));
             itemContainerStyle.Setters.Add(new Setter(ListBoxItem.AllowDropProperty, true));
             itemContainerStyle.Setters.Add(new EventSetter(ListBoxItem.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(s_PreviewMouseLeftButtonDown)));
@@ -239,7 +243,7 @@ namespace Hongyang
                     Application.Current.MainWindow.WindowState = WindowState.Minimized;
                     foreach (PMLevelOrSet level in lstAllLevel.Items)
                     {
-                        if (level.Name == "Red" || level.Name == "Blue" || level.Name == "Green")
+                        if (level.Name == "Red" || level.Name == "Blue" || level.Name == "Green" || level.Name == "Yellow")
                         {
                             Calculate(level.Name);
                         }
@@ -400,9 +404,16 @@ namespace Hongyang
 
         private void Calculate(string level)
         {
-            powerMILL.DialogsOff();            
-            session.Refresh();
+            powerMILL.DialogsOff();
+            string output = powerMILL.ExecuteEx($"SIZE LEVEL \"{level}\"").ToString();            
+            if (output.Split(new string[] { "\r\n"}, StringSplitOptions.RemoveEmptyEntries).Length == 3)
+            {
+                //空层
+                return;
+            }
 
+            session.Refresh();
+            
             string tag;
             if (chxSelectMethod.IsChecked == true)
             {
@@ -418,16 +429,18 @@ namespace Hongyang
                 {
                     tag = "S";
                 }
-                else if (level == "Green")
+                else if (level == "Green" || level == "Yellow")
                 {
-                    tag = "C";
+                    tag = "Y";
                 }
                 else
                 {
-                    MessageBox.Show($"自动计算的层必须以Red，Blue或Green命名。当前层：{level}。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                    MessageBox.Show($"自动计算的层必须以Red，Blue，Green或Yellow命名。当前层：{level}。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                     return;
                 }
             }
+
+            powerMILL.Execute("FORM RIBBON BACKSTAGE CLOSE RESET ALL");
             string tpName = level + "_" + tag;
 
             if (tag == "S")
@@ -439,37 +452,38 @@ namespace Hongyang
 
                 CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);
 
-                //Swarf刀路            
-                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
-                powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
-                powerMILL.Execute("EDIT BLOCK RESET");
+                //Swarf刀路   
                 powerMILL.Execute("CREATE TOOL ; BALLNOSED");
+                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
                 session.Refresh();
                 session.Tools.ActiveItem.Name = tpName + "_BALLNOSED";
                 session.Tools.ActiveItem.Diameter = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('tool', '{cbxTool.Text}').Diameter\"").ToString());
+                session.Toolpaths.ActiveItem.Name = swarfTpName;
+                powerMILL.Execute($"ACTIVATE TOOLPATH \"{swarfTpName}\" FORM TOOLPATH");
+                powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
+                powerMILL.Execute("EDIT BLOCK RESET");           
                 powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");
                 powerMILL.Execute("EDIT TOOLAXIS LEAN \"60\"");
                 powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_down'");
                 powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");
-                powerMILL.Execute($"EDIT PAR 'StepdownLimit.Value' \"{tbxStepdown.Text}\"");
-                powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{tbxDepth.Text}\"");
+                string value = chxSelectMethod.IsChecked == true  ? tbxStepdown.Text : "2";
+                powerMILL.Execute($"EDIT PAR 'StepdownLimit.Value' \"{value}\"");
+                value = chxSelectMethod.IsChecked == true ? tbxDepth.Text : "3";
+                powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{value}\"");
                 powerMILL.Execute("EDIT PAR 'Filter.Type' 'redistribute'");
                 powerMILL.Execute("EDIT PAR 'MaxDistanceBetweenPoints.Active' '1'");
                 powerMILL.Execute("EDIT PAR 'MaxDistanceBetweenPoints.Value' \"5\"");
-                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
-                session.Refresh();
-                session.Toolpaths.ActiveItem.Name = swarfTpName;
+                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");                
+                powerMILL.Execute($"EDIT TOOLPATH \"{swarfTpName}\" REAPPLYFROMGUI\rYes");
                 session.Toolpaths.ActiveItem.Calculate();
 
                 //参考线
-                powerMILL.Execute("CREATE PATTERN ;");
-                session.Refresh();
-                session.Patterns.ActiveItem.Name = tpName;
-                powerMILL.Execute($"EDIT PATTERN \"{session.Patterns.ActiveItem.Name}\" INSERT TOOLPATH ;");
+                powerMILL.Execute($"CREATE PATTERN {tpName}");                
+                powerMILL.Execute($"EDIT PATTERN \"{tpName}\" INSERT TOOLPATH ;");
                 powerMILL.Execute("SET TOOLPATHPOINTS ;");
 
                 //曲面检测刀路               
-                CalculateProbingPath(probingTpName, session.Patterns.ActiveItem.Name);
+                CalculateProbingPath(probingTpName, tpName);
             }
             else if (tag == "P")
             {
@@ -482,23 +496,26 @@ namespace Hongyang
 
                 CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);
 
-                //Swarf刀路            
-                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
-                powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
-                powerMILL.Execute("EDIT BLOCK RESET");
+                //Swarf刀路     
                 powerMILL.Execute("CREATE TOOL ; ENDMILL");
+                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");                
                 session.Refresh();
                 session.Tools.ActiveItem.Name = tpName + "_ENDMILL";
                 session.Tools.ActiveItem.Diameter = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('tool', '{cbxTool.Text}').Diameter\"").ToString());
+                session.Toolpaths.ActiveItem.Name = swarfTpName;
+                powerMILL.Execute($"ACTIVATE TOOLPATH \"{swarfTpName}\" FORM TOOLPATH");
+                powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
+                powerMILL.Execute("EDIT BLOCK RESET");                
                 powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");
                 powerMILL.Execute("EDIT TOOLAXIS LEAN \"0\"");
                 powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_up'");
                 powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");
-                powerMILL.Execute($"EDIT PAR 'StepdownLimit.Value' \"{tbxStepdown.Text}\"");
-                powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{tbxDepth.Text}\"");
+                string value = chxSelectMethod.IsChecked == true ? tbxStepdown.Text : "2";
+                powerMILL.Execute($"EDIT PAR 'StepdownLimit.Value' \"{value}\"");
+                value = chxSelectMethod.IsChecked == true ? tbxDepth.Text : "3";
+                powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{value}\"");
                 powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
-                session.Refresh();
-                session.Toolpaths.ActiveItem.Name = swarfTpName;
+                powerMILL.Execute($"EDIT TOOLPATH \"{swarfTpName}\" REAPPLYFROMGUI\rYes");
                 session.Toolpaths.ActiveItem.Calculate();
                 powerMILL.Execute("EDIT TOOLPATH SAFEAREA CALCULATE_DIMENSIONS");
 
@@ -506,10 +523,12 @@ namespace Hongyang
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Pattern-Finishing.ptf\"");
                 session.Refresh();
                 session.Toolpaths.ActiveItem.Name = patternTpName;
+                powerMILL.Execute($"ACTIVATE TOOLPATH \"{patternTpName}\" FORM TOOLPATH");
                 powerMILL.Execute("EDIT PAR 'UseToolpathAsPattern' 1");
                 powerMILL.Execute($"EDIT PAR 'ReferenceToolpath' \"{swarfTpName}\"");
                 powerMILL.Execute("EDIT PAR 'PatternBasePosition' 'drive_curve'");
                 powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");
+                powerMILL.Execute($"EDIT TOOLPATH \"{patternTpName}\" REAPPLYFROMGUI\rYes");
                 session.Toolpaths.ActiveItem.Calculate();
 
                 //参考线
@@ -528,22 +547,25 @@ namespace Hongyang
                 string endMillTool = tpName + "_ENDMILL";
                 CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);
 
-                //Swarf刀路            
-                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
-                powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
-                powerMILL.Execute("EDIT BLOCK RESET");
+                //Swarf刀路    
                 powerMILL.Execute("CREATE TOOL ; BALLNOSED");
+                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
                 session.Refresh();
                 session.Tools.ActiveItem.Name = endMillTool;
+                session.Toolpaths.ActiveItem.Name = swarfTpName;
+                powerMILL.Execute($"ACTIVATE TOOLPATH \"{swarfTpName}\" FORM TOOLPATH");
+                powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
+                powerMILL.Execute("EDIT BLOCK RESET");               
                 powerMILL.Execute($"EDIT TOOL \"{session.Tools.ActiveItem.Name}\" LENGTH \"60\"");
                 powerMILL.Execute($"EDIT TOOL \"{session.Tools.ActiveItem.Name}\" DIAMETER \"0.5\"");
                 powerMILL.Execute("EDIT PAR 'Tolerance' \"0.01\"");
                 powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_down'");
                 powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");
                 powerMILL.Execute("EDIT PAR 'StepdownLimit.Value' \"2\"");
-                powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{tbxDepth.Text}\"");                
-                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
-                session.Toolpaths.ActiveItem.Name = swarfTpName;
+                string value = chxSelectMethod.IsChecked == true ? tbxDepth.Text : "5";
+                powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{value}\"");                
+                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");                
+                powerMILL.Execute($"EDIT TOOLPATH \"{swarfTpName}\" REAPPLYFROMGUI\rYes");
                 session.Toolpaths.ActiveItem.Calculate();
                 powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r 0 NEW");
                 powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
@@ -552,6 +574,7 @@ namespace Hongyang
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Pattern-Finishing.ptf\"");
                 session.Refresh();
                 session.Toolpaths.ActiveItem.Name = patternTpName;
+                powerMILL.Execute($"ACTIVATE TOOLPATH \"{patternTpName}\" FORM TOOLPATH");
                 powerMILL.Execute("EDIT PAR 'UseToolpathAsPattern' 1");
                 powerMILL.Execute($"EDIT PAR 'ReferenceToolpath' \"{swarfTpName}\"");
                 powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");
@@ -560,6 +583,7 @@ namespace Hongyang
                 powerMILL.Execute("EDIT PAR 'MaxDistanceBetweenPoints.Active' '1'");
                 powerMILL.Execute("EDIT PAR 'MaxDistanceBetweenPoints.Value' \"5\"");
                 powerMILL.Execute("EDIT PAR 'MultipleCuts' 'off'");
+                powerMILL.Execute($"EDIT TOOLPATH \"{patternTpName}\" REAPPLYFROMGUI\rYes");
                 session.Toolpaths.ActiveItem.Calculate();
                 powerMILL.Execute("EDIT TOOLPATH SAFEAREA CALCULATE_DIMENSIONS");
                 powerMILL.Execute("PROCESS TPLEADS");
@@ -570,7 +594,8 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT PATTERN \"{tpName}\" CURVEEDITOR START");
                 powerMILL.Execute("FORM RIBBON TAB \"CurveTools.EditCurve\"");
                 powerMILL.Execute("CURVEEDITOR REPOINT RAISE");
-                powerMILL.Execute($"CURVEEDITOR REPOINT POINTS \"{tbxPoints.Text}\"");
+                value = chxSelectMethod.IsChecked == true ? tbxPoints.Text : "10";
+                powerMILL.Execute($"CURVEEDITOR REPOINT POINTS \"{value}\"");
                 powerMILL.Execute("FORM APPLY CEREPOINTCURVE");
                 powerMILL.Execute("FORM CANCEL CEREPOINTCURVE");
                 powerMILL.Execute("FORM RIBBON TAB \"CurveEditor.Edit\"");
@@ -602,15 +627,8 @@ namespace Hongyang
                 session.Refresh();
                 PMToolpath clone = session.Toolpaths.Last();
 
-                MainWindow window = Application.Current.MainWindow as MainWindow;
-                window.EPoint.Apply();
-                window.LeadLink.Apply();
-                window.Link.Apply();
-                window.LinkFilter.Apply();
-                window.SPoint.Apply();
-                window.ToolAxOVec.Apply();
-                window.ToolRapidMv.Apply();
-                window.ToolRapidMvClear.Apply();
+                MainWindow window = Application.Current.MainWindow as MainWindow;                
+                window.Link.Apply(probingTpName);                
 
                 powerMILL.Execute($"EDIT TOOLPATH \"{clone.Name}\" CALCULATE");
                 powerMILL.Execute("FORM ACCEPT SFSurfaceInspect");
@@ -623,19 +641,41 @@ namespace Hongyang
             {
 
             }
-            (Application.Current.MainWindow as MainWindow).RefreshToolpaths();
+            
             RefreshToolpaths();
         }
 
         public void CalculateProbingPath(string probingTpName, string patternName)
-        {
+        {            
             powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
-
-            powerMILL.Execute($"EDIT PAR 'Pattern' \"{patternName}\"");
-            powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");
             session.Refresh();
             session.Toolpaths.ActiveItem.Name = probingTpName;
+            powerMILL.Execute($"ACTIVATE TOOLPATH \"{probingTpName}\" FORM TOOLPATH");
+            powerMILL.Execute($"EDIT PAR 'Pattern' \"{patternName}\"");
+            powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");            
+            (Application.Current.MainWindow as MainWindow).Link.Apply(probingTpName);
+            powerMILL.Execute($"EDIT TOOLPATH \"{probingTpName}\" REAPPLYFROMGUI\rYes");
             session.Toolpaths.ActiveItem.Calculate();
+
+            //刀路优化
+            powerMILL.Execute($"ACTIVATE Toolpath \"{probingTpName}\"");
+            powerMILL.Execute($"EDIT TOOLPATH LEADS RAISEFORM");
+            powerMILL.Execute("EDIT TOOLPATH LEADS PAGE LINK");
+            powerMILL.Execute("EDIT PAR 'Connections.Link[0].ProbingType' 'probing_straight'");
+            powerMILL.Execute("EDIT PAR 'Connections.Link[0].ApplyConstraints' '1'");
+            powerMILL.Execute("EDIT PAR 'Connections.Link[1].ProbingType' 'probing_skim'");
+            powerMILL.Execute("EDIT PAR 'Connections.Link[1].ApplyConstraints' '0'");
+            powerMILL.Execute("PROCESS TPLINKS");
+            powerMILL.Execute("EDIT TOOLPATH LEADS PAGE RAPIDMOVES");
+            powerMILL.Execute("EDIT TOOLPATH SAFEAREA CALCULATE_DIMENSIONS");
+            powerMILL.Execute("EDIT TOOLPATH SAFEAREA APPLY");
+            powerMILL.Execute("EDIT TOOLPATH LEADS PAGE STARTENDPT");
+            powerMILL.Execute("EDIT TOOLPATH START TYPE POINT_SAFE");
+            powerMILL.Execute("EDIT TOOLPATH END TYPE POINT_SAFE");
+            powerMILL.Execute("RESET TOOLPATH START_END");
+            powerMILL.Execute("PROCESS TPLEADS");
+            powerMILL.Execute("LEADS ACCEPT");
+
             powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
             string message = powerMILL.ExecuteEx("EDIT COLLISION APPLY").ToString();
             if (message != "信息： 找不到过切")
@@ -647,7 +687,64 @@ namespace Hongyang
             string tag = probingTpName.Split('_')[1];
             if (tag == "P" || tag == "S")
             {
-                Keep10Points(probingTpName);
+                KeepPointsByPattern(probingTpName);
+            }      
+        }
+
+        public void KeepPointsByPattern(string tpName)
+        {
+            powerMILL.Execute($"ACTIVATE Toolpath \"{tpName}\"");
+            //powerMILL.Execute("EDIT TOOLPATH REORDER N");
+            int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{tpName}').Statistics.PlungesIntoStock\"").ToString());//点数
+            int max = int.Parse(System.Configuration.ConfigurationManager.AppSettings["points"]);//每一面的最大点数
+            if (count > max * 2)
+            {
+                string swarfTpName = tpName.Replace("_90", "").Replace("_180", "").Replace("_270", "").Replace("Probing", "Swarf");
+                int stepdown = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{swarfTpName}').StepdownLimit.Value\"").ToString());//参考线条数
+                int section = stepdown * 2;//两个面，所以参选线段数量要乘以2
+
+                int step = count / section;//每一段的点数量
+                int start = 0;
+                List<int> points = new List<int>();//要保留的点
+
+                for (int i = 0; i < section; i++)
+                {
+                    int center = start + step / 2;
+                    int a, b;//前后两点
+                    if (step > 8)//每段点数大于8
+                    {
+                        a = center - 2;
+                        b = center + 2;
+                    }
+                    else
+                    {
+                        a = center - 1;
+                        b = center + 1;
+                    }
+                    points.Add(a);
+                    points.Add(b);
+                    if (section == 4 && i % 2 == 0)//自动计算保留5点的
+                    {
+                        points.Add(center);
+                    }
+                    start += step;
+                }
+
+                for (int i = 0; i < count; i++)
+                {
+                    if (!points.Contains(i))
+                    {
+                        if (i == 0)
+                        {
+                            powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r {i} NEW");
+                        }
+                        else
+                        {
+                            powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r {i} TOGGLE");
+                        }
+                    }
+                }
+                powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
             }
         }
 
@@ -1317,6 +1414,7 @@ namespace Hongyang
                 tbxDepth.IsEnabled = false;
                 tbxPoints.IsEnabled = true;
             }*/
+            /*
             string tag = (cbxMethod.SelectedItem as ComboBoxItem).Tag.ToString();
             if (tag == "Y")
             {
@@ -1326,6 +1424,7 @@ namespace Hongyang
             {
                 tbxDepth.Text = "3";
             }
+            */
         }
 
         private void BtnTransform_Click(object sender, RoutedEventArgs e)
@@ -1436,7 +1535,11 @@ namespace Hongyang
 
             IMeasure measure = doc.get_ActiveMeasure();
             ISurfaceGroup inspect1 = doc.SequenceItems[4] as ISurfaceGroup;//导入Total NC的初始检测组
-            IBagOfPoints points = inspect1.BagOfPoints[measure];           
+            IBagOfPoints points = inspect1.BagOfPoints[measure];
+            for (int i = 1; i <= inspect1.SequenceItems.Count; i++)
+            {
+                inspect1.SequenceItems[i].OutputToReport = false;
+            }
 
             ISequenceGroup geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
             int index = 1;

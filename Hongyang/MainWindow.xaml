@@ -36,7 +36,7 @@
                     <ComboBox Name="cbxToolpaths" Width="150" SelectionChanged="CbxToolpaths_SelectionChanged"></ComboBox>
                 </StackPanel>
             </GroupBox>
-            <Frame Grid.Row="2" Name="frame" NavigationUIVisibility="Hidden" Grid.ColumnSpan="2"></Frame>
+            <Frame Grid.Row="2" Name="frame" NavigationUIVisibility="Hidden" Grid.ColumnSpan="2" Navigated="Frame_Navigated"></Frame>
             <Grid Grid.Row="3" Visibility="Collapsed">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
