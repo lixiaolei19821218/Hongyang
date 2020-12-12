@@ -35,6 +35,8 @@
             <StackPanel Margin="5" Orientation="Horizontal">
                 <Image Source="Icon\file.gif" Width="25"/>
                 <Button HorizontalAlignment="Right" Margin="5" Name="btnImportModel" Width="80" Height="26" Click="BtnImportModel_Click">导入模型..</Button>
+                <Label Margin="50 0 0 0" VerticalContentAlignment="Center">零件名</Label>
+                <TextBox Margin="0" Name="tbxPart" Width="50" Height="25" HorizontalAlignment="Left" Text="零件名"></TextBox>
             </StackPanel>
         </GroupBox>
         <GroupBox Header="当前刀具" Grid.Row="1" Grid.ColumnSpan="2">            
@@ -63,7 +65,7 @@
         <DockPanel Grid.Row="3" Grid.Column="1" Margin="5">
             <StackPanel Orientation="Horizontal" IsEnabled="{Binding ElementName=chxSelectMethod, Path=IsChecked}">
                 <Label Margin="0" VerticalContentAlignment="Center">检测行</Label>
-                <TextBox Margin="0" Name="tbxStepdown" Width="50" Height="25" HorizontalAlignment="Left" Text="2"></TextBox>
+                <TextBox Margin="0" Name="tbxStepdown" Width="50" Height="25" HorizontalAlignment="Left" Text="3"></TextBox>
                 <Label Margin="0" VerticalContentAlignment="Center">行间距</Label>
                 <TextBox Margin="0" Name="tbxDepth" Width="50" Height="25" HorizontalAlignment="Left" Text="3"></TextBox>
                 <Label Margin="0" VerticalContentAlignment="Center">点数</Label>

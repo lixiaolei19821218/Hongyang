@@ -501,23 +501,28 @@ namespace Hongyang
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");                
                 session.Refresh();
                 session.Tools.ActiveItem.Name = tpName + "_ENDMILL";
-                session.Tools.ActiveItem.Diameter = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('tool', '{cbxTool.Text}').Diameter\"").ToString());
+                session.Tools.ActiveItem.Diameter = 0.5;//double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('tool', '{cbxTool.Text}').Diameter\"").ToString());
                 session.Toolpaths.ActiveItem.Name = swarfTpName;
                 powerMILL.Execute($"ACTIVATE TOOLPATH \"{swarfTpName}\" FORM TOOLPATH");
                 powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
                 powerMILL.Execute("EDIT BLOCK RESET");                
                 powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");
                 powerMILL.Execute("EDIT TOOLAXIS LEAN \"0\"");
-                powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_up'");
+                powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_down'");
+                powerMILL.Execute("EDIT PAR 'Tolerance' \"0.01\"");
                 powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");
-                string value = chxSelectMethod.IsChecked == true ? tbxStepdown.Text : "2";
-                powerMILL.Execute($"EDIT PAR 'StepdownLimit.Value' \"{value}\"");
-                value = chxSelectMethod.IsChecked == true ? tbxDepth.Text : "3";
-                powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{value}\"");
+                int cut = chxSelectMethod.IsChecked == true ? int.Parse(tbxStepdown.Text) : 3;
+                powerMILL.Execute($"EDIT PAR 'StepdownLimit.Value' \"{cut}\"");
+                string interval = chxSelectMethod.IsChecked == true ? tbxDepth.Text : "3";
+                powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{interval}\"");
                 powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
                 powerMILL.Execute($"EDIT TOOLPATH \"{swarfTpName}\" REAPPLYFROMGUI\rYes");
                 session.Toolpaths.ActiveItem.Calculate();
                 powerMILL.Execute("EDIT TOOLPATH SAFEAREA CALCULATE_DIMENSIONS");
+                //删除两侧第一条线
+                powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r {0} TOGGLE");
+                powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r {cut} TOGGLE");
+                powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
 
                 //参考线精加工
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Pattern-Finishing.ptf\"");
@@ -528,6 +533,9 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT PAR 'ReferenceToolpath' \"{swarfTpName}\"");
                 powerMILL.Execute("EDIT PAR 'PatternBasePosition' 'drive_curve'");
                 powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");
+                powerMILL.Execute("EDIT PAR 'MultipleCuts' 'off'");
+                powerMILL.Execute("EDIT TOOLAXIS LEAN \"80\"");
+                powerMILL.Execute("EDIT PAR 'ToolAxis.LeadLeanMode' 'PM2012R2'");
                 powerMILL.Execute($"EDIT TOOLPATH \"{patternTpName}\" REAPPLYFROMGUI\rYes");
                 session.Toolpaths.ActiveItem.Calculate();
 
@@ -678,7 +686,11 @@ namespace Hongyang
 
             powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
             string message = powerMILL.ExecuteEx("EDIT COLLISION APPLY").ToString();
-            if (message != "信息： 找不到过切")
+            if (message == "信息： 整个刀具路径过切" || message == "信息： 找不到过切")
+            {
+
+            }
+            else
             {
                 powerMILL.Execute($"DELETE TOOLPATH \"{probingTpName}\"");
                 powerMILL.Execute($"DELETE TOOLPATH \"{probingTpName + "_2"}\"");
@@ -1275,10 +1287,11 @@ namespace Hongyang
             Application.Current.MainWindow.WindowState = WindowState.Normal;
         }
 
-        public void ExportNC(string nc, string opt, string workplane)
+        public string ExportNC(string nc, string opt, string workplane)
         {
             session.Refresh();
             PMNCProgram program = session.NCPrograms.FirstOrDefault(n => n.Name == nc);
+            string ncFile = string.Empty;
             if (program != null)
             {
                 string output = powerMILL.ExecuteEx($"EDIT NCPROGRAM '{program.Name}' LIST").ToString();
@@ -1303,8 +1316,21 @@ namespace Hongyang
 
                     powerMILL.Execute($"NCTOOLPATH ACCEPT FORM ACCEPT NCTOOLPATHLIST FORM ACCEPT NCTOOLLIST FORM ACCEPT PROBINGNCOPTS");
                     powerMILL.Execute("TEXTINFO ACCEPT");
+
+                    ncFile = path + "\\" + nc + ".tap";
+                    string totalFolder = ConfigurationManager.AppSettings["ncFolder"] + "\\" + projectName + "\\Total";
+                    if (!Directory.Exists(totalFolder))
+                    {
+                        Directory.CreateDirectory(totalFolder);
+                    }
+                    StreamReader reader = new StreamReader(ncFile);
+                    StreamWriter writer = new StreamWriter(totalFolder + "\\Total.nc", true);
+                    writer.Write(reader.ReadToEnd());
+                    writer.Close();
+                    reader.Close();
                 }
             }
+            return ncFile;
         }
 
         private void BtnImportModel_Click(object sender, RoutedEventArgs e)
@@ -1709,6 +1735,7 @@ namespace Hongyang
             else
             {
                 Dictionary<string, List<Dictionary<string, double>>> msrFiles = new Dictionary<string, List<Dictionary<string, double>>>();//保存msr文件
+                /*
                 for (int i = 0; i < 4; i++)
                 {
                     string file = "OMVu" + 90 * i + ".msr";
@@ -1733,6 +1760,30 @@ namespace Hongyang
                         }
                         reader.Close();
                     }
+                }
+                */
+                //整合后，机床只返回一个msr文件
+                string totalNC = $"OMV_{tbxPart.Text.Trim()}.msr";
+                string path = folder + "\\" + totalNC;
+                if (File.Exists(path))
+                {
+                    List<Dictionary<string, double>> lines = new List<Dictionary<string, double>>();
+                    msrFiles.Add(totalNC, lines);
+                    StreamReader reader = new StreamReader(path);
+                    string line = reader.ReadLine();
+                    while (line != null)
+                    {
+                        Dictionary<string, double> values = new Dictionary<string, double>();//保存mrs文件一行的XYZ值
+                        lines.Add(values);
+                        double x = double.Parse(line.Substring(9, 11));
+                        values.Add("X", x);
+                        double y = double.Parse(line.Substring(21, 11));
+                        values.Add("Y", y);
+                        double z = double.Parse(line.Substring(33));
+                        values.Add("Z", z);
+                        line = reader.ReadLine();
+                    }
+                    reader.Close();
                 }
                 if (msrFiles.Count == 0)
                 {
