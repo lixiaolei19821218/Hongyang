@@ -65,11 +65,18 @@
         <DockPanel Grid.Row="3" Grid.Column="1" Margin="5">
             <StackPanel Orientation="Horizontal" IsEnabled="{Binding ElementName=chxSelectMethod, Path=IsChecked}">
                 <Label Margin="0" VerticalContentAlignment="Center">检测行</Label>
-                <TextBox Margin="0" Name="tbxStepdown" Width="50" Height="25" HorizontalAlignment="Left" Text="3"></TextBox>
-                <Label Margin="0" VerticalContentAlignment="Center">行间距</Label>
-                <TextBox Margin="0" Name="tbxDepth" Width="50" Height="25" HorizontalAlignment="Left" Text="3"></TextBox>                
+                <ComboBox SelectedIndex="0" Name="cbxStepdownLimit" Width="50" SelectionChanged="CbxStepdownLimit_SelectionChanged">
+                    <ComboBoxItem>2</ComboBoxItem>
+                    <ComboBoxItem>3</ComboBoxItem>
+                </ComboBox>
+                <!--<TextBox Margin="0" Name="tbxStepdown" Width="50" Height="25" HorizontalAlignment="Left" Text="3"></TextBox>-->
                 <Label Margin="0" VerticalContentAlignment="Center">点数</Label>
-                <TextBox Margin="0" Name="tbxPoints" Width="50" Height="25" HorizontalAlignment="Left" Text="8"></TextBox>               
+                <ComboBox Name="cbxPoints" Width="50" SelectedIndex="0">
+                    
+                </ComboBox>
+                <!--<TextBox Margin="0" Name="tbxPoints" Width="50" Height="25" HorizontalAlignment="Left" Text="8"></TextBox>-->
+                <Label Margin="0" VerticalContentAlignment="Center">行间距</Label>
+                <TextBox Margin="0" Name="tbxStepdown" Width="50" Height="25" HorizontalAlignment="Left" Text="3"></TextBox>                         
             </StackPanel>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Margin="0">
                 <CheckBox Margin="10" Name="chxSelectMethod">手工选取测量方法</CheckBox>

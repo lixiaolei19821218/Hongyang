@@ -50,6 +50,8 @@ namespace Hongyang
             lstToolpath.ItemContainerStyle = itemContainerStyle;
             lstAllLevel.ItemContainerStyle = itemContainerStyle;
             lstSelectedLevel.ItemContainerStyle = itemContainerStyle;
+
+            InitComboBox();
         }
 
         private void LoadPmoptz()
@@ -244,6 +246,7 @@ namespace Hongyang
                         MessageBox.Show("请至少选择一个要计算的层。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                         return;
                     }
+                    /*行数和点数改成下拉
                     uint v;
                     if (!uint.TryParse(tbxStepdown.Text, out v)) 
                     {
@@ -255,8 +258,9 @@ namespace Hongyang
                         MessageBox.Show("点数必须是正整数。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                         return;
                     }
+                    */
                     double d;
-                    if(double.TryParse(tbxDepth.Text, out d))
+                    if(double.TryParse(tbxStepdown.Text, out d))
                     {
                         if (d <= 0.0)
                         {
@@ -333,7 +337,7 @@ namespace Hongyang
             powerMILL.Execute($"EDIT PATTERN \"{pattern.Name}\" SELECT ALL");
             powerMILL.Execute("FORM RIBBON TAB \"CurveTools.EditCurve\"");
             powerMILL.Execute("CURVEEDITOR REPOINT RAISE");
-            powerMILL.Execute($"CURVEEDITOR REPOINT POINTS \"{tbxPoints.Text}\"");
+            powerMILL.Execute($"CURVEEDITOR REPOINT POINTS \"{cbxPoints.Text}\"");
             powerMILL.Execute("FORM APPLY CEREPOINTCURVE");
             powerMILL.Execute("FORM CANCEL CEREPOINTCURVE");
             powerMILL.Execute("CURVEEDITOR POINT NUMBER ON");
@@ -424,7 +428,7 @@ namespace Hongyang
             powerMILL.Execute("MODE TRANSFORM FINISH");
             powerMILL.Execute("FORM RIBBON TAB \"CurveTools.EditCurve\"");
             powerMILL.Execute("CURVEEDITOR REPOINT RAISE");
-            powerMILL.Execute($"CURVEEDITOR REPOINT POINTS \"{tbxPoints.Text}\"");
+            powerMILL.Execute($"CURVEEDITOR REPOINT POINTS \"{cbxPoints.Text}\"");
             powerMILL.Execute("FORM APPLY CEREPOINTCURVE");
             powerMILL.Execute("FORM CANCEL CEREPOINTCURVE");
             powerMILL.Execute("CURVEEDITOR POINT NUMBER ON");
@@ -505,9 +509,9 @@ namespace Hongyang
                 powerMILL.Execute("EDIT TOOLAXIS LEAN \"60\"");
                 powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_down'");
                 powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");
-                string value = chxSelectMethod.IsChecked == true  ? tbxStepdown.Text : ConfigurationManager.AppSettings["BlueCut"];
+                string value = chxSelectMethod.IsChecked == true  ? cbxStepdownLimit.Text : ConfigurationManager.AppSettings["StepdownLimit"];
                 powerMILL.Execute($"EDIT PAR 'StepdownLimit.Value' \"{value}\"");
-                value = chxSelectMethod.IsChecked == true ? tbxDepth.Text : ConfigurationManager.AppSettings["BlueDepth"];
+                value = chxSelectMethod.IsChecked == true ? tbxStepdown.Text : ConfigurationManager.AppSettings["Stepdown"];
                 powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{value}\"");
                 powerMILL.Execute("EDIT PAR 'Filter.Type' 'redistribute'");
                 powerMILL.Execute("EDIT PAR 'MaxDistanceBetweenPoints.Active' '1'");
@@ -549,9 +553,9 @@ namespace Hongyang
                 powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_down'");
                 powerMILL.Execute("EDIT PAR 'Tolerance' \"0.01\"");
                 powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");
-                string cut = chxSelectMethod.IsChecked == true ? tbxStepdown.Text : ConfigurationManager.AppSettings["RedCut"];
-                powerMILL.Execute($"EDIT PAR 'StepdownLimit.Value' \"{cut}\"");
-                string interval = chxSelectMethod.IsChecked == true ? tbxDepth.Text : ConfigurationManager.AppSettings["RedDepth"];
+                int cut = int.Parse(chxSelectMethod.IsChecked == true ? cbxStepdownLimit.Text : ConfigurationManager.AppSettings["StepdownLimit"]) + 1;
+                powerMILL.Execute($"EDIT PAR 'StepdownLimit.Value' \"{cut}\"");//因为会删除一条，所以这里要加上一条
+                string interval = chxSelectMethod.IsChecked == true ? tbxStepdown.Text : ConfigurationManager.AppSettings["Stepdown"];
                 powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{interval}\"");
                 powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
                 powerMILL.Execute($"EDIT TOOLPATH \"{swarfTpName}\" REAPPLYFROMGUI\rYes");
@@ -609,7 +613,7 @@ namespace Hongyang
                 powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_down'");
                 powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");
                 powerMILL.Execute("EDIT PAR 'StepdownLimit.Value' \"2\"");
-                string value = chxSelectMethod.IsChecked == true ? tbxDepth.Text : ConfigurationManager.AppSettings["GreenDepth"];
+                string value = chxSelectMethod.IsChecked == true ? tbxStepdown.Text : ConfigurationManager.AppSettings["GreenStepdown"];
                 powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{value}\"");                
                 powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");                
                 powerMILL.Execute($"EDIT TOOLPATH \"{swarfTpName}\" REAPPLYFROMGUI\rYes");
@@ -642,7 +646,7 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT PATTERN \"{tpName}\" CURVEEDITOR START");
                 powerMILL.Execute("FORM RIBBON TAB \"CurveTools.EditCurve\"");
                 powerMILL.Execute("CURVEEDITOR REPOINT RAISE");
-                value = chxSelectMethod.IsChecked == true ? tbxPoints.Text : (int.Parse(ConfigurationManager.AppSettings["points"]) * 2).ToString();
+                value = chxSelectMethod.IsChecked == true ? cbxPoints.Text : ConfigurationManager.AppSettings["points"];
                 powerMILL.Execute($"CURVEEDITOR REPOINT POINTS \"{value}\"");
                 powerMILL.Execute("FORM APPLY CEREPOINTCURVE");
                 powerMILL.Execute("FORM CANCEL CEREPOINTCURVE");
@@ -739,20 +743,21 @@ namespace Hongyang
             string tag = probingTpName.Split('_')[1];
             if (tag == "P" || tag == "S")
             {
-                KeepPointsByPattern(probingTpName, tag);
+                KeepPointsByPattern(probingTpName);
             }      
         }
 
-        public void KeepPointsByPattern(string tpName, string tag)
+        public void KeepPointsByPattern(string tpName/*, string tag*/)
         {
             powerMILL.Execute($"ACTIVATE Toolpath \"{tpName}\"");
             //powerMILL.Execute("EDIT TOOLPATH REORDER N");
             int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{tpName}').Statistics.PlungesIntoStock\"").ToString());//检测路径点数
-            int max = chxSelectMethod.IsChecked == true ? int.Parse(tbxPoints.Text) / 2 : int.Parse(ConfigurationManager.AppSettings["points"]);//每一面的最大点数
-            if (count > max * 2)
+            int max = chxSelectMethod.IsChecked == true ? int.Parse(cbxPoints.Text) : int.Parse(ConfigurationManager.AppSettings["points"]);//要保留的最大点数
+            if (count > max)
             {
-                string swarfTpName = tpName.Substring(0, tpName.IndexOf("Probing") + "Probing".Length).Replace("Probing", "Swarf");
-                int stepdown = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{swarfTpName}').StepdownLimit.Value\"").ToString());//参考线条数
+                //string swarfTpName = tpName.Substring(0, tpName.IndexOf("Probing") + "Probing".Length).Replace("Probing", "Swarf");
+                //int stepdown = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{swarfTpName}').StepdownLimit.Value\"").ToString());//参考线条数
+                /*
                 int section;//两个面，所以参选线段数量要乘以2。参考线减一是因为红面之前删除了一条
                 if (tag == "S")
                 {
@@ -766,7 +771,10 @@ namespace Hongyang
                 {
                     return;
                 }                
+                */
 
+                int pattern = chxSelectMethod.IsChecked == true ? int.Parse(cbxStepdownLimit.Text) : int.Parse(ConfigurationManager.AppSettings["StepdownLimit"]);//参考线条数
+                int section = pattern * 2;//因为有两个面，参考线段数要*2
                 int step = count / section;//每一段的点数量
                 int start = 0;
                 List<int> points = new List<int>();//要保留的点
@@ -786,7 +794,21 @@ namespace Hongyang
                         b = center + 1;
                     }
                     points.Add(a);
-                    points.Add(b);
+                    points.Add(b);//这里已经在一段参考线上加了2点了，如果section == 6，即3条参考线，一定就是12个点
+
+                    if (section == 4)//2条参考线
+                    {
+                        //如果section == 4，即2条参考线，不加就是8个点
+                        if (max == 10 && i % 2 == 0)//保留10个点，奇数段加上中点
+                        {
+                            points.Add(center);
+                        }
+                        else if (max == 12)//保留12个点，每段都加上中点
+                        {
+                            points.Add(center);
+                        }
+                    }
+                    
                     if (section == 4 && i % 2 == 0)//自动计算保留5点的
                     {
                         //points.Add(center);//又要保留4点
@@ -1540,17 +1562,17 @@ namespace Hongyang
             string tag = (cbxMethod.SelectedItem as ComboBoxItem).Tag.ToString();
             if (tag == "Y")
             {
-                tbxDepth.Text = ConfigurationManager.AppSettings["GreenDepth"];
+                tbxStepdown.Text = ConfigurationManager.AppSettings["GreenStepdown"];
             }
             else if (tag == "S")
             {
-                tbxStepdown.Text = ConfigurationManager.AppSettings["BlueCut"];
-                tbxDepth.Text = ConfigurationManager.AppSettings["BlueDepth"];
+                //tbxStepdown.Text = ConfigurationManager.AppSettings["BlueCut"];
+                tbxStepdown.Text = ConfigurationManager.AppSettings["Stepdown"];
             }  
             else if (tag == "P")
             {
-                tbxStepdown.Text = ConfigurationManager.AppSettings["RedCut"];
-                tbxDepth.Text = ConfigurationManager.AppSettings["RedDepth"];
+                //tbxStepdown.Text = ConfigurationManager.AppSettings["RedCut"];
+                tbxStepdown.Text = ConfigurationManager.AppSettings["Stepdown"];
             }            
         }
 
@@ -2007,5 +2029,35 @@ namespace Hongyang
             }
         }
 
+        private int[] points2 = new int[] { 8, 10, 12 };
+        private int[] points3 = new int[] { 12 };
+
+        private void CbxStepdownLimit_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cbxPoints != null)
+            {
+                ComboBoxItem item = cbxStepdownLimit.SelectedItem as ComboBoxItem;
+                int[] points = null;
+                if (item.Content.ToString() == "2")
+                {
+                    points = points2;
+                }
+                else if (item.Content.ToString() == "3")
+                {
+                    points = points3;
+                }
+                cbxPoints.ItemsSource = points;
+                cbxPoints.SelectedItem = points.First();
+            }
+        }
+
+        /// <summary>
+        /// 2条参考线，有8，10，12点可选；3条线，只能选12
+        /// </summary>
+        private void InitComboBox()
+        {
+            cbxPoints.ItemsSource = points2;
+            cbxPoints.SelectedItem = points2.First();
+        }
     }
 }
