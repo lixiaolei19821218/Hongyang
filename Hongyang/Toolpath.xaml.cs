@@ -1374,7 +1374,7 @@ namespace Hongyang
                 }
             }
 
-            string opt = AppContext.BaseDirectory + "Pmoptz\\Fidia_KR199_OMV_V4.pmoptz";
+            string opt = AppContext.BaseDirectory + ConfigurationManager.AppSettings["uPmoptz"];
             ExportNC("U0", opt, "NC");
             ExportNC("U90", opt, "NC90");
             ExportNC("U180", opt, "NC180");
@@ -1397,7 +1397,7 @@ namespace Hongyang
                 }
                 */
             }
-            opt = AppContext.BaseDirectory + "Pmoptz\\Results_Output_Generator_OMV2015.pmoptz";
+            opt = AppContext.BaseDirectory + ConfigurationManager.AppSettings["totalPmoptz"]; ;
             ExportNC("Total", opt, "NC");
             powerMILL.Execute("PROJECT SAVE");
 
