@@ -1,5 +1,6 @@
 ﻿using Autodesk.Geometry;
 using Autodesk.ProductInterface.PowerMILL;
+using Hongyang.Model;
 using PowerINSPECTAutomation;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,8 @@ namespace Hongyang
         private PMAutomation powerMILL;
         private PMProject session;
 
+        private List<NCOutput> NCOutputs = new List<NCOutput>();
+
         public Toolpath()
         {
             InitializeComponent();
@@ -52,6 +55,13 @@ namespace Hongyang
             lstSelectedLevel.ItemContainerStyle = itemContainerStyle;
 
             InitComboBox();
+
+            int uAngle = int.Parse(ConfigurationManager.AppSettings["uAngle"]);
+            int count = 360 / uAngle;
+            for (int i = 0; i < count; i++)
+            {
+                NCOutputs.Add(new NCOutput { Angle = uAngle * i });
+            }
         }
 
         private void LoadPmoptz()
@@ -260,13 +270,13 @@ namespace Hongyang
                     }
                     */
                     double d;
-                    if(double.TryParse(tbxStepdown.Text, out d))
+                    if (double.TryParse(tbxStepdown.Text, out d))
                     {
                         if (d <= 0.0)
                         {
                             MessageBox.Show("行距必须是正数。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                             return;
-                        }                        
+                        }
                     }
                     else
                     {
@@ -284,7 +294,7 @@ namespace Hongyang
                 else
                 {
                     Application.Current.MainWindow.WindowState = WindowState.Minimized;
-                    
+
                     foreach (PMLevelOrSet level in lstAllLevel.Items)
                     {
                         if (level.Name == "Red" || level.Name == "Blue" || level.Name == "Green" || level.Name == "Yellow")
@@ -449,15 +459,15 @@ namespace Hongyang
         private void Calculate(string level)
         {
             powerMILL.DialogsOff();
-            string output = powerMILL.ExecuteEx($"SIZE LEVEL \"{level}\"").ToString();            
-            if (output.Split(new string[] { "\r\n"}, StringSplitOptions.RemoveEmptyEntries).Length == 3)
+            string output = powerMILL.ExecuteEx($"SIZE LEVEL \"{level}\"").ToString();
+            if (output.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).Length == 3)
             {
                 //空层
                 return;
             }
 
             session.Refresh();
-            
+
             string tag;
             if (chxSelectMethod.IsChecked == true)
             {
@@ -490,7 +500,7 @@ namespace Hongyang
             if (tag == "S")
             {
                 string swarfTpName = tpName + "_Swarf";
-                string probingTpName = tpName + "_Probing";                
+                string probingTpName = tpName + "_Probing";
                 //ClearToolpath(probingTpName);
                 //ClearToolpath(swarfTpName);
                 ClearToolpath_V2(probingTpName);
@@ -499,7 +509,7 @@ namespace Hongyang
 
                 //Swarf刀路            
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
-                session.Refresh();                
+                session.Refresh();
                 session.Toolpaths.ActiveItem.Name = swarfTpName;
                 powerMILL.Execute($"ACTIVATE TOOLPATH \"{swarfTpName}\" FORM TOOLPATH");
                 powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
@@ -509,19 +519,19 @@ namespace Hongyang
                 powerMILL.Execute("EDIT TOOLAXIS LEAN \"60\"");
                 powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_down'");
                 powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");
-                string value = chxSelectMethod.IsChecked == true  ? cbxStepdownLimit.Text : ConfigurationManager.AppSettings["StepdownLimit"];
+                string value = chxSelectMethod.IsChecked == true ? cbxStepdownLimit.Text : ConfigurationManager.AppSettings["StepdownLimit"];
                 powerMILL.Execute($"EDIT PAR 'StepdownLimit.Value' \"{value}\"");
                 value = chxSelectMethod.IsChecked == true ? tbxStepdown.Text : ConfigurationManager.AppSettings["Stepdown"];
                 powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{value}\"");
                 powerMILL.Execute("EDIT PAR 'Filter.Type' 'redistribute'");
                 powerMILL.Execute("EDIT PAR 'MaxDistanceBetweenPoints.Active' '1'");
                 powerMILL.Execute("EDIT PAR 'MaxDistanceBetweenPoints.Value' \"5\"");
-                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");                
+                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
                 powerMILL.Execute($"EDIT TOOLPATH \"{swarfTpName}\" REAPPLYFROMGUI\rYes");
                 session.Toolpaths.ActiveItem.Calculate();
 
                 //参考线
-                powerMILL.Execute($"CREATE PATTERN {tpName}");                
+                powerMILL.Execute($"CREATE PATTERN {tpName}");
                 powerMILL.Execute($"EDIT PATTERN \"{tpName}\" INSERT TOOLPATH ;");
                 powerMILL.Execute("SET TOOLPATHPOINTS ;");
 
@@ -541,7 +551,7 @@ namespace Hongyang
                 CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);
 
                 //Swarf刀路     
-                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");                
+                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
                 session.Refresh();
                 session.Toolpaths.ActiveItem.Name = swarfTpName;
                 powerMILL.Execute($"ACTIVATE TOOLPATH \"{swarfTpName}\" FORM TOOLPATH");
@@ -585,7 +595,7 @@ namespace Hongyang
                 session.Toolpaths.ActiveItem.Calculate();
 
                 //参考线
-                powerMILL.Execute($"CREATE PATTERN {tpName}");            
+                powerMILL.Execute($"CREATE PATTERN {tpName}");
                 powerMILL.Execute($"EDIT PATTERN \"{tpName}\" INSERT TOOLPATH ;");
                 powerMILL.Execute("SET TOOLPATHPOINTS ;");
 
@@ -597,25 +607,25 @@ namespace Hongyang
                 string swarfTpName = tpName + "_Swarf";
                 string patternTpName = tpName + "_Pattern";
                 string probingTpName = tpName + "_Probing";
-                
+
                 ClearToolpath_V2(probingTpName);
                 CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);
 
                 //Swarf刀路    
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
-                session.Refresh();                
+                session.Refresh();
                 session.Toolpaths.ActiveItem.Name = swarfTpName;
                 powerMILL.Execute($"ACTIVATE TOOLPATH \"{swarfTpName}\" FORM TOOLPATH");
                 powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
                 powerMILL.Execute("EDIT BLOCK RESET");
-                powerMILL.Execute($"ACTIVATE Tool \"{ConfigurationManager.AppSettings["ENDMILL"]}\"");                
+                powerMILL.Execute($"ACTIVATE Tool \"{ConfigurationManager.AppSettings["ENDMILL"]}\"");
                 powerMILL.Execute("EDIT PAR 'Tolerance' \"0.01\"");
                 powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_down'");
                 powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");
                 powerMILL.Execute("EDIT PAR 'StepdownLimit.Value' \"2\"");
                 string value = chxSelectMethod.IsChecked == true ? tbxStepdown.Text : ConfigurationManager.AppSettings["GreenStepdown"];
-                powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{value}\"");                
-                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");                
+                powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{value}\"");
+                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
                 powerMILL.Execute($"EDIT TOOLPATH \"{swarfTpName}\" REAPPLYFROMGUI\rYes");
                 session.Toolpaths.ActiveItem.Calculate();
                 powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r 0 NEW");
@@ -679,8 +689,8 @@ namespace Hongyang
                 session.Refresh();
                 PMToolpath clone = session.Toolpaths.Last();
 
-                MainWindow window = Application.Current.MainWindow as MainWindow;                
-                window.Link.Apply(probingTpName);                
+                MainWindow window = Application.Current.MainWindow as MainWindow;
+                window.Link.Apply(probingTpName);
 
                 powerMILL.Execute($"EDIT TOOLPATH \"{clone.Name}\" CALCULATE");
                 powerMILL.Execute("FORM ACCEPT SFSurfaceInspect");
@@ -693,18 +703,18 @@ namespace Hongyang
             {
 
             }
-            
+
             RefreshToolpaths();
         }
 
         public void CalculateProbingPath(string probingTpName, string patternName)
-        {            
+        {
             powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
             session.Refresh();
             session.Toolpaths.ActiveItem.Name = probingTpName;
             powerMILL.Execute($"ACTIVATE TOOLPATH \"{probingTpName}\" FORM TOOLPATH");
             powerMILL.Execute($"EDIT PAR 'Pattern' \"{patternName}\"");
-            powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");            
+            powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");
             (Application.Current.MainWindow as MainWindow).Link.Apply(probingTpName);
             powerMILL.Execute($"EDIT TOOLPATH \"{probingTpName}\" REAPPLYFROMGUI\rYes");
             session.Toolpaths.ActiveItem.Calculate();
@@ -744,7 +754,7 @@ namespace Hongyang
             if (tag == "P" || tag == "S")
             {
                 KeepPointsByPattern(probingTpName);
-            }      
+            }
         }
 
         public void KeepPointsByPattern(string tpName/*, string tag*/)
@@ -808,7 +818,7 @@ namespace Hongyang
                             points.Add(center);
                         }
                     }
-                    
+
                     if (section == 4 && i % 2 == 0)//自动计算保留5点的
                     {
                         //points.Add(center);//又要保留4点
@@ -1091,9 +1101,9 @@ namespace Hongyang
             session.Refresh();
 
             string orgProbingPath = probingTpName.Substring(0, probingTpName.IndexOf("Probing") + "Probing".Length);//去掉旋转过后的角度字符
-            string swarfTpName = orgProbingPath.Replace("Probing",  "Swarf");
-            string patternTpName = orgProbingPath.Replace("Probing", "Pattern");            
-            
+            string swarfTpName = orgProbingPath.Replace("Probing", "Swarf");
+            string patternTpName = orgProbingPath.Replace("Probing", "Pattern");
+
             PMToolpath toolpath = session.Toolpaths.FirstOrDefault(t => t.Name == probingTpName);
             if (toolpath != null)
             {
@@ -1106,7 +1116,7 @@ namespace Hongyang
                 if (pattern != null)
                 {
                     session.Patterns.Remove(pattern, true);
-                }                
+                }
             }
 
             if (isCopied == false)
@@ -1335,7 +1345,7 @@ namespace Hongyang
             {
                 MessageBox.Show("未连接PowerMILl，请导入模型开始。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
-            }            
+            }
 
             Application.Current.MainWindow.WindowState = WindowState.Minimized;
 
@@ -1343,10 +1353,13 @@ namespace Hongyang
             powerMILL.DialogsOff();
             ActivateWorldPlane();
             powerMILL.Execute($"DELETE NCPROGRAM ALL");
-            powerMILL.Execute($"CREATE NCPROGRAM 'U0'");
-            powerMILL.Execute($"CREATE NCPROGRAM 'U90'");
-            powerMILL.Execute($"CREATE NCPROGRAM 'U180'");
-            powerMILL.Execute($"CREATE NCPROGRAM 'U270'");
+
+            string opt = AppContext.BaseDirectory + ConfigurationManager.AppSettings["uPmoptz"];
+            foreach (NCOutput n in NCOutputs)
+            {
+                powerMILL.Execute($"CREATE NCPROGRAM '{n.NC}'");
+            }
+
             session.Refresh();
             foreach (PMToolpath toolpath in session.Toolpaths.Where(tp => tp.IsCalculated))
             {
@@ -1354,31 +1367,16 @@ namespace Hongyang
                 if (strategy == "surface_inspection")
                 {
                     double azimuth = double.Parse(powerMILL.ExecuteEx($"PRINT PAR terse \"entity('workplane', '{toolpath.WorkplaneName}').Azimuth\"").ToString());
-                    if (azimuth <= 90)
-                    {
-                        powerMILL.Execute("ACTIVATE NCProgram \"U0\"");
-                    }
-                    else if (azimuth <= 180)
-                    {
-                        powerMILL.Execute("ACTIVATE NCProgram \"U90\"");
-                    }
-                    else if (azimuth <= 270)
-                    {
-                        powerMILL.Execute("ACTIVATE NCProgram \"U180\"");
-                    }
-                    else
-                    {
-                        powerMILL.Execute("ACTIVATE NCProgram \"U270\"");
-                    }
+                    NCOutput output = NCOutputs.First(n => n.Angle >= azimuth);
+                    powerMILL.Execute($"ACTIVATE NCProgram \"{output.NC}\"");
                     powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
                 }
             }
 
-            string opt = AppContext.BaseDirectory + ConfigurationManager.AppSettings["uPmoptz"];
-            ExportNC("U0", opt, "NC");
-            ExportNC("U90", opt, "NC90");
-            ExportNC("U180", opt, "NC180");
-            ExportNC("U270", opt, "NC270");
+            foreach (NCOutput n in NCOutputs)
+            {
+                ExportNC(n.NC, opt, n.Workplane);
+            }
 
             powerMILL.Execute($"CREATE NCPROGRAM 'Total'");
             session.Refresh();
@@ -1462,7 +1460,7 @@ namespace Hongyang
 
             if (r.Contains("Cancel"))
             {
-                MessageBox.Show("未保存或放弃保存当前PowerMILL项目，将不会导入模型。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);                
+                MessageBox.Show("未保存或放弃保存当前PowerMILL项目，将不会导入模型。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
             }
             else
             {
@@ -1506,21 +1504,22 @@ namespace Hongyang
                                 powerMILL.Execute($"EDIT LEVEL \"Yellow\" ACQUIRE SELECTED");
                             }
                         }
-                    }                   
+                    }
 
                     CreateTool();
                     cbxTool.ItemsSource = session.Tools.Select(t => t.Name);
 
                     //创建NC坐标系
                     powerMILL.Execute("DELETE WORKPLANE ALL");
-                    CreateNCWorkplane("NC", 0);
-                    CreateNCWorkplane("NC90", 90);
-                    CreateNCWorkplane("NC180", 180);
-                    CreateNCWorkplane("NC270", 270);
+
+                    foreach (NCOutput output in NCOutputs)
+                    {
+                        CreateNCWorkplane(output.Workplane, output.Angle);
+                    }
 
                     string tag = DateTime.Now.ToString("yyyyMMdd_HHmmss");
                     powerMILL.Execute($"PROJECT SAVE AS FILESAVE '{ConfigurationManager.AppSettings["projectFolder"]}\\{tag}\\PM_{tag}'");
-                    
+
                     RefreshToolpaths();
                     RefreshLevels();
 
@@ -1558,7 +1557,7 @@ namespace Hongyang
                 tbxDepth.IsEnabled = false;
                 tbxPoints.IsEnabled = true;
             }*/
-            
+
             string tag = (cbxMethod.SelectedItem as ComboBoxItem).Tag.ToString();
             if (tag == "Y")
             {
@@ -1568,12 +1567,12 @@ namespace Hongyang
             {
                 //tbxStepdown.Text = ConfigurationManager.AppSettings["BlueCut"];
                 tbxStepdown.Text = ConfigurationManager.AppSettings["Stepdown"];
-            }  
+            }
             else if (tag == "P")
             {
                 //tbxStepdown.Text = ConfigurationManager.AppSettings["RedCut"];
                 tbxStepdown.Text = ConfigurationManager.AppSettings["Stepdown"];
-            }            
+            }
         }
 
         private void BtnTransform_Click(object sender, RoutedEventArgs e)
@@ -1589,16 +1588,16 @@ namespace Hongyang
                 MessageBox.Show("请选要复制的刀路到已选刀路列表。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
             }
-            
+
             double d;
             if (!double.TryParse(tbxAngle.Text, out d))
-            {           
+            {
                 MessageBox.Show($"角度必须是数值。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
             }
             uint v;
             if (!uint.TryParse(tbxCopies.Text, out v) || v <= 0)
-            {                
+            {
                 MessageBox.Show($"复制个数必须是正整数。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
             }
@@ -1631,7 +1630,7 @@ namespace Hongyang
                     //复制一个坐标系来旋转，原来刀路的不能直接变换，否则要重制刀路                    
                     string workplane = powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Workplane.Name\"").ToString();
                     powerMILL.Execute($"COPY WORKPLANE \"{workplane}\" ");
-                    string w1 = workplane + "_1";           
+                    string w1 = workplane + "_1";
                     powerMILL.Execute($"ACTIVATE Workplane \"{w1}\"");
                     powerMILL.Execute("MODE WORKPLANE_TRANSFORM START ;");
                     ActivateWorldPlane();
@@ -1683,7 +1682,7 @@ namespace Hongyang
             {
                 MessageBox.Show("没有在PowerMILL中找到名为Total的NC程序。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
-            }            
+            }
 
             IApplication application = new PIApplication() as IApplication;
             IPIDocument doc = application.ActiveDocument;
@@ -1711,7 +1710,7 @@ namespace Hongyang
             ISequenceGroup geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
             int index = 1;
             foreach (PMToolpath toolpath in program.Toolpaths)
-            {                 
+            {
                 int n = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Statistics.PlungesIntoStock\"").ToString());//点数
                 int a = n / 2;//前面一半
                 int b = n - a;//后面一半
@@ -1858,7 +1857,7 @@ namespace Hongyang
                 }
             }
 
-            string pmFolder = powerMILL.ExecuteEx("print $project_pathname(0)").ToString().Trim();            
+            string pmFolder = powerMILL.ExecuteEx("print $project_pathname(0)").ToString().Trim();
             string file = $"{Directory.GetParent(pmFolder)}\\PI_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pwi";
             doc.SaveAs(file, false);
 
@@ -1874,158 +1873,100 @@ namespace Hongyang
                 tbxPart.Focus();
                 return;
             }
-            string folder = ConfigurationManager.AppSettings["msrFolder"];
-            if (!Directory.Exists(folder))
+            
+            string msr = ConfigurationManager.AppSettings["msrFolder"] + "\\" + $"OMV_{tbxPart.Text.Trim()}.msr";
+            if (!File.Exists(msr))
             {
-                MessageBox.Show($"没有找到mrs文件的存放目录{folder}，请检测设定。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                MessageBox.Show($"没有找到mrs文件：{msr}，请检测设定并在该路径放置了msr文件。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
             }
-            else
+
+            Queue<Autodesk.Geometry.Point> points = new Queue<Autodesk.Geometry.Point>();
+            StreamReader reader = new StreamReader(msr);
+            string line = reader.ReadLine();
+            while (line != null)
             {
-                Dictionary<string, List<Dictionary<string, double>>> msrFiles = new Dictionary<string, List<Dictionary<string, double>>>();//保存msr文件
-                /*
-                for (int i = 0; i < 4; i++)
+                double x = double.Parse(line.Substring(9, 11));
+                double y = double.Parse(line.Substring(21, 11));
+                double z = double.Parse(line.Substring(33));
+                points.Enqueue(new Autodesk.Geometry.Point() { X = x, Y = y, Z = z });
+                line = reader.ReadLine();
+            }
+            reader.Close();
+
+            powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
+            string project = powerMILL.ExecuteEx("print $project_pathname(1)").ToString().Trim();
+            string total = $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total\\Total.tap";
+            if (!File.Exists(total))
+            {
+                MessageBox.Show($"没有找到{total}。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+
+            //读取total.tap
+            reader = new StreamReader(total);
+            List<string> totalLines = new List<string>();
+            line = reader.ReadLine();
+            while (line != null)
+            {
+                totalLines.Add(line);
+                line = reader.ReadLine();
+            }
+            reader.Close();
+
+            if (totalLines.Count - 2 != points.Count) //total.tap去掉头尾的Start和End
+            {
+                MessageBox.Show($"msr文件中的总点数和Total.tap中的不一至。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+
+            //保存并转换msr中的坐标值
+            List<string> transformed = new List<string>();
+            session.Refresh();                      
+            int n = 0;//整合文件的行Index
+            foreach (PMNCProgram program in session.NCPrograms.Where(nc => nc.Name != "Total"))
+            {
+                double angle = (double)powerMILL.ExecuteEx($"print par terse \"entity('ncprogram', 'NC270').OutputWorkplane.ZAngle\"") / 180 * Math.PI;
+                int count = 0;//nc程序中的点数
+                string output = powerMILL.ExecuteEx($"EDIT NCPROGRAM '{program.Name}' LIST").ToString();
+                string[] toolpaths = output.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);                
+                foreach (string toolpath in toolpaths)
                 {
-                    string file = "OMVu" + 90 * i + ".msr";
-                    string path = folder + "\\" + file;
-                    if (File.Exists(path))
-                    {
-                        List<Dictionary<string, double>> lines = new List<Dictionary<string, double>>();
-                        msrFiles.Add(file, lines);                 
-                        StreamReader reader = new StreamReader(path);
-                        string line = reader.ReadLine();
-                        while (line != null)
-                        {
-                            Dictionary<string, double> values = new Dictionary<string, double>();//保存mrs文件一行的XYZ值
-                            lines.Add(values);
-                            double x = double.Parse(line.Substring(9, 11));
-                            values.Add("X", x);
-                            double y = double.Parse(line.Substring(21, 11));
-                            values.Add("Y", y);
-                            double z = double.Parse(line.Substring(33));
-                            values.Add("Z", z);
-                            line = reader.ReadLine();
-                        }
-                        reader.Close();
-                    }
+                    count += int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath}').Statistics.PlungesIntoStock\"").ToString());//检测路径点数
                 }
-                */
-                //整合后，机床只返回一个msr文件
-                string totalNC = $"OMV_{tbxPart.Text.Trim()}.msr";
-                string path = folder + "\\" + totalNC;
-                if (File.Exists(path))
+                if (points.Count < count)
                 {
-                    List<Dictionary<string, double>> lines = new List<Dictionary<string, double>>();
-                    msrFiles.Add(totalNC, lines);
-                    StreamReader reader = new StreamReader(path);
-                    string line = reader.ReadLine();
-                    while (line != null)
-                    {
-                        Dictionary<string, double> values = new Dictionary<string, double>();//保存mrs文件一行的XYZ值
-                        lines.Add(values);
-                        double x = double.Parse(line.Substring(9, 11));
-                        values.Add("X", x);
-                        double y = double.Parse(line.Substring(21, 11));
-                        values.Add("Y", y);
-                        double z = double.Parse(line.Substring(33));
-                        values.Add("Z", z);
-                        line = reader.ReadLine();
-                    }
-                    reader.Close();
-                }
-                if (msrFiles.Count == 0)
-                {
-                    MessageBox.Show($"没有找到mrs文件。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                    MessageBox.Show($"msr文件中的总点数少于PowerMILL中NC程序（U0到 - U315）的总点数。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                    return;
                 }
                 else
                 {
-                    //int count = msrFiles.Sum(f => f.Value.Count);
-                    powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
-                    string project = powerMILL.ExecuteEx("print $project_pathname(1)").ToString().Trim();
-                    string file = $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total\\Total.tap";
-                    if (!File.Exists(file))
+                    for (int i = 0; i < count; i++)
                     {
-                        MessageBox.Show($"没有找到{file}。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
-                    }
-                    else
-                    {
-                        //保存并转换msr中的坐标值
-                        List<string> transformed = new List<string>();
-                        int n = 0;
-                        foreach (var f in msrFiles)
-                        {
-                            switch (f.Key)
-                            {
-                                case "OMVu0.msr":
-                                    foreach (var l in f.Value)
-                                    {
-                                        transformed.Add($"G801 N{n} X{l["X"]} Y{l["Y"]} Z{l["Z"]} R3.0");
-                                        n++;
-                                    }
-                                    break;
-                                case "OMVu90.msr":
-                                    foreach (var l in f.Value)
-                                    {
-                                        transformed.Add($"G801 N{n} X{-l["Y"]} Y{l["X"]} Z{l["Z"]} R3.0");
-                                        n++;
-                                    }
-                                    break;
-                                case "OMVu180.msr":
-                                    foreach (var l in f.Value)
-                                    {
-                                        transformed.Add($"G801 N{n} X{-l["X"]} Y{-l["Y"]} Z{l["Z"]} R3.0");
-                                        n++;
-                                    }
-                                    break;
-                                case "OMVu270.msr":
-                                    foreach (var l in f.Value)
-                                    {
-                                        transformed.Add($"G801 N{n} X{l["Y"]} Y{-l["X"]} Z{l["Z"]} R3.0");
-                                        n++;
-                                    }
-                                    break;
-                            }
-                        }
-
-                        //读取total.tap
-                        StreamReader reader = new StreamReader(file);
-                        List<string> totalLines = new List<string>();
-                        string line = reader.ReadLine();
-                        while (line != null)
-                        {
-                            totalLines.Add(line);
-                            line = reader.ReadLine();
-                        }
-                        reader.Close();
-                        if (totalLines.Count - 2 != transformed.Count * 2) //total.tap去掉头尾的Start和End，和名义值
-                        {
-                            MessageBox.Show($"msr文件中的总点数和Total.tap中的不一至。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
-                        }
-                        else
-                        {
-                            string integrated = $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total\\Total_Integrated.tap";
-                            StreamWriter writer = new StreamWriter(integrated, false);
-
-                            n = 0;
-                            foreach (string l in totalLines)
-                            {
-                                if (l.Contains("R3.0"))
-                                {
-                                    writer.WriteLine(transformed[n++]);
-                                }
-                                else
-                                {
-                                    writer.WriteLine(l);
-                                }
-                            }
-                            writer.Close();
-
-                            if (MessageBox.Show("生成整合文件Total_Integrated.tap完成，是否打开所在文件夹？", "Info", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes, MessageBoxOptions.DefaultDesktopOnly) == MessageBoxResult.Yes)
-                            {
-                                System.Diagnostics.Process.Start("explorer.exe", $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total");
-                            }
-                        }
+                        Autodesk.Geometry.Point point = points.Dequeue();
+                        transformed.Add($"G801 N{n++} X{point.X * Math.Cos(angle) - point.Y * Math.Sin(angle)} Y{point.X * Math.Sin(angle) + point.Y * Math.Cos(angle)} Z{point.Z} R3.0");
                     }
                 }
+            }
+            if (points.Count > 0)
+            {
+                MessageBox.Show($"msr文件中的总点数大于PowerMILL中NC程序（U0到 - U315）的总点数。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+
+            string integrated = $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total\\Total_Integrated.tap";
+            StreamWriter writer = new StreamWriter(integrated, false);           
+            writer.WriteLine(totalLines.First());//复制total.tap的Start行
+            foreach (string l in transformed)
+            {
+                writer.WriteLine(l);
+            }
+            writer.WriteLine(totalLines.Last());//复制total.tap的End两行           
+            writer.Close();
+
+            if (MessageBox.Show("生成整合文件Total_Integrated.tap完成，是否打开所在文件夹？", "Info", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes, MessageBoxOptions.DefaultDesktopOnly) == MessageBoxResult.Yes)
+            {
+                System.Diagnostics.Process.Start("explorer.exe", $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total");
             }
         }
 

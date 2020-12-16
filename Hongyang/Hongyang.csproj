@@ -88,6 +88,7 @@
     <Compile Include="LinkFilter.xaml.cs">
       <DependentUpon>LinkFilter.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Model\NCOutput.cs" />
     <Compile Include="SPoint.xaml.cs">
       <DependentUpon>SPoint.xaml</DependentUpon>
     </Compile>
@@ -185,7 +186,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icon\pmill.ico" />
