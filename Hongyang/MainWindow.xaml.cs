@@ -40,6 +40,7 @@ namespace Hongyang
         public SPoint SPoint;
         public EPoint EPoint;
         public Config Config;
+        public PINominal PINominal;
 
         public ObservableCollection<string> Toolpaths = new ObservableCollection<string>();
 
@@ -70,6 +71,7 @@ namespace Hongyang
             SPoint = new SPoint();
             EPoint = new EPoint();
             Config = new Config();
+            PINominal = new PINominal();
         }
 
         public void RefreshToolpaths()
@@ -115,6 +117,9 @@ namespace Hongyang
             treeItem = new TreeItem() { Icon = @"\Icon\2D-Curve-Profile.ico", Name = "连接" };
             treeItems.Add(treeItem);
 
+            treeItem = new TreeItem() { Icon = @"\Icon\PowerInspect.ico", Name = "PI名义值" };
+            treeItems.Add(treeItem);
+
             treeItem = new TreeItem() { Icon = @"\Icon\Config.jpg", Name = "配置" };
             treeItems.Add(treeItem);
 
@@ -127,7 +132,7 @@ namespace Hongyang
             switch (treeItem.Name)
             {
                 case "曲面检测":
-                    frame.Navigate(Toolpath);
+                    frame.Navigate(Toolpath, "ttt");
                     break;
                 case "加工轴控制":
                     frame.Navigate(ToolAxOVec);
@@ -156,10 +161,13 @@ namespace Hongyang
                 case "配置":
                     frame.Navigate(Config);
                     break;
+                case "PI名义值":
+                    frame.Navigate(PINominal);
+                    break;
                 default:
                     break;
             }
-            if (Session.Toolpaths.ActiveItem != null)
+            if (Session.Toolpaths.ActiveItem != null && treeItem.Name == "连接")
             {
                 lblBanner.Content = treeItem.Name + " " + Session.Toolpaths.ActiveItem.Name;
             }

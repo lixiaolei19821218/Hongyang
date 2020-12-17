@@ -1373,28 +1373,62 @@ namespace Hongyang
                 }
             }
 
+            List<string> mocks = new List<string>();
             foreach (NCOutput n in NCOutputs)
             {
-                ExportNC(n.NC, opt, n.Workplane);
+                if (ConfigurationManager.AppSettings["mock"] == "true")
+                {
+                    //产生测试用的tap
+                    mocks.Add(ExportNC(n.NC, AppContext.BaseDirectory + ConfigurationManager.AppSettings["totalPmoptz"], n.Workplane));
+                }
+                else
+                {
+                    ExportNC(n.NC, opt, n.Workplane);
+                }
+            }
+            if (ConfigurationManager.AppSettings["mock"] == "true")
+            {
+                //生成测试用的msr
+                StreamWriter writer = new StreamWriter(ConfigurationManager.AppSettings["msrFolder"] + "\\OMV_Total.msr", false);
+                int i = 0;
+                foreach (string tap in mocks)
+                {
+                    StreamReader reader = new StreamReader(tap);
+                    string line = reader.ReadLine();
+                    while (line != null)
+                    {
+                        if (line.Contains("R3.0"))
+                        {
+                            string x = line.Substring(line.IndexOf("X") + 1, line.IndexOf("Y") - (line.IndexOf("X") + 1)).Trim();
+                            string y = line.Substring(line.IndexOf("Y") + 1, line.IndexOf("Z") - (line.IndexOf("Y") + 1)).Trim();
+                            string z = line.Substring(line.IndexOf("Z") + 1, line.IndexOf("R") - (line.IndexOf("Z") + 1)).Trim();
+                            writer.WriteLine($"N{(i++).ToString().PadLeft(7)}X{x.PadLeft(11)}Y{y.PadLeft(11)}Z{z.PadLeft(11)}");
+                        }
+                        line = reader.ReadLine();
+                    }
+                    reader.Close();
+                }
+                writer.Close();
             }
 
             powerMILL.Execute($"CREATE NCPROGRAM 'Total'");
             session.Refresh();
             foreach (PMNCProgram program in session.NCPrograms.Where(n => n.Name != "Total"))
             {
+                /*
                 string output = powerMILL.ExecuteEx($"EDIT NCPROGRAM '{program.Name}' LIST").ToString();
                 string[] toolpaths = output.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
                 for (int i = 2; i < toolpaths.Length - 1; i++)
                 {
                     powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpaths[i]}\"");
-                }
-                /* 此方法有bug， program.Toolpaths包含的刀路是乱的
+                }*/
+                ///此方法有bug， program.Toolpaths包含的刀路是乱的
                 foreach (PMToolpath toolpath in program.Toolpaths)
                 {
                     powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
-                }
-                */
+                }                
             }
+            
             opt = AppContext.BaseDirectory + ConfigurationManager.AppSettings["totalPmoptz"]; ;
             ExportNC("Total", opt, "NC");
             powerMILL.Execute("PROJECT SAVE");
@@ -1700,12 +1734,20 @@ namespace Hongyang
             Application.Current.MainWindow.WindowState = WindowState.Minimized;
 
             IMeasure measure = doc.get_ActiveMeasure();
-            ISurfaceGroup inspect1 = doc.SequenceItems[4] as ISurfaceGroup;//导入Total NC的初始检测组
+            ISurfaceGroup inspect1 = doc.SequenceItems[4] as ISurfaceGroup;//导入Total NC的初始检测组，设置点不输出到报告
             IBagOfPoints points = inspect1.BagOfPoints[measure];
             for (int i = 1; i <= inspect1.SequenceItems.Count; i++)
             {
                 inspect1.SequenceItems[i].OutputToReport = false;
             }
+
+            //取设置的名义值
+            PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
+            double nAngle, nDistance, nMinDistance, nMaxDistance;
+            double.TryParse(page.tbxAngle.Text, out nAngle);
+            double.TryParse(page.tbxDistance.Text, out nDistance);
+            double.TryParse(page.tbxMinDistance.Text, out nMinDistance);
+            double.TryParse(page.tbxMaxDistance.Text, out nMaxDistance);
 
             ISequenceGroup geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
             int index = 1;
@@ -1745,7 +1787,8 @@ namespace Hongyang
                             angle.ReferenceLine2.Feature = feature;
                             break;
                         }
-                    }
+                    }                    
+                    angle.PropertyAngle.Nominal = nAngle;
 
                     indices = new int[points.Count];
                     for (int i = 0; i < points.Count; i++)
@@ -1801,6 +1844,9 @@ namespace Hongyang
                             break;
                         }
                     }
+                    distance.PropertyDistance.Nominal = nDistance;
+                    distance.PropertyMaxDistance.Nominal = nMaxDistance;
+                    distance.PropertyMinDistance.Nominal = nMinDistance;
 
                     indices = new int[points.Count];
                     for (int i = 0; i < points.Count; i++)
@@ -1914,7 +1960,7 @@ namespace Hongyang
             }
             reader.Close();
 
-            if (totalLines.Count - 2 != points.Count) //total.tap去掉头尾的Start和End
+            if (totalLines.Count - 2 != points.Count * 2) //total.tap去掉头尾的Start和End，Total.tap一个点有名义值和实测值，所以是点数的两倍
             {
                 MessageBox.Show($"msr文件中的总点数和Total.tap中的不一至。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
@@ -1922,18 +1968,16 @@ namespace Hongyang
 
             //保存并转换msr中的坐标值
             List<string> transformed = new List<string>();
+            powerMILL.DialogsOff();
             session.Refresh();                      
             int n = 0;//整合文件的行Index
+            int totalCount = 0;
             foreach (PMNCProgram program in session.NCPrograms.Where(nc => nc.Name != "Total"))
             {
-                double angle = (double)powerMILL.ExecuteEx($"print par terse \"entity('ncprogram', 'NC270').OutputWorkplane.ZAngle\"") / 180 * Math.PI;
-                int count = 0;//nc程序中的点数
-                string output = powerMILL.ExecuteEx($"EDIT NCPROGRAM '{program.Name}' LIST").ToString();
-                string[] toolpaths = output.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);                
-                foreach (string toolpath in toolpaths)
-                {
-                    count += int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath}').Statistics.PlungesIntoStock\"").ToString());//检测路径点数
-                }
+                double angle = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('ncprogram', '{program.Name}').OutputWorkplane.ZAngle\"").ToString()) / 180 * Math.PI;
+                //nc程序中的点数                
+                int count = program.Toolpaths.Sum(t => int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{t.Name}').Statistics.PlungesIntoStock\"").ToString()));
+                totalCount += count;//continue;
                 if (points.Count < count)
                 {
                     MessageBox.Show($"msr文件中的总点数少于PowerMILL中NC程序（U0到 - U315）的总点数。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
@@ -1944,7 +1988,7 @@ namespace Hongyang
                     for (int i = 0; i < count; i++)
                     {
                         Autodesk.Geometry.Point point = points.Dequeue();
-                        transformed.Add($"G801 N{n++} X{point.X * Math.Cos(angle) - point.Y * Math.Sin(angle)} Y{point.X * Math.Sin(angle) + point.Y * Math.Cos(angle)} Z{point.Z} R3.0");
+                        transformed.Add($"G801 N{n++} X{Math.Round(point.X * Math.Cos(angle) - point.Y * Math.Sin(angle), 3)} Y{Math.Round(point.X * Math.Sin(angle) + point.Y * Math.Cos(angle),3)} Z{point.Z} R3.0");
                     }
                 }
             }
@@ -1955,13 +1999,19 @@ namespace Hongyang
             }
 
             string integrated = $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total\\Total_Integrated.tap";
-            StreamWriter writer = new StreamWriter(integrated, false);           
-            writer.WriteLine(totalLines.First());//复制total.tap的Start行
-            foreach (string l in transformed)
+            StreamWriter writer = new StreamWriter(integrated, false);
+            n = 0;
+            foreach (string l in totalLines)
             {
-                writer.WriteLine(l);
+                if (l.Contains("R3.0"))//实际测量值的列写来自msr的
+                {
+                    writer.WriteLine(transformed[n++]);
+                }
+                else
+                {
+                    writer.WriteLine(l);//Start，End和名义值列
+                }
             }
-            writer.WriteLine(totalLines.Last());//复制total.tap的End两行           
             writer.Close();
 
             if (MessageBox.Show("生成整合文件Total_Integrated.tap完成，是否打开所在文件夹？", "Info", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes, MessageBoxOptions.DefaultDesktopOnly) == MessageBoxResult.Yes)
@@ -1999,6 +2049,6 @@ namespace Hongyang
         {
             cbxPoints.ItemsSource = points2;
             cbxPoints.SelectedItem = points2.First();
-        }
+        }        
     }
 }
