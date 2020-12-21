@@ -7,26 +7,38 @@
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="Config">
-
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <Label VerticalContentAlignment="Center">项目保存路径</Label>
-        <TextBox Grid.Column="1" Height="30" Text="{Binding ElementName=imgProject, Path=Tag}"></TextBox>
-        <Image Grid.Column="2" Name="imgProject" Source="icon/folder.png" Width="30" Height="30" Margin="10" HorizontalAlignment="Right" MouseLeftButtonUp="ImgProject_MouseLeftButtonUp"/>
-        <Label VerticalContentAlignment="Center" Grid.Row="1">NC程序保存路径</Label>
-        <TextBox Grid.Row="1" Grid.Column="1" Height="30" Text="{Binding ElementName=imgNC, Path=Tag}"></TextBox>
-        <Image Grid.Row="1" Grid.Column="2" Name="imgNC" Source="icon/folder.png" Width="30" Height="30" Margin="10" HorizontalAlignment="Right" MouseLeftButtonUp="ImgNC_MouseLeftButtonUp"/>
-        <Label VerticalContentAlignment="Center" Grid.Row="2">机床文件放置路径</Label>
-        <TextBox Grid.Row="2" Grid.Column="1" Height="30" Text="{Binding ElementName=imgMachine, Path=Tag}"></TextBox>
-        <Image Grid.Row="2" Grid.Column="2" Name="imgMachine" Source="icon/folder.png" Width="30" Height="30" Margin="10" HorizontalAlignment="Right" MouseLeftButtonUp="ImgMachine_MouseLeftButtonUp"/>
-    </Grid>
+    <StackPanel>
+        <GroupBox Header="文档路径设置">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Label VerticalContentAlignment="Center">项目保存路径</Label>
+                <TextBox Grid.Column="1" Height="30" Text="{Binding ElementName=imgProject, Path=Tag}"></TextBox>
+                <Image Grid.Column="2" Name="imgProject" Source="icon/folder.png" Width="30" Height="30" Margin="10" HorizontalAlignment="Right" MouseLeftButtonUp="ImgProject_MouseLeftButtonUp"/>
+                <Label VerticalContentAlignment="Center" Grid.Row="1">NC程序保存路径</Label>
+                <TextBox Grid.Row="1" Grid.Column="1" Height="30" Text="{Binding ElementName=imgNC, Path=Tag}"></TextBox>
+                <Image Grid.Row="1" Grid.Column="2" Name="imgNC" Source="icon/folder.png" Width="30" Height="30" Margin="10" HorizontalAlignment="Right" MouseLeftButtonUp="ImgNC_MouseLeftButtonUp"/>
+                <Label VerticalContentAlignment="Center" Grid.Row="2">机床文件放置路径</Label>
+                <TextBox Grid.Row="2" Grid.Column="1" Height="30" Text="{Binding ElementName=imgMachine, Path=Tag}"></TextBox>
+                <Image Grid.Row="2" Grid.Column="2" Name="imgMachine" Source="icon/folder.png" Width="30" Height="30" Margin="10" HorizontalAlignment="Right" MouseLeftButtonUp="ImgMachine_MouseLeftButtonUp"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox Header="曲面颜色识别">
+            <DataGrid Margin="5" Name="dgColor" AutoGenerateColumns="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding Path=R}"/>
+                    <DataGridTextColumn Binding="{Binding Path=G}"/>
+                    <DataGridTextColumn Binding="{Binding Path=B}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
+    </StackPanel>
 </Page>

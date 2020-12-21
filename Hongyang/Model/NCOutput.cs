@@ -15,6 +15,6 @@ namespace Hongyang.Model
 
         public string Workplane => "U" + Angle;
 
-        public string NC => "NC" + Angle;       
+        public string NC => Workplane;       
     }
 }

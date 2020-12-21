@@ -100,3 +100,8 @@ C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Config.g.cs
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Config.baml
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\PINominal.g.cs
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\PINominal.baml
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\NC\NC_Booter.tap
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Pmoptz\Fidia_KR199_OMV_V6.pmoptz
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Pmoptz\Results_Output_Generator_OMV2015.pmoptz
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\NC\NC_Header.tap
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Newtonsoft.Json.dll

@@ -20,9 +20,9 @@
                 <Label Content="距离"/>
                 <TextBox Width="60" Text="0.0" Name="tbxDistance" x:FieldModifier="public"/>
                 <Label Content="最小距离"/>
-                <TextBox Width="60" Text="0.0" Name="tbxMinDistance" x:FieldModifier="public"/>
+                <TextBox Width="60" Text="{Binding ElementName=tbxDistance, Path=Text, Mode=OneWay}" Name="tbxMinDistance" x:FieldModifier="public"/>
                 <Label Content="最大距离"/>
-                <TextBox Width="60" Text="0.0" Name="tbxMaxDistance" x:FieldModifier="public"/>
+                <TextBox Width="60" Text="{Binding ElementName=tbxDistance, Path=Text, Mode=OneWay}" Name="tbxMaxDistance" x:FieldModifier="public"/>
             </StackPanel>
         </GroupBox>
     </StackPanel>

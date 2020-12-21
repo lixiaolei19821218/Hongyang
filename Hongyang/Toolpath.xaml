@@ -79,6 +79,8 @@
                 <!--<TextBox Margin="0" Name="tbxPoints" Width="50" Height="25" HorizontalAlignment="Left" Text="8"></TextBox>-->
                 <Label Margin="0" VerticalContentAlignment="Center">行间距</Label>
                 <TextBox Margin="0" Name="tbxStepdown" Width="50" Height="25" HorizontalAlignment="Left" Text="3"></TextBox>
+                <Label Margin="0" VerticalContentAlignment="Center">曲面点数</Label>
+                <TextBox Margin="0" Name="tbxGreenPoints" Width="50" Height="25" HorizontalAlignment="Left" Text="10"></TextBox>
             </StackPanel>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Margin="0">
                 <CheckBox Margin="10" Name="chxSelectMethod">手工选取测量方法</CheckBox>

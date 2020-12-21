@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -28,6 +29,15 @@ namespace Hongyang
             imgProject.Tag = ConfigurationManager.AppSettings["projectFolder"];
             imgNC.Tag = ConfigurationManager.AppSettings["ncFolder"];
             imgMachine.Tag = ConfigurationManager.AppSettings["msrFolder"];
+            
+            List<Color> colors = new List<Color>();
+            dgColor.ItemsSource = colors;
+            colors.Add(new Color() { R = 255, G = 0, B = 0 });
+
+            
+            //Color color = new Color { }
+
+            //JsonConvert.
         }
 
         private void ImgProject_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)

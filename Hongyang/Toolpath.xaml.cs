@@ -256,19 +256,13 @@ namespace Hongyang
                         MessageBox.Show("请至少选择一个要计算的层。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                         return;
                     }
-                    /*行数和点数改成下拉
-                    uint v;
-                    if (!uint.TryParse(tbxStepdown.Text, out v)) 
+                   
+                    uint v;                   
+                    if (!uint.TryParse(tbxGreenPoints.Text, out v) || v == 0)
                     {
-                        MessageBox.Show("检测行数必须是正整数。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                        MessageBox.Show("曲面点数必须是正整数。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                         return;
-                    }
-                    if (!uint.TryParse(tbxPoints.Text, out v))
-                    {
-                        MessageBox.Show("点数必须是正整数。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
-                        return;
-                    }
-                    */
+                    }                   
                     double d;
                     if (double.TryParse(tbxStepdown.Text, out d))
                     {
@@ -656,7 +650,7 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT PATTERN \"{tpName}\" CURVEEDITOR START");
                 powerMILL.Execute("FORM RIBBON TAB \"CurveTools.EditCurve\"");
                 powerMILL.Execute("CURVEEDITOR REPOINT RAISE");
-                value = chxSelectMethod.IsChecked == true ? cbxPoints.Text : ConfigurationManager.AppSettings["points"];
+                value = chxSelectMethod.IsChecked == true ? tbxGreenPoints.Text : ConfigurationManager.AppSettings["greenPoints"];
                 powerMILL.Execute($"CURVEEDITOR REPOINT POINTS \"{value}\"");
                 powerMILL.Execute("FORM APPLY CEREPOINTCURVE");
                 powerMILL.Execute("FORM CANCEL CEREPOINTCURVE");
@@ -1354,7 +1348,7 @@ namespace Hongyang
             ActivateWorldPlane();
             powerMILL.Execute($"DELETE NCPROGRAM ALL");
 
-            string opt = AppContext.BaseDirectory + ConfigurationManager.AppSettings["uPmoptz"];
+            
             foreach (NCOutput n in NCOutputs)
             {
                 powerMILL.Execute($"CREATE NCPROGRAM '{n.NC}'");
@@ -1371,27 +1365,25 @@ namespace Hongyang
                     powerMILL.Execute($"ACTIVATE NCProgram \"{output.NC}\"");
                     powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
                 }
-            }
+            }            
 
-            List<string> mocks = new List<string>();
+            List<string> ncFiles = new List<string>();
+            string opt = AppContext.BaseDirectory + ConfigurationManager.AppSettings["uPmoptz"];
             foreach (NCOutput n in NCOutputs)
             {
                 if (ConfigurationManager.AppSettings["mock"] == "true")
                 {
                     //产生测试用的tap
-                    mocks.Add(ExportNC(n.NC, AppContext.BaseDirectory + ConfigurationManager.AppSettings["totalPmoptz"], n.Workplane));
-                }
-                else
-                {
-                    ExportNC(n.NC, opt, n.Workplane);
-                }
+                    opt = AppContext.BaseDirectory + ConfigurationManager.AppSettings["totalPmoptz"];
+                }                
+                ncFiles.Add(ExportNC(n.NC, opt, n.Workplane));
             }
             if (ConfigurationManager.AppSettings["mock"] == "true")
             {
                 //生成测试用的msr
                 StreamWriter writer = new StreamWriter(ConfigurationManager.AppSettings["msrFolder"] + "\\OMV_Total.msr", false);
                 int i = 0;
-                foreach (string tap in mocks)
+                foreach (string tap in ncFiles)
                 {
                     StreamReader reader = new StreamReader(tap);
                     string line = reader.ReadLine();
@@ -1408,6 +1400,34 @@ namespace Hongyang
                     }
                     reader.Close();
                 }
+                writer.Close();
+            }
+            else
+            {
+                string projectName = powerMILL.ExecuteEx("print $project_pathname(1)").ToString().Trim();
+                string totalFolder = ConfigurationManager.AppSettings["ncFolder"] + "\\" + projectName + "\\Total";
+                if (!Directory.Exists(totalFolder))
+                {
+                    Directory.CreateDirectory(totalFolder);
+                }
+
+                StreamReader reader = new StreamReader(AppContext.BaseDirectory + @"\NC\NC_Header.tap");
+                StreamWriter writer = new StreamWriter(totalFolder + "\\Total.nc", false);
+                writer.Write(reader.ReadToEnd().Replace("OMV", $"OMV_{tbxPart.Text.Trim()}"));//DGT => IPC C:\MSR\OMV.msr这个行替换成OMV_零件名.msr
+                reader.Close();
+                writer.WriteLine();
+
+                foreach (string ncFile in ncFiles.Where(n => !string.IsNullOrEmpty(n)))
+                {
+                    reader = new StreamReader(ncFile);
+                    writer.Write(reader.ReadToEnd());
+                    reader.Close();
+                }
+
+                writer.WriteLine();
+                reader = new StreamReader(AppContext.BaseDirectory + @"\NC\NC_Booter.tap");
+                writer.Write(reader.ReadToEnd());
+                reader.Close();
                 writer.Close();
             }
 
@@ -1437,6 +1457,13 @@ namespace Hongyang
             Application.Current.MainWindow.WindowState = WindowState.Normal;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="nc">PM中的NC程序名</param>
+        /// <param name="opt">后置文件完整路径</param>
+        /// <param name="workplane">PM中的坐标系名</param>
+        /// <returns></returns>
         public string ExportNC(string nc, string opt, string workplane)
         {
             session.Refresh();
@@ -1467,17 +1494,7 @@ namespace Hongyang
                     powerMILL.Execute($"NCTOOLPATH ACCEPT FORM ACCEPT NCTOOLPATHLIST FORM ACCEPT NCTOOLLIST FORM ACCEPT PROBINGNCOPTS");
                     powerMILL.Execute("TEXTINFO ACCEPT");
 
-                    ncFile = path + "\\" + nc + ".tap";
-                    string totalFolder = ConfigurationManager.AppSettings["ncFolder"] + "\\" + projectName + "\\Total";
-                    if (!Directory.Exists(totalFolder))
-                    {
-                        Directory.CreateDirectory(totalFolder);
-                    }
-                    StreamReader reader = new StreamReader(ncFile);
-                    StreamWriter writer = new StreamWriter(totalFolder + "\\Total.nc", true);
-                    writer.Write(reader.ReadToEnd());
-                    writer.Close();
-                    reader.Close();
+                    ncFile = path + "\\" + nc + ".tap";                   
                 }
             }
             return ncFile;
