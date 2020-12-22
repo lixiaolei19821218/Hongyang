@@ -10,6 +10,7 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -77,7 +78,7 @@ namespace Hongyang
         private void RefreshLevels()
         {
             session.Refresh();
-            lstAllLevel.ItemsSource = session.LevelsAndSets.OrderBy(l => l.Name);
+            lstAllLevel.ItemsSource = session.LevelsAndSets;
         }
 
         private void s_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -293,10 +294,7 @@ namespace Hongyang
 
                     foreach (PMLevelOrSet level in lstAllLevel.Items)
                     {
-                        if (level.Name == "Red" || level.Name == "Blue" || level.Name == "Green" || level.Name == "Yellow")
-                        {
-                            Calculate(level.Name);
-                        }
+                        Calculate(level.Name);                        
                     }
                 }
                 //(Application.Current.MainWindow as MainWindow).RefreshToolpaths();
@@ -482,11 +480,19 @@ namespace Hongyang
                 else if (level == "Green" || level == "Yellow")
                 {
                     tag = "Y";
-                }
+                }                
                 else
                 {
-                    MessageBox.Show($"自动计算的层必须以Red，Blue，Green或Yellow命名。当前层：{level}。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
-                    return;
+                    Regex r = new Regex(@"^R\d+G\d+B\d+");
+                    if (r.IsMatch(level))
+                    {
+                        tag = "Y";                        
+                    }    
+                    else
+                    {
+                        //MessageBox.Show($"自动计算的层必须以Red，Blue，Green，Yellow命名或是RGB命名的预留层。当前层：{level}。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                        return;
+                    }
                 }
             }
 
