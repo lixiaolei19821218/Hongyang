@@ -358,5 +358,14 @@
   <ItemGroup>
     <Resource Include="Icon\total.jpg" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\delete.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\add.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icon\save.jpg" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

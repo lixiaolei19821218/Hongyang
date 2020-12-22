@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,6 +24,9 @@ namespace Hongyang
     /// </summary>
     public partial class Config : Page
     {
+        private ObservableCollection<Color> colors;
+        private string jsonFile = AppContext.BaseDirectory + @"color.txt";
+
         public Config()
         {
             InitializeComponent();
@@ -29,15 +34,16 @@ namespace Hongyang
             imgProject.Tag = ConfigurationManager.AppSettings["projectFolder"];
             imgNC.Tag = ConfigurationManager.AppSettings["ncFolder"];
             imgMachine.Tag = ConfigurationManager.AppSettings["msrFolder"];
-            
-            List<Color> colors = new List<Color>();
+
+            StreamReader reader = new StreamReader(jsonFile);
+            string json = reader.ReadToEnd();
+            reader.Close();
+            colors = JsonConvert.DeserializeObject<ObservableCollection<Color>>(json);
+            if (colors == null)
+            {
+                colors = new ObservableCollection<Color>();
+            }
             dgColor.ItemsSource = colors;
-            colors.Add(new Color() { R = 255, G = 0, B = 0 });
-
-            
-            //Color color = new Color { }
-
-            //JsonConvert.
         }
 
         private void ImgProject_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -73,6 +79,52 @@ namespace Hongyang
                 Configuration cfa = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 cfa.AppSettings.Settings["msrFolder"].Value = dialog.SelectedPath;
                 cfa.Save();
+            }
+        }
+
+        private void BtnAdd_Click(object sender, RoutedEventArgs e)
+        {
+            colors.Add(new Color());
+        }
+
+        private void BtnDelete_Click(object sender, RoutedEventArgs e)
+        {            
+            List<Color> toDelete = new List<Color>();
+            foreach (Color color in dgColor.SelectedItems)
+            {
+                toDelete.Add(color);
+            }
+            foreach (Color color in toDelete)
+            {
+                colors.Remove(color);
+            }
+        }
+
+        private void BtnSave_Click(object sender, RoutedEventArgs e)
+        {
+            string json = JsonConvert.SerializeObject(colors.Distinct());
+            StreamWriter writer = new StreamWriter(jsonFile, false);
+            writer.Write(json);
+            writer.Close();
+            MessageBox.Show("颜色配置保存成功。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+        }
+
+        private void DgColor_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            Color color = (Color)e.Row.Item;
+            if (
+                (color.R == 255 && color.G == 0 && color.B == 0) || 
+                (color.R == 0 && color.G == 255 && color.B == 0) || 
+                (color.R == 0 && color.G == 0 && color.B == 255) || 
+                (color.R == 255 && color.G == 255 && color.B == 0)
+                )
+            {
+                MessageBox.Show($"R{color.R}G{color.G}B{color.B}为保留色，不能配置此RGB值。", "Warming", MessageBoxButton.OK, MessageBoxImage.Warning, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                e.Row.Item = colors[e.Row.GetIndex()];
+            }            
+            else
+            {
+                colors[e.Row.GetIndex()] = (Color)e.Row.Item;
             }
         }
     }

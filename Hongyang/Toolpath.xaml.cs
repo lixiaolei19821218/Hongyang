@@ -1,9 +1,11 @@
 ﻿using Autodesk.Geometry;
 using Autodesk.ProductInterface.PowerMILL;
 using Hongyang.Model;
+using Newtonsoft.Json;
 using PowerINSPECTAutomation;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Configuration;
 using System.IO;
 using System.Linq;
@@ -1507,9 +1509,9 @@ namespace Hongyang
             //powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);            
             //session = powerMILL.ActiveProject;
             powerMILL.DialogsOff();
-            string r = powerMILL.ExecuteEx("project reset").ToString();
+            string reset = powerMILL.ExecuteEx("project reset").ToString();
 
-            if (r.Contains("Cancel"))
+            if (reset.Contains("Cancel"))
             {
                 MessageBox.Show("未保存或放弃保存当前PowerMILL项目，将不会导入模型。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
             }
@@ -1524,8 +1526,21 @@ namespace Hongyang
                     powerMILL.Execute("CREATE LEVEL Green");
                     powerMILL.Execute("CREATE LEVEL Yellow");
 
+                    //创建预留层
+                    StreamReader reader = new StreamReader(AppContext.BaseDirectory + @"color.txt");
+                    string json = reader.ReadToEnd();
+                    reader.Close();
+                    ObservableCollection<Color> colors = JsonConvert.DeserializeObject<ObservableCollection<Color>>(json);
+                    if (colors != null)
+                    {
+                        foreach (Color color in colors)
+                        {
+                            powerMILL.Execute($"CREATE LEVEL R{color.R}G{color.G}B{color.B}");
+                        }
+                    }
+
                     session.Refresh();
-                    //识别层
+                    //识别层                    
                     foreach (PMModel model in session.Models)
                     {
                         string output = powerMILL.ExecuteEx($"size model '{model.Name}'").ToString();
@@ -1534,27 +1549,40 @@ namespace Hongyang
                         {
                             powerMILL.Execute($"edit model '{model.Name}' deselect all");
                             string[] items = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                            if (items[3] == "255" && items[4] == "0" && items[5] == "0")
+                            int r = int.Parse(items[3]);
+                            int g = int.Parse(items[4]);
+                            int b = int.Parse(items[5]);
+
+                            if (r == 255 && g == 0 && b == 0)
                             {
                                 powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
                                 powerMILL.Execute($"EDIT LEVEL \"Red\" ACQUIRE SELECTED");
                             }
-                            if (items[3] == "0" && items[4] == "255" && items[5] == "0")
+                            else if (r == 0 && g == 255 && b == 0)
                             {
                                 powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
                                 powerMILL.Execute($"EDIT LEVEL \"Green\" ACQUIRE SELECTED");
                             }
-                            if (items[3] == "0" && items[4] == "0" && items[5] == "255")
+                            else if (r == 0 && g == 0 && b == 255)
                             {
                                 powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
                                 powerMILL.Execute($"EDIT LEVEL \"Blue\" ACQUIRE SELECTED");
                             }
-                            if (items[3] == "255" && items[4] == "255" && items[5] == "0")
+                            else if (r == 255 && g == 255 && b == 0)
                             {
                                 powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
                                 powerMILL.Execute($"EDIT LEVEL \"Yellow\" ACQUIRE SELECTED");
                             }
-                        }
+                            else
+                            {                               
+                                if (colors.Any(c => c.R == r && c.G == g && c.B == b))
+                                {
+                                    string level = $"R{r}G{g}B{b}";
+                                    powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
+                                    powerMILL.Execute($"EDIT LEVEL \"{level}\" ACQUIRE SELECTED");
+                                }
+                            }                            
+                        }                       
                     }
 
                     CreateTool();

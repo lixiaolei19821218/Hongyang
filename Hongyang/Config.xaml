@@ -32,13 +32,27 @@
             </Grid>
         </GroupBox>
         <GroupBox Header="曲面颜色识别">
-            <DataGrid Margin="5" Name="dgColor" AutoGenerateColumns="False">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Binding="{Binding Path=R}"/>
-                    <DataGridTextColumn Binding="{Binding Path=G}"/>
-                    <DataGridTextColumn Binding="{Binding Path=B}"/>
-                </DataGrid.Columns>
-            </DataGrid>
+            <StackPanel Margin="5">
+                <DockPanel Margin="5" Height="40">
+                    <StackPanel Orientation="Horizontal">
+                    <Image Source="Icon\add.jpg" Width="25"/>
+                    <Button Name="btnAdd" Margin="5" Width="50" Click="BtnAdd_Click">增加</Button>
+                    <Image Source="Icon\delete.jpg" Width="25" Margin="10 0 0 0"/>
+                    <Button Name="btnDelete" Margin="5" Width="50" Click="BtnDelete_Click">删除</Button>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Image Source="Icon\save.jpg" Width="25" Margin="10 0 0 0"/>
+                        <Button Name="btnSave" Margin="5" Width="50" Click="BtnSave_Click">保存</Button>
+                    </StackPanel>
+                </DockPanel>
+                <DataGrid Margin="5" Name="dgColor" AutoGenerateColumns="False" HeadersVisibility="Column" RowHeight="20" Height="480" CellEditEnding="DgColor_CellEditEnding">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Width="*" Header="R" Binding="{Binding Path=R, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <DataGridTextColumn Width="*" Header="G" Binding="{Binding Path=G, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <DataGridTextColumn Width="*" Header="B" Binding="{Binding Path=B, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
         </GroupBox>
     </StackPanel>
 </Page>
