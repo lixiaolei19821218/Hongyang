@@ -67,29 +67,28 @@
         <DockPanel Grid.Row="3" Grid.Column="1" Margin="5" Grid.ColumnSpan="3">
             <StackPanel Orientation="Horizontal" IsEnabled="{Binding ElementName=chxSelectMethod, Path=IsChecked}">
                 <Label Margin="0" VerticalContentAlignment="Center">检测行</Label>
-                <ComboBox SelectedIndex="0" Name="cbxStepdownLimit" Width="50" SelectionChanged="CbxStepdownLimit_SelectionChanged">
+                <ComboBox SelectedIndex="0" Name="cbxStepdownLimit" Width="45" SelectionChanged="CbxStepdownLimit_SelectionChanged">
                     <ComboBoxItem>2</ComboBoxItem>
                     <ComboBoxItem>3</ComboBoxItem>
                 </ComboBox>
                 <!--<TextBox Margin="0" Name="tbxStepdown" Width="50" Height="25" HorizontalAlignment="Left" Text="3"></TextBox>-->
                 <Label Margin="0" VerticalContentAlignment="Center">点数</Label>
-                <ComboBox Name="cbxPoints" Width="50" SelectedIndex="0">
-
+                <ComboBox Name="cbxPoints" Width="45" SelectedIndex="0">
                 </ComboBox>
                 <!--<TextBox Margin="0" Name="tbxPoints" Width="50" Height="25" HorizontalAlignment="Left" Text="8"></TextBox>-->
                 <Label Margin="0" VerticalContentAlignment="Center">行间距</Label>
-                <TextBox Margin="0" Name="tbxStepdown" Width="50" Height="25" HorizontalAlignment="Left" Text="3"></TextBox>
+                <TextBox Margin="0" Name="tbxStepdown" Width="40" Height="25" HorizontalAlignment="Left" Text="3"></TextBox>
                 <Label Margin="0" VerticalContentAlignment="Center">曲面点数</Label>
-                <TextBox Margin="0" Name="tbxGreenPoints" Width="50" Height="25" HorizontalAlignment="Left" Text="10"></TextBox>
+                <TextBox Margin="0" Name="tbxGreenPoints" Width="40" Height="25" HorizontalAlignment="Left" Text="10"></TextBox>
             </StackPanel>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Margin="0">
-                <CheckBox Margin="10" Name="chxSelectMethod">手工选取测量方法</CheckBox>
-                <ComboBox Name="cbxMethod" Width="80" SelectionChanged="CbxMethod_SelectionChanged" SelectedIndex="0" IsEnabled="{Binding ElementName=chxSelectMethod, Path=IsChecked}">
-                    <ComboBoxItem Content="Swarf" Tag="S" />
+                <CheckBox Margin="10" Name="chxSelectMethod">手工选取测量项</CheckBox>
+                <ComboBox Name="cbxMethod" Width="110" SelectionChanged="CbxMethod_SelectionChanged" SelectedIndex="0" IsEnabled="{Binding ElementName=chxSelectMethod, Path=IsChecked}">
+                    <!--<ComboBoxItem Content="Swarf" Tag="S" />
                     <ComboBoxItem Content="Pattern" Tag="P"/>
                     <ComboBoxItem Content="SPattern" Tag="Y"/>
                     <ComboBoxItem Content="弧度" Tag="C"/>
-                    <ComboBoxItem Content="Z值" Tag="Z"/>
+                    <ComboBoxItem Content="Z值" Tag="Z"/>-->
                 </ComboBox>
             </StackPanel>
         </DockPanel>

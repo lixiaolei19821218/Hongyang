@@ -7,23 +7,34 @@
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="PI Nominal">
-
     <StackPanel>
-        <GroupBox Header="角度" Margin="5">
-            <StackPanel Orientation="Horizontal">
-                <Label Content="角度"/>
-                <TextBox Width="60" Text="0.0" Name="tbxAngle" x:FieldModifier="public"/>
-            </StackPanel>            
-        </GroupBox>
-        <GroupBox Header="距离" Margin="5">
-            <StackPanel Orientation="Horizontal">
-                <Label Content="距离"/>
-                <TextBox Width="60" Text="0.0" Name="tbxDistance" x:FieldModifier="public"/>
-                <Label Content="最小距离"/>
-                <TextBox Width="60" Text="{Binding ElementName=tbxDistance, Path=Text, Mode=OneWay}" Name="tbxMinDistance" x:FieldModifier="public"/>
-                <Label Content="最大距离"/>
-                <TextBox Width="60" Text="{Binding ElementName=tbxDistance, Path=Text, Mode=OneWay}" Name="tbxMaxDistance" x:FieldModifier="public"/>
+        <GroupBox Header="PI名义值">
+            <StackPanel>
+                <GroupBox Header="角度" Margin="5">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="角度"/>
+                        <TextBox Width="60" Text="0.0" Name="tbxAngle" x:FieldModifier="public"/>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Header="距离" Margin="5">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="距离"/>
+                        <TextBox Width="60" Text="0.0" Name="tbxDistance" x:FieldModifier="public"/>
+                        <Label Content="最小距离"/>
+                        <TextBox Width="60" Text="{Binding ElementName=tbxDistance, Path=Text, Mode=OneWay}" Name="tbxMinDistance" x:FieldModifier="public"/>
+                        <Label Content="最大距离"/>
+                        <TextBox Width="60" Text="{Binding ElementName=tbxDistance, Path=Text, Mode=OneWay}" Name="tbxMaxDistance" x:FieldModifier="public"/>
+                    </StackPanel>
+                </GroupBox>
             </StackPanel>
+        </GroupBox>
+        <GroupBox Header="顶端平面">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="直径"/>
+                <TextBox Width="60" Text="1000.0" Name="tbxDiameter" x:FieldModifier="public"/>
+                <Label Content="最小距离"/>
+                <TextBox Width="60" Text="50.0" Name="tbxMinWidth" x:FieldModifier="public"/>
+                </StackPanel>
         </GroupBox>
     </StackPanel>
 </Page>

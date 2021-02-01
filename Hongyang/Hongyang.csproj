@@ -89,6 +89,7 @@
     <Compile Include="LinkFilter.xaml.cs">
       <DependentUpon>LinkFilter.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Model\LevelConfig.cs" />
     <Compile Include="Model\NCOutput.cs" />
     <Compile Include="PINominal.xaml.cs">
       <DependentUpon>PINominal.xaml</DependentUpon>

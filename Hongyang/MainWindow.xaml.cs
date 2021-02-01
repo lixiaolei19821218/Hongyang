@@ -117,7 +117,7 @@ namespace Hongyang
             treeItem = new TreeItem() { Icon = @"\Icon\2D-Curve-Profile.ico", Name = "连接" };
             treeItems.Add(treeItem);
 
-            treeItem = new TreeItem() { Icon = @"\Icon\PowerInspect.ico", Name = "PI名义值" };
+            treeItem = new TreeItem() { Icon = @"\Icon\PowerInspect.ico", Name = "参数设置" };
             treeItems.Add(treeItem);
 
             treeItem = new TreeItem() { Icon = @"\Icon\Config.jpg", Name = "配置" };
@@ -132,7 +132,7 @@ namespace Hongyang
             switch (treeItem.Name)
             {
                 case "曲面检测":
-                    frame.Navigate(Toolpath, "ttt");
+                    frame.Navigate(Toolpath);
                     break;
                 case "加工轴控制":
                     frame.Navigate(ToolAxOVec);
@@ -161,7 +161,7 @@ namespace Hongyang
                 case "配置":
                     frame.Navigate(Config);
                     break;
-                case "PI名义值":
+                case "参数设置":
                     frame.Navigate(PINominal);
                     break;
                 default:

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Hongyang.Model;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -24,8 +25,10 @@ namespace Hongyang
     /// </summary>
     public partial class Config : Page
     {
-        private ObservableCollection<Color> colors;
-        private string jsonFile = AppContext.BaseDirectory + @"color.txt";
+        private ObservableCollection<LevelConfig> levelConfigs;
+        private string colorFile = AppContext.BaseDirectory + @"color.txt";        
+
+        public static ObservableCollection<string> MethodList = new ObservableCollection<string>(ConfigurationManager.AppSettings["methods"].Split(','));
 
         public Config()
         {
@@ -33,17 +36,17 @@ namespace Hongyang
 
             imgProject.Tag = ConfigurationManager.AppSettings["projectFolder"];
             imgNC.Tag = ConfigurationManager.AppSettings["ncFolder"];
-            imgMachine.Tag = ConfigurationManager.AppSettings["msrFolder"];
+            imgMachine.Tag = ConfigurationManager.AppSettings["msrFolder"];            
 
-            StreamReader reader = new StreamReader(jsonFile);
+            StreamReader reader = new StreamReader(colorFile);
             string json = reader.ReadToEnd();
             reader.Close();
-            colors = JsonConvert.DeserializeObject<ObservableCollection<Color>>(json);
-            if (colors == null)
+            levelConfigs = JsonConvert.DeserializeObject<ObservableCollection<LevelConfig>>(json);
+            if (levelConfigs == null)
             {
-                colors = new ObservableCollection<Color>();
+                levelConfigs = new ObservableCollection<LevelConfig>();
             }
-            dgColor.ItemsSource = colors;
+            dgColor.ItemsSource = levelConfigs;
         }
 
         private void ImgProject_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -84,48 +87,48 @@ namespace Hongyang
 
         private void BtnAdd_Click(object sender, RoutedEventArgs e)
         {
-            colors.Add(new Color());
+            levelConfigs.Add(new LevelConfig());
         }
 
         private void BtnDelete_Click(object sender, RoutedEventArgs e)
         {            
-            List<Color> toDelete = new List<Color>();
-            foreach (Color color in dgColor.SelectedItems)
+            List<LevelConfig> toDelete = new List<LevelConfig>();
+            foreach (LevelConfig config in dgColor.SelectedItems)
             {
-                toDelete.Add(color);
+                toDelete.Add(config);
             }
-            foreach (Color color in toDelete)
+            foreach (LevelConfig config in toDelete)
             {
-                colors.Remove(color);
+                levelConfigs.Remove(config);
             }
         }
 
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
-            string json = JsonConvert.SerializeObject(colors.Distinct());
-            StreamWriter writer = new StreamWriter(jsonFile, false);
+            string json = JsonConvert.SerializeObject(levelConfigs.Distinct());
+            StreamWriter writer = new StreamWriter(colorFile, false);
             writer.Write(json);
             writer.Close();
             MessageBox.Show("颜色配置保存成功。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
         }
 
         private void DgColor_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
-        {
-            Color color = (Color)e.Row.Item;
+        {/*
+            LevelConfig config = (LevelConfig)e.Row.Item;
             if (
-                (color.R == 255 && color.G == 0 && color.B == 0) || 
-                (color.R == 0 && color.G == 255 && color.B == 0) || 
-                (color.R == 0 && color.G == 0 && color.B == 255) || 
-                (color.R == 255 && color.G == 255 && color.B == 0)
+                (config.R == 255 && config.G == 0 && config.B == 0) || 
+                (config.R == 0 && config.G == 255 && config.B == 0) || 
+                (config.R == 0 && config.G == 0 && config.B == 255) || 
+                (config.R == 255 && config.G == 255 && config.B == 0)
                 )
             {
-                MessageBox.Show($"R{color.R}G{color.G}B{color.B}为保留色，不能配置此RGB值。", "Warming", MessageBoxButton.OK, MessageBoxImage.Warning, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
-                e.Row.Item = colors[e.Row.GetIndex()];
+                MessageBox.Show($"R{config.R}G{config.G}B{config.B}为保留色，不能配置此RGB值。", "Warming", MessageBoxButton.OK, MessageBoxImage.Warning, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                e.Row.Item = levelConfigs[e.Row.GetIndex()];
             }            
             else
             {
-                colors[e.Row.GetIndex()] = (Color)e.Row.Item;
-            }
+                levelConfigs[e.Row.GetIndex()] = (LevelConfig)e.Row.Item;
+            }*/
         }
     }
 }
