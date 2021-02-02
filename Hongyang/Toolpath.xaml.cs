@@ -634,23 +634,31 @@ namespace Hongyang
                 //曲面检测刀路               
                 CalculateProbingPath(probingTpName, tpName);
             }
-            else if (method == "模型比对")
+            else if (method == "模型比对" || method == "顶端内侧圆弧")
             {
                 string swarfTpName = tpName + "_Swarf";
                 string patternTpName = tpName + "_Pattern";
                 string probingTpName = tpName + "_Probing";
-
+               
                 ClearToolpath_V2(probingTpName);
-                CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);
+                if (method == "模型比对")
+                {
+                    CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);
+                    powerMILL.Execute($"ACTIVATE Tool \"{ConfigurationManager.AppSettings["ENDMILL"]}\"");
+                }
+                else if (method == "顶端内侧圆弧")
+                {
+                    powerMILL.Execute("ACTIVATE WORKPLANE \" \"");
+                    powerMILL.Execute($"ACTIVATE Tool \"{ConfigurationManager.AppSettings["ENDMILL_D10"]}\"");
+                }
 
                 //Swarf刀路    
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
                 session.Refresh();
                 session.Toolpaths.ActiveItem.Name = swarfTpName;
                 powerMILL.Execute($"ACTIVATE TOOLPATH \"{swarfTpName}\" FORM TOOLPATH");
-                powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
-                powerMILL.Execute("EDIT BLOCK RESET");
-                powerMILL.Execute($"ACTIVATE Tool \"{ConfigurationManager.AppSettings["ENDMILL"]}\"");
+                powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");                
+                powerMILL.Execute("EDIT BLOCK RESET");                
                 powerMILL.Execute("EDIT PAR 'Tolerance' \"0.01\"");
                 powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_down'");
                 powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");
@@ -660,8 +668,23 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
                 powerMILL.Execute($"EDIT TOOLPATH \"{swarfTpName}\" REAPPLYFROMGUI\rYes");
                 session.Toolpaths.ActiveItem.Calculate();
-                powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r 0 NEW");
-                powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+                if (method == "模型比对")
+                {
+                    powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r 0 NEW");
+                    powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+                }
+                else if (method == "顶端内侧圆弧")
+                {
+                    int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{swarfTpName}').Statistics.PlungesIntoStock\"").ToString());
+                    for (int i = 0; i < count; i++)
+                    {
+                        if (i % 2 == 0)
+                        {
+                            powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {i} TOGGLE");                           
+                        }
+                    }
+                    powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+                }
 
                 //参考线精加工
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Pattern-Finishing.ptf\"");
@@ -1023,7 +1046,7 @@ namespace Hongyang
                 powerMILL.Execute("FORM TPLIST");
                 powerMILL.Execute("EDIT TOOLPATH REORDER N");
                 powerMILL.Execute("TPLIST ACCEPT");
-            }
+            }            
             else
             {
 
@@ -1080,6 +1103,33 @@ namespace Hongyang
             if (method == "角度" || method == "距离")
             {
                 KeepPointsByPattern(probingTpName);
+            }
+            else if (method == "顶端内侧圆弧")
+            {
+                PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
+                int curve = int.Parse(page.tbxCurve.Text);
+                int curvePoint = int.Parse(page.tbxCurvePoint.Text);
+                     
+                int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{probingTpName}').Statistics.PlungesIntoStock\"").ToString());
+                int length = count / curve;//每段圆弧的点数
+                int step = length / (curvePoint + 1);//每段圆弧内一段的长度
+                List<int> points = new List<int>();//保存要保留的点
+                for (int i = 0; i < curve; i++)
+                {
+                    int start = length * i;
+                    for (int j = 1; j <= curvePoint; j++)
+                    {
+                        points.Add(start + j * step);
+                    }
+                }
+                for (int i = 0; i < count; i++)
+                {
+                    if (!points.Contains(i))
+                    {
+                        powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {i} TOGGLE");
+                    }
+                }
+                powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
             }
         }
 
@@ -2123,6 +2173,9 @@ namespace Hongyang
             double.TryParse(page.tbxMinDistance.Text, out nMinDistance);
             double.TryParse(page.tbxMaxDistance.Text, out nMaxDistance);
 
+            PINominal config = (Application.Current.MainWindow as MainWindow).PINominal;
+            bool model1 = config.rbMode1.IsChecked == true;//角度或距离
+
             ISequenceGroup geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
             int index = 1;
             foreach (PMToolpath toolpath in program.Toolpaths)
@@ -2132,7 +2185,8 @@ namespace Hongyang
                 int b = n - a;//后面一半
                 int[] indices;
 
-                if (toolpath.Name.Contains("角度"))//角度
+
+                if (toolpath.Name.Contains("角度") && model1)//角度
                 {
                     //存检测角度的两个平面，红面
                     IPlane_ProbedItem plane1 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
@@ -2196,7 +2250,7 @@ namespace Hongyang
                     points.CopyToClipboard(indices);
                     plane2.BagOfPoints[measure].PasteFromClipboard();
                 }
-                else if (toolpath.Name.Contains("距离"))//距离
+                else if (toolpath.Name.Contains("距离") && model1)//距离
                 {
                     //存检测距离的两个平面，蓝面
                     IPlane_ProbedItem plane3 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
@@ -2254,7 +2308,8 @@ namespace Hongyang
                     points.CopyToClipboard(indices);
                     plane4.BagOfPoints[measure].PasteFromClipboard();
                 }
-                else if (toolpath.Name.Contains("模型比对"))//模型比对
+                //else if (toolpath.Name.Contains("模型比对"))//模型比对
+                else
                 {
                     //存绿面
                     ISurfaceGroup inspect2 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_SurfPointsCNC) as ISurfaceGroup;

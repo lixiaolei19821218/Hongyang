@@ -36,5 +36,19 @@
                 <TextBox Width="60" Text="50.0" Name="tbxMinWidth" x:FieldModifier="public"/>
                 </StackPanel>
         </GroupBox>
+        <GroupBox Header="顶端内侧圆弧">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="圆弧个数"/>
+                <TextBox Width="60" Text="3" Name="tbxCurve" x:FieldModifier="public"/>
+                <Label Content="每圆弧点数"/>
+                <TextBox Width="60" Text="2" Name="tbxCurvePoint" x:FieldModifier="public"/>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox Header="距离角度测量项">
+            <StackPanel Orientation="Horizontal" Margin="5">
+                <RadioButton GroupName="RedBlue" IsChecked="True" Name="rbMode1" x:FieldModifier="public" Margin="5">输出距离/角度</RadioButton>
+                <RadioButton GroupName="RedBlue" Name="rbMode2" x:FieldModifier="public" Margin="5">输出模型比对</RadioButton>
+            </StackPanel>
+        </GroupBox>
     </StackPanel>
 </Page>
