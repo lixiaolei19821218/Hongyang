@@ -105,3 +105,9 @@ C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Pmoptz\Fidia_KR199
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Pmoptz\Results_Output_Generator_OMV2015.pmoptz
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\NC\NC_Header.tap
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Newtonsoft.Json.dll
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Report\Layout.html
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Report\Styles.css
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Report\Autodesk2003.pxm
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Hongyang_Content.g.cs
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Report\GroupHeadBackground.gif
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Report\Hongyang.png

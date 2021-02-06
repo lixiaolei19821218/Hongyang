@@ -205,6 +205,9 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <Content Include="Report\Autodesk2003.pxm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
@@ -244,7 +247,6 @@
   <ItemGroup>
     <Folder Include="Doc\" />
     <Folder Include="Ptf\" />
-    <Folder Include="Report\" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icon\tooltipdiscu.png" />
@@ -367,6 +369,20 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icon\save.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Report\GroupHeadBackground.gif">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Report\Hongyang.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Report\Layout.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Report\Styles.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

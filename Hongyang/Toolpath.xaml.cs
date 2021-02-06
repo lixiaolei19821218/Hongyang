@@ -1882,7 +1882,15 @@ namespace Hongyang
                 string strategy = powerMILL.ExecuteEx($"PRINT PAR terse \"entity('toolpath', '{toolpath.Name}').Strategy\"").ToString();
                 if (strategy == "surface_inspection")
                 {
-                    double azimuth = double.Parse(powerMILL.ExecuteEx($"PRINT PAR terse \"entity('workplane', '{toolpath.WorkplaneName}').Azimuth\"").ToString());
+                    double azimuth;
+                    if (toolpath.WorkplaneName == "#错误: 无效名称")//用的世界坐标系
+                    {
+                        azimuth = 0;
+                    }
+                    else
+                    {
+                        azimuth = double.Parse(powerMILL.ExecuteEx($"PRINT PAR terse \"entity('workplane', '{toolpath.WorkplaneName}').Azimuth\"").ToString());
+                    }
                     NCOutput output = NCOutputs.First(n => n.Angle >= azimuth);
                     powerMILL.Execute($"ACTIVATE NCProgram \"{output.NC}\"");
                     powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
@@ -2475,6 +2483,25 @@ namespace Hongyang
             string pmFolder = powerMILL.ExecuteEx("print $project_pathname(0)").ToString().Trim();
             string file = $"{Directory.GetParent(pmFolder)}\\PI_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pwi";
             doc.SaveAs(file, false);
+
+            //改报告模板，把零件名写到产品名称栏位
+            string layout = AppContext.BaseDirectory + @"Report\Layout.html";
+            if (File.Exists(layout))
+            {
+                StreamReader reader = new StreamReader(layout, System.Text.Encoding.GetEncoding("GB2312"));
+                string content = reader.ReadToEnd();                
+                reader.Close();
+                StreamWriter writer = new StreamWriter(layout, false, System.Text.Encoding.GetEncoding("GB2312"));
+                //找出"<span id="idReportVariable" m_name="Customer" m_is_value="true">产品名称</span>这样的字符串，并替换其中的产品名称
+                string prefix = "<span id=\"idReportVariable\" m_name=\"Customer\" m_is_value=\"true\">";
+                string suffix = "</span>";
+                int start = content.IndexOf(prefix);
+                int end = content.IndexOf(suffix, start);
+                string oldHtml = content.Substring(start, end - start);
+                string newHtml = prefix + tbxPart.Text;
+                writer.Write(content.Replace(oldHtml, newHtml));
+                writer.Close();
+            }
 
             MessageBox.Show("检测完成。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
             Application.Current.MainWindow.WindowState = WindowState.Normal;

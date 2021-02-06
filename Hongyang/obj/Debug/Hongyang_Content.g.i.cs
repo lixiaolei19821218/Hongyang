@@ -8,6 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("icon/save.jpg")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("report/autodesk2003.pxm")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("report/groupheadbackground.gif")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("report/hongyang.png")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("report/layout.html")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("report/styles.css")]
 
 
