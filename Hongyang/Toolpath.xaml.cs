@@ -643,14 +643,14 @@ namespace Hongyang
                 ClearToolpath_V2(probingTpName);
                 if (method == "模型比对")
                 {
-                    CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);
-                    powerMILL.Execute($"ACTIVATE Tool \"{ConfigurationManager.AppSettings["ENDMILL"]}\"");
+                    CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);                    
                 }
                 else if (method == "顶端内侧圆弧")
                 {
                     powerMILL.Execute("ACTIVATE WORKPLANE \" \"");
-                    powerMILL.Execute($"ACTIVATE Tool \"{ConfigurationManager.AppSettings["ENDMILL_D10"]}\"");
+                    //powerMILL.Execute($"ACTIVATE Tool \"{ConfigurationManager.AppSettings["ENDMILL_D10"]}\"");
                 }
+                powerMILL.Execute($"ACTIVATE Tool \"{ConfigurationManager.AppSettings["ENDMILL"]}\"");
 
                 //Swarf刀路    
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
@@ -661,8 +661,8 @@ namespace Hongyang
                 powerMILL.Execute("EDIT BLOCK RESET");                
                 powerMILL.Execute("EDIT PAR 'Tolerance' \"0.01\"");
                 powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_down'");
-                powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");
-                powerMILL.Execute("EDIT PAR 'StepdownLimit.Value' \"2\"");
+                powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");               
+                powerMILL.Execute("EDIT PAR 'StepdownLimit.Value' \"2\"");               
                 string value = chxSelectMethod.IsChecked == true ? tbxStepdown.Text : ConfigurationManager.AppSettings["GreenStepdown"];
                 powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{value}\"");
                 powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
@@ -1046,7 +1046,130 @@ namespace Hongyang
                 powerMILL.Execute("FORM TPLIST");
                 powerMILL.Execute("EDIT TOOLPATH REORDER N");
                 powerMILL.Execute("TPLIST ACCEPT");
-            }            
+            }     
+            else if (method == "顶孔" || method == "侧孔")
+            {
+                powerMILL.Execute("edit model all deselect all");
+                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
+
+                powerMILL.Execute($"DELETE FEATURESET \"{tpName}\"");
+                powerMILL.Execute("EDIT FEATURECREATE TYPE HOLE EDIT FEATURECREATE CIRCULAR ON EDIT FEATURECREATE FILTER HOLES EDIT FEATURECREATE TOPDEFINE ABSOLUTE EDIT FEATURECREATE BOTTOMDEFINE ABSOLUTE FORM CANCEL FEATURE FORM CREATEHOLE");
+                powerMILL.Execute("EDIT FEATURECREATE CREATEHOLES");
+                powerMILL.Execute("FORM CANCEL CREATEHOLE");
+                session.Refresh();
+                session.FeatureSets.ActiveItem.Name = tpName;    
+                
+                double holeDiameter = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"EditHole.Shell.Geom.UpperDia\").Value").ToString());
+                double toolDiameter = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('tool', '{cbxTool.Text}').Diameter\"").ToString());
+                if (holeDiameter < toolDiameter * 2)
+                {
+                    MessageBox.Show("孔直径小于两倍探针直径，无法检测。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                    return;
+                }
+                //获取孔数量
+                string msg = powerMILL.ExecuteEx($"SIZE FEATURESET \"{tpName}\"").ToString();
+                int holdCount = int.Parse(msg.Split('\r')[4].Split(':')[1]);
+
+                string swarf = tpName + "_Swarf";
+                string pattern = tpName + "_Pattern";
+                string probing = tpName + "_Probing";
+
+                ClearToolpath_V2(probing);
+
+                if (method == "侧孔")
+                {
+                    powerMILL.Execute($"ACTIVATE WORKPLANE FROMENTITY FEATURESET \"{tpName}\"");
+                }
+                else if (method == "顶孔")
+                {
+                    powerMILL.Execute("ACTIVATE WORKPLANE \" \"");
+                }
+
+                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
+                session.Refresh();
+                session.Toolpaths.ActiveItem.Name = swarf;
+                powerMILL.Execute($"ACTIVATE TOOLPATH \"{swarf}\" FORM TOOLPATH");                  
+                powerMILL.Execute("EDIT BLOCK RESET");
+                powerMILL.Execute($"ACTIVATE Tool \"{ConfigurationManager.AppSettings["ENDMILL"]}\"");
+                powerMILL.Execute("EDIT PAR 'Tolerance' \"0.01\"");
+                powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_down'");
+                powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");
+                powerMILL.Execute("EDIT PAR 'StepdownLimit.Value' \"1\"");
+                powerMILL.Execute($"EDIT TOOLPATH \"{swarf}\" REAPPLYFROMGUI\rYes");
+                session.Toolpaths.ActiveItem.Calculate();                
+
+                powerMILL.Execute("EDIT TOOLPATH LEADS RAISEFORM");
+                powerMILL.Execute("EDIT TOOLPATH LEADS PAGE STARTENDPT");
+                powerMILL.Execute("EDIT TOOLPATH START TYPE POINT");
+                powerMILL.Execute("RESET TOOLPATH START_END");
+                powerMILL.Execute("EDIT TOOLPATH LEADS PAGE RAPIDMOVES");
+                powerMILL.Execute("EDIT TOOLPATH SAFEAREA CALCULATE_DIMENSIONS");
+                powerMILL.Execute("PROCESS TPLEADS");
+                powerMILL.Execute("LEADS ACCEPT");                
+
+                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Pattern-Finishing.ptf\"");
+                session.Refresh();
+                session.Toolpaths.ActiveItem.Name = pattern;
+                powerMILL.Execute($"ACTIVATE TOOLPATH \"{pattern}\" FORM TOOLPATH");                
+                powerMILL.Execute("EDIT PAR 'UseToolpathAsPattern' 1");
+                powerMILL.Execute($"EDIT PAR 'ReferenceToolpath' \"{swarf}\"");
+                powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");
+                powerMILL.Execute("EDIT PAR 'ToolAxis.LeadLeanMode' 'PM2012R2'");
+                powerMILL.Execute("EDIT TOOLAXIS LEAN \"80.0\"");
+                powerMILL.Execute($"EDIT TOOLPATH \"{pattern}\" REAPPLYFROMGUI\rYes");
+                session.Toolpaths.ActiveItem.Calculate();
+
+                powerMILL.Execute($"CREATE PATTERN {tpName}");
+                powerMILL.Execute($"EDIT PATTERN \"{tpName}\" INSERT TOOLPATH ;");
+                powerMILL.Execute($"EDIT PATTERN \"{tpName}\" CURVEEDITOR START");
+                powerMILL.Execute("CURVEEDITOR MODE TRANSLATE");
+                PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
+                powerMILL.Execute($"MODE COORDINPUT COORDINATES 0 0 -{page.tbxHoleDistance.Text}");
+                powerMILL.Execute("MODE TRANSFORM COPY YES");
+                powerMILL.Execute($"MODE COORDINPUT COORDINATES 0 0 -{page.tbxHoleDepth.Text}");
+                powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
+
+                if (method == "顶孔")
+                {
+                    powerMILL.Execute($"EDIT PATTERN \"{tpName}\" CURVEEDITOR START");
+                    int segment = holdCount * 2;//参考线段数等于洞数 * （切削次数 + 复制次数）
+                    for (int i = 0; i < segment; i++)
+                    {
+                        powerMILL.Execute($"EDIT PATTERN \"{tpName}\" DESELECT ALL");
+                        powerMILL.Execute($"EDIT PATTERN \"{tpName}\" SELECT {i}");
+                        powerMILL.Execute("CURVEEDITOR REPOINT RAISE");
+                        powerMILL.Execute("CURVEEDITOR REPOINT POINTS \"4\"");
+                        powerMILL.Execute("FORM APPLY CEREPOINTCURVE");
+                        powerMILL.Execute("FORM CANCEL CEREPOINTCURVE");
+                    }
+                    powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
+                }
+
+                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
+                session.Refresh();
+                session.Toolpaths.ActiveItem.Name = probing;
+                powerMILL.Execute($"ACTIVATE TOOLPATH \"{probing}\" FORM TOOLPATH");
+                powerMILL.Execute($"EDIT PAR 'Pattern' \"{tpName}\"");
+                powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");
+                powerMILL.Execute($"EDIT PAR 'Probing.Approach' \"{toolDiameter}\"");
+                powerMILL.Execute($"EDIT PAR 'Probing.Retract' \"{toolDiameter}\"");
+                powerMILL.Execute($"EDIT TOOLPATH \"{probing}\" REAPPLYFROMGUI\rYes");
+                session.Toolpaths.ActiveItem.Calculate();
+
+                CollisionCheck(probing, probing);
+                if (method == "侧孔")
+                {
+                    KeepPointsByPatternAndPoint(probing, 2, 4);
+                }
+
+                powerMILL.Execute("EDIT TOOLPATH LEADS RAISEFORM");
+                powerMILL.Execute("EDIT TOOLPATH LEADS PAGE LINK");
+                powerMILL.Execute("EDIT PAR 'Connections.Link[0].ProbingType' 'probing_skim'");
+                powerMILL.Execute("PROCESS TPLEADS");
+                powerMILL.Execute("EDIT TOOLPATH END TYPE POINT_SAFE");
+                powerMILL.Execute("RESET TOOLPATH START_END");
+                powerMILL.Execute("LEADS ACCEPT");                
+            }
             else
             {
 
@@ -1109,28 +1232,45 @@ namespace Hongyang
                 PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
                 int curve = int.Parse(page.tbxCurve.Text);
                 int curvePoint = int.Parse(page.tbxCurvePoint.Text);
-                     
-                int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{probingTpName}').Statistics.PlungesIntoStock\"").ToString());
-                int length = count / curve;//每段圆弧的点数
-                int step = length / (curvePoint + 1);//每段圆弧内一段的长度
-                List<int> points = new List<int>();//保存要保留的点
-                for (int i = 0; i < curve; i++)
-                {
-                    int start = length * i;
-                    for (int j = 1; j <= curvePoint; j++)
-                    {
-                        points.Add(start + j * step);
-                    }
-                }
-                for (int i = 0; i < count; i++)
-                {
-                    if (!points.Contains(i))
-                    {
-                        powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {i} TOGGLE");
-                    }
-                }
-                powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+
+                KeepPointsByPatternAndPoint(probingTpName, curve, curvePoint);
             }
+            else if (method == "侧孔" || method == "顶孔")
+            {
+                //上下两条线各4点
+                KeepPointsByPatternAndPoint(probingTpName, 2, 4);
+            }
+        }
+
+        /// <summary>
+        /// 根据参考线段数，和每段的点数保留点
+        /// </summary>
+        /// <param name="probing">检测路径</param>
+        /// <param name="pattern">参考线段数</param>
+        /// <param name="point">每段要保留的点数</param>
+        public void KeepPointsByPatternAndPoint(string probing, int pattern, int point)
+        {
+            powerMILL.Execute($"ACTIVATE Toolpath \"{probing}\"");
+            int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{probing}').Statistics.PlungesIntoStock\"").ToString());
+            int length = count / pattern;//每段圆弧的点数
+            int step = length / (point + 1);//每段圆弧内一段的长度
+            List<int> points = new List<int>();//保存要保留的点
+            for (int i = 0; i < pattern; i++)
+            {
+                int start = length * i;
+                for (int j = 1; j <= point; j++)
+                {
+                    points.Add(start + j * step);
+                }
+            }
+            for (int i = 0; i < count; i++)
+            {
+                if (!points.Contains(i))
+                {
+                    powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {i} TOGGLE");
+                }
+            }
+            powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
         }
 
         public void KeepPointsByPattern(string tpName/*, string tag*/)
