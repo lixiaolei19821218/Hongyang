@@ -45,7 +45,7 @@
                         <Button Name="btnSave" Margin="5" Width="50" Click="BtnSave_Click">保存</Button>
                     </StackPanel>
                 </DockPanel>
-                <DataGrid Margin="5" Name="dgColor" AutoGenerateColumns="False" HeadersVisibility="Column" RowHeight="20" Height="480" CanUserAddRows="False">
+                <DataGrid Margin="5" Name="dgColor" AutoGenerateColumns="False" HeadersVisibility="Column" RowHeight="20" Height="400" CanUserAddRows="False">
                     <DataGrid.Columns>
                         <DataGridTextColumn Width="*" Header="层名" Binding="{Binding Path=Level, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         <DataGridComboBoxColumn Width="*" Header="检查项" SelectedItemBinding="{Binding Path=Method, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{x:Static local:Config.MethodList}"/>

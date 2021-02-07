@@ -529,15 +529,16 @@ namespace Hongyang
             }
             string tpName = level + "_" + method;
 
+            powerMILL.Execute("edit model all deselect all");
+            powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
+
             if (method == "距离")
             {
                 string swarfTpName = tpName + "_Swarf";
                 string probingTpName = tpName + "_Probing";
                 //ClearToolpath(probingTpName);
                 //ClearToolpath(swarfTpName);
-                ClearToolpath_V2(probingTpName);
-
-                CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);
+                ClearToolpath_V2(probingTpName);               
 
                 //Swarf刀路            
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
@@ -558,9 +559,11 @@ namespace Hongyang
                 powerMILL.Execute("EDIT PAR 'Filter.Type' 'redistribute'");
                 powerMILL.Execute("EDIT PAR 'MaxDistanceBetweenPoints.Active' '1'");
                 powerMILL.Execute("EDIT PAR 'MaxDistanceBetweenPoints.Value' \"5\"");
-                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
+                powerMILL.Execute("EDIT TOOLPATH START TYPE POINT_SAFE");
                 powerMILL.Execute($"EDIT TOOLPATH \"{swarfTpName}\" REAPPLYFROMGUI\rYes");
                 session.Toolpaths.ActiveItem.Calculate();
+
+                CreateWorkplanebySwarf(swarfTpName, tpName);
 
                 //参考线
                 powerMILL.Execute($"CREATE PATTERN {tpName}");
@@ -578,9 +581,7 @@ namespace Hongyang
                 //ClearToolpath(probingTpName);
                 //ClearToolpath(patternTpName);
                 //ClearToolpath(swarfTpName);
-                ClearToolpath_V2(probingTpName);
-
-                CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);
+                ClearToolpath_V2(probingTpName);               
 
                 //Swarf刀路     
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
@@ -599,7 +600,7 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT PAR 'StepdownLimit.Value' \"{cut}\"");//因为会删除一条，所以这里要加上一条
                 string interval = chxSelectMethod.IsChecked == true ? tbxStepdown.Text : ConfigurationManager.AppSettings["Stepdown"];
                 powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{interval}\"");
-                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
+                powerMILL.Execute("EDIT TOOLPATH START TYPE POINT_SAFE");
                 powerMILL.Execute($"EDIT TOOLPATH \"{swarfTpName}\" REAPPLYFROMGUI\rYes");
                 session.Toolpaths.ActiveItem.Calculate();
                 powerMILL.Execute("EDIT TOOLPATH SAFEAREA CALCULATE_DIMENSIONS");
@@ -607,6 +608,8 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r {0} TOGGLE");
                 powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r {cut} TOGGLE");
                 powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+
+                CreateWorkplanebySwarf(swarfTpName, tpName);
 
                 //参考线精加工
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Pattern-Finishing.ptf\"");
@@ -641,15 +644,7 @@ namespace Hongyang
                 string probingTpName = tpName + "_Probing";
                
                 ClearToolpath_V2(probingTpName);
-                if (method == "模型比对")
-                {
-                    CreateWorkplane(level, tpName, chxLean.IsChecked ?? false);                    
-                }
-                else if (method == "顶端内侧圆弧")
-                {
-                    powerMILL.Execute("ACTIVATE WORKPLANE \" \"");
-                    //powerMILL.Execute($"ACTIVATE Tool \"{ConfigurationManager.AppSettings["ENDMILL_D10"]}\"");
-                }
+                
                 powerMILL.Execute($"ACTIVATE Tool \"{ConfigurationManager.AppSettings["ENDMILL"]}\"");
 
                 //Swarf刀路    
@@ -662,16 +657,39 @@ namespace Hongyang
                 powerMILL.Execute("EDIT PAR 'Tolerance' \"0.01\"");
                 powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_down'");
                 powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");               
-                powerMILL.Execute("EDIT PAR 'StepdownLimit.Value' \"2\"");               
+                powerMILL.Execute("EDIT PAR 'StepdownLimit.Value' \"2\"");    
+                if (method == "模型比对")
+                {
+                    powerMILL.Execute("EDIT PAR 'Degouge.Active' 0");
+                }
+                else if (method == "顶端内侧圆弧")
+                {
+                    powerMILL.Execute("EDIT PAR 'Degouge.Active' 1");
+                }
                 string value = chxSelectMethod.IsChecked == true ? tbxStepdown.Text : ConfigurationManager.AppSettings["GreenStepdown"];
                 powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{value}\"");
-                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
+                powerMILL.Execute("EDIT TOOLPATH START TYPE POINT_SAFE");
                 powerMILL.Execute($"EDIT TOOLPATH \"{swarfTpName}\" REAPPLYFROMGUI\rYes");
                 session.Toolpaths.ActiveItem.Calculate();
+
+                string pattern = tpName + "_S";
                 if (method == "模型比对")
                 {
                     powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\\r 0 NEW");
                     powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+
+                    powerMILL.Execute($"DELETE PATTERN \"{pattern}\"");
+                    powerMILL.Execute($"CREATE PATTERN {pattern}");
+                    powerMILL.Execute($"EDIT PATTERN \"{pattern}\" INSERT TOOLPATH ;");
+                    powerMILL.Execute($"EDIT PATTERN \"{pattern}\" CURVEEDITOR START");
+                    powerMILL.Execute($"EDIT PATTERN \"{pattern}\" SELECT 0");
+                    powerMILL.Execute("CURVEEDITOR REPOINT RAISE");
+                    powerMILL.Execute("CURVEEDITOR REPOINT POINTS \"20\"");
+                    powerMILL.Execute("FORM APPLY CEREPOINTCURVE");
+                    powerMILL.Execute("FORM CANCEL CEREPOINTCURVE");
+                    powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
+
+                    CreateWorkplanebySwarf(swarfTpName, tpName);
                 }
                 else if (method == "顶端内侧圆弧")
                 {
@@ -684,6 +702,7 @@ namespace Hongyang
                         }
                     }
                     powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+                    powerMILL.Execute("ACTIVATE WORKPLANE \" \"");
                 }
 
                 //参考线精加工
@@ -692,8 +711,16 @@ namespace Hongyang
                 session.Toolpaths.ActiveItem.Name = patternTpName;
                 powerMILL.Execute($"ACTIVATE TOOLPATH \"{patternTpName}\" FORM TOOLPATH");
                 powerMILL.Execute($"ACTIVATE Tool \"{ConfigurationManager.AppSettings["BALLNOSED"]}\"");
-                powerMILL.Execute("EDIT PAR 'UseToolpathAsPattern' 1");
-                powerMILL.Execute($"EDIT PAR 'ReferenceToolpath' \"{swarfTpName}\"");
+                if (method == "模型比对")
+                {
+                    powerMILL.Execute("EDIT PAR 'UseToolpathAsPattern' 0");
+                    powerMILL.Execute($"EDIT PAR 'Pattern' \"{pattern}\"");
+                }
+                else if (method == "顶端内侧圆弧")
+                {
+                    powerMILL.Execute("EDIT PAR 'UseToolpathAsPattern' 1");
+                    powerMILL.Execute($"EDIT PAR 'ReferenceToolpath' \"{swarfTpName}\"");
+                }
                 powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");
                 powerMILL.Execute("EDIT TOOLAXIS LEAN \"80.0\"");
                 powerMILL.Execute("EDIT PAR 'ToolAxis.LeadLeanMode' 'PM2012R2'");
@@ -799,18 +826,9 @@ namespace Hongyang
                 powerMILL.Execute("EDIT TPSELECT ; TPLIST UPDATE\r 0 NEW");
                 powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
                 powerMILL.Execute("TPLIST ACCEPT");
-                
+
                 //建立坐标系
-                string elevation = powerMILL.ExecuteEx("print par terse $widget(\"ToolPosition.AxisDirection.AxisElevation\").Value").ToString();//仰角
-                string azimuth = powerMILL.ExecuteEx("print par terse $widget(\"ToolPosition.AxisDirection.AxisAzimuth\").Value").ToString();//方位角
-                powerMILL.Execute($"CREATE WORKPLANE {tpName} EDITOR");
-                powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Z");
-                powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{azimuth}\"");
-                powerMILL.Execute("WPETWIST ACCEPT");
-                powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Y");
-                powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{90 - double.Parse(elevation)}\"");
-                powerMILL.Execute("WPETWIST ACCEPT");
-                powerMILL.Execute("MODE WORKPLANE_EDIT FINISH ACCEPT");
+                CreateWorkplanebySwarf(swarfTpName, tpName);
 
                 //存坐标系，底面要用
                 App.Current.Resources["workplane"] = tpName;
@@ -1096,16 +1114,14 @@ namespace Hongyang
                 powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");
                 powerMILL.Execute("EDIT PAR 'StepdownLimit.Value' \"1\"");
                 powerMILL.Execute($"EDIT TOOLPATH \"{swarf}\" REAPPLYFROMGUI\rYes");
-                session.Toolpaths.ActiveItem.Calculate();                
+                session.Toolpaths.ActiveItem.Calculate();
 
                 powerMILL.Execute("EDIT TOOLPATH LEADS RAISEFORM");
-                powerMILL.Execute("EDIT TOOLPATH LEADS PAGE STARTENDPT");
-                powerMILL.Execute("EDIT TOOLPATH START TYPE POINT");
+                powerMILL.Execute("EDIT TOOLPATH START TYPE POINT_SAFE");
                 powerMILL.Execute("RESET TOOLPATH START_END");
-                powerMILL.Execute("EDIT TOOLPATH LEADS PAGE RAPIDMOVES");
                 powerMILL.Execute("EDIT TOOLPATH SAFEAREA CALCULATE_DIMENSIONS");
                 powerMILL.Execute("PROCESS TPLEADS");
-                powerMILL.Execute("LEADS ACCEPT");                
+                powerMILL.Execute("LEADS ACCEPT");                       
 
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Pattern-Finishing.ptf\"");
                 session.Refresh();
@@ -1176,6 +1192,28 @@ namespace Hongyang
             }
 
             RefreshToolpaths();
+        }
+
+        /// <summary>
+        /// 根据Swarf刀路仿真建立坐标系
+        /// </summary>
+        /// <param name="swarf">Swarf刀路名</param>
+        /// <param name="workplane">坐标系名</param>
+        public void CreateWorkplanebySwarf(string swarf, string workplane)
+        {
+            //powerMILL.Execute($"ACTIVATE Toolpath \"{swarf}\"");
+            powerMILL.Execute($"SIMULATE TOOLPATH \"{swarf}\" FORM RIBBON TAB SIMULATION");
+            string elevation = powerMILL.ExecuteEx("print par terse $widget(\"ToolPosition.AxisDirection.AxisElevation\").Value").ToString();//仰角
+            string azimuth = powerMILL.ExecuteEx("print par terse $widget(\"ToolPosition.AxisDirection.AxisAzimuth\").Value").ToString();//方位角
+            powerMILL.Execute($"CREATE WORKPLANE {workplane} EDITOR");
+            powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Z");
+            powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{azimuth}\"");
+            powerMILL.Execute("WPETWIST ACCEPT");
+            powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Y");
+            powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{90 - double.Parse(elevation)}\"");
+            powerMILL.Execute("WPETWIST ACCEPT");
+            powerMILL.Execute("MODE WORKPLANE_EDIT FINISH ACCEPT");
+            powerMILL.Execute($"ACTIVATE Workplane \"{workplane}\"");
         }
 
         public void CalculateProbingPath(string probingTpName, string patternName)

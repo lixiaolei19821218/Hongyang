@@ -48,7 +48,7 @@
                 <ComboBox Name="cbxTool" SelectedIndex="0" Width="150" SelectionChanged="CbxTool_SelectionChanged"/>
             </StackPanel>
         </GroupBox>
-        <GroupBox Margin="5" Grid.Row="2" Grid.ColumnSpan="4">
+        <GroupBox Margin="5" Grid.Row="2" Grid.ColumnSpan="4" Visibility="Collapsed">
             <GroupBox.Header>
                 <CheckBox Name="ckbManul" IsChecked="{Binding ElementName=chxAdjust, Path=IsChecked, Mode=OneWay}">手动设置偏移</CheckBox>
             </GroupBox.Header>
@@ -107,7 +107,7 @@
                     <ListBox Name="lstSelectedLevel" Width="130" Height="120" DisplayMemberPath="Name" Drop="listboxLevel_Drop" AllowDrop="True"></ListBox>
                 </GroupBox>
                 <!--<ComboBox Visibility="Collapsed" Name="cbxLevel" Width="150" SelectedIndex="0" HorizontalAlignment="Left" SelectionChanged="CbxLevel_SelectionChanged"/>-->
-                <StackPanel Orientation="Vertical" HorizontalAlignment="Right">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Right" Visibility="Collapsed">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="Icon\move.gif" Width="20"/>
                         <CheckBox Name="chxAdjust" Margin="10" VerticalAlignment="Top">调整偏移</CheckBox>
@@ -121,7 +121,7 @@
         </GroupBox>
         <DockPanel Margin="5" Grid.Row="5" Grid.ColumnSpan="4">
             <Image Source="Icon\calculate.gif" Width="25"/>
-            <CheckBox Name="chxLean" Margin="5" Content="倾斜曲面"></CheckBox>
+            <CheckBox Name="chxLean" Margin="5" Content="倾斜曲面" Visibility="Collapsed"></CheckBox>
             <Button  Name="btnCalculate" Click="BtnCalculate_Click">计算</Button>
         </DockPanel>
 
