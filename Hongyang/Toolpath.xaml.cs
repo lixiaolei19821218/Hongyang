@@ -1150,14 +1150,15 @@ namespace Hongyang
                 powerMILL.Execute("CURVEEDITOR MODE TRANSLATE");
                 PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
                 powerMILL.Execute($"MODE COORDINPUT COORDINATES 0 0 -{page.tbxHoleDistance.Text}");
-                powerMILL.Execute("MODE TRANSFORM COPY YES");
-                powerMILL.Execute($"MODE COORDINPUT COORDINATES 0 0 -{page.tbxHoleDepth.Text}");
+                //powerMILL.Execute("MODE TRANSFORM COPY YES");
+               // powerMILL.Execute($"MODE COORDINPUT COORDINATES 0 0 -{page.tbxHoleDepth.Text}");
                 powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
 
                 if (method == "顶孔")
                 {
                     powerMILL.Execute($"EDIT PATTERN \"{tpName}\" CURVEEDITOR START");
-                    int segment = holdCount * 2;//参考线段数等于洞数 * （切削次数 + 复制次数）
+                    //int segment = holdCount * 2;//参考线段数等于洞数 * （切削次数 + 复制次数）
+                    int segment = holdCount;//不复制了，保留上面4个点即可
                     for (int i = 0; i < segment; i++)
                     {
                         powerMILL.Execute($"EDIT PATTERN \"{tpName}\" DESELECT ALL");
@@ -2390,7 +2391,6 @@ namespace Hongyang
                 int b = n - a;//后面一半
                 int[] indices;
 
-
                 if (toolpath.Name.Contains("角度") && model1)//角度
                 {
                     //存检测角度的两个平面，红面
@@ -2513,7 +2513,105 @@ namespace Hongyang
                     points.CopyToClipboard(indices);
                     plane4.BagOfPoints[measure].PasteFromClipboard();
                 }
-                //else if (toolpath.Name.Contains("模型比对"))//模型比对
+                else if (toolpath.Name.Contains("顶孔"))
+                {
+                    string feature = toolpath.Name.Replace("_Probing", "");
+                    //获取孔数量
+                    string msg = powerMILL.ExecuteEx($"SIZE FEATURESET \"{feature}\"").ToString();
+                    int holdCount = int.Parse(msg.Split('\r')[4].Split(':')[1]);
+                    int pointCount = n / holdCount;//每个孔的点数
+
+                    IGeometricGroup geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
+                    IPlane_ProbedItem plane = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                    for (int i = 0; i < holdCount; i++)
+                    {                        
+                        IGeometricCircleItem circle = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Feat_ProbedCircle_) as IGeometricCircleItem;
+                        foreach(IFeature f in circle.ReferencePlane.PossibleFeatures)
+                        {
+                            if (f.Name == plane.Name)
+                            {
+                                circle.ReferencePlane.Feature = f;
+                                break;
+                            }
+                        }
+                        indices = new int[points.Count];
+                        for (int j = 0; j < points.Count; j++)
+                        {
+                            if (j < pointCount)
+                            {
+                                indices[j] = index + j;
+                            }
+                            else
+                            {
+                                indices[j] = index;
+                            }
+                        }
+                        index += pointCount;
+                        points.CopyToClipboard(indices);
+                        circle.BagOfPoints[measure].PasteFromClipboard();
+                    }
+                }
+                else if (toolpath.Name.Contains("侧孔"))
+                {
+                    IGeometricGroup geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
+                    IFeat_CylinderItem cylinder = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Feat_Cylinder_) as IFeat_CylinderItem;
+                    indices = new int[points.Count];
+                    for (int i = 0; i < points.Count; i++)
+                    {
+                        if (i < n)
+                        {
+                            indices[i] = index + i;
+                        }
+                        else
+                        {
+                            indices[i] = index;
+                        }
+                    }
+                    index += n;
+                    points.CopyToClipboard(indices);
+                    cylinder.BagOfPoints[measure].PasteFromClipboard();
+                }
+                else if (toolpath.Name.Contains("顶端内侧圆弧"))
+                {
+                    IGeometricGroup geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
+                    IPlane_ProbedItem plane = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                    IGeometricCircleItem circle = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Feat_ProbedCircle_) as IGeometricCircleItem;
+                    indices = new int[points.Count];
+                    for (int i = 0; i < points.Count; i++)
+                    {
+                        if (i < n)
+                        {
+                            indices[i] = index + i;
+                        }
+                        else
+                        {
+                            indices[i] = index;
+                        }
+                    }
+                    index += n;
+                    points.CopyToClipboard(indices);
+                    circle.BagOfPoints[measure].PasteFromClipboard();
+                }
+                else if (toolpath.Name.Contains("顶端平面"))
+                {
+                    IGeometricGroup geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
+                    IPlane_ProbedItem plane = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;                    
+                    indices = new int[points.Count];
+                    for (int i = 0; i < points.Count; i++)
+                    {
+                        if (i < n)
+                        {
+                            indices[i] = index + i;
+                        }
+                        else
+                        {
+                            indices[i] = index;
+                        }
+                    }
+                    index += n;
+                    points.CopyToClipboard(indices);
+                    plane.BagOfPoints[measure].PasteFromClipboard();
+                }
                 else
                 {
                     //存绿面
