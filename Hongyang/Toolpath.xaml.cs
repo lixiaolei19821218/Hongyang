@@ -586,78 +586,20 @@ namespace Hongyang
                 PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;                
                 if (page.rbMode2.IsChecked == true)
                 {
-                    tpName = "Blue_距离";
-                    //从配置找角度的层名
-                    string angleLevel = colors.FirstOrDefault(c => c.Method == "角度").Level;
-                    powerMILL.Execute($"EDIT LEVEL \"{angleLevel}\" SELECT ALL");
-                    powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
-
-                    powerMILL.Execute($"ACTIVATE WORKPLANE \"{tpName}\"");
-                    tpName = tpName + "_底面";
-                    string finishing = tpName + "_Finishing";
-                    string probing = tpName + "_Probing";
-                    powerMILL.Execute($"DELETE TOOLPATH \"{probing}\"");
-                    powerMILL.Execute($"DELETE PATTERN \"{tpName}\"");
-                    powerMILL.Execute($"DELETE TOOLPATH \"{finishing}\"");
-                    powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Raster-Finishing.002.ptf\"");
-                    session.Refresh();
-                    session.Toolpaths.ActiveItem.Name = finishing;
-                    powerMILL.Execute($"ACTIVATE TOOLPATH \"{finishing}\" FORM TOOLPATH");
-                    powerMILL.Execute("FORM THICKNESS EDIT THICKNESS TAB COMPONENTS TOOLPATH");
-                    powerMILL.Execute("EDIT TOOLPATH THICKNESS LIST UPDATE\r 1 NEW");
-                    powerMILL.Execute("EDIT TOOLPATH ; THICKNESS COMPONENTS MACHINE");
-                    powerMILL.Execute("THICKNESS ACCEPT");
-                    powerMILL.Execute("EDIT PAR 'Tolerance' \"0.1\"");
-                    powerMILL.Execute("EDIT TPPAGE SWBlock");
-                    powerMILL.Execute("EDIT BLOCK RESET");
+                    string tpPrefix = tpName + "_底面";
                     double diameter = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('tool', '{cbxTool.Text}').Diameter\"").ToString());//测头直径
-                    double minX = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MinX\").Value").ToString());
-                    powerMILL.Execute($"EDIT BLOCK XMIN \"{minX + diameter}\"");
-                    double minY = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MinY\").Value").ToString());
-                    powerMILL.Execute($"EDIT BLOCK YMIN \"{minY + diameter}\"");
-                    double maxX = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MaxX\").Value").ToString());
-                    powerMILL.Execute($"EDIT BLOCK XMAX \"{maxX - diameter}\"");
-                    double maxY = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MaxY\").Value").ToString());
-                    powerMILL.Execute($"EDIT BLOCK YMAX \"{maxY - diameter}\"");
-                    powerMILL.Execute($"ACTIVATE TOOL \"{ConfigurationManager.AppSettings["ENDMILL_D10"]}\"");
-                    powerMILL.Execute($"ACTIVATE WORKPLANE \"{tpName}\"");
-                    powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");
-                    powerMILL.Execute("EDIT TOOLAXIS LEAN 0.0");
-                    powerMILL.Execute("EDIT PAR 'ToolAxis.LeadLeanMode' 'contact_normal'");
-                    powerMILL.Execute($"EDIT TOOLPATH \"{finishing}\" REAPPLYFROMGUI\rYes");
-                    session.Toolpaths.ActiveItem.Calculate();
-
-                    powerMILL.Execute($"CREATE PATTERN {tpName}");
-                    powerMILL.Execute($"EDIT PATTERN \"{tpName}\" INSERT TOOLPATH ;");
-
-                    powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
-                    session.Refresh();
-                    session.Toolpaths.ActiveItem.Name = probing;
-                    powerMILL.Execute($"ACTIVATE TOOLPATH \"{probing}\" FORM TOOLPATH");
-                    powerMILL.Execute($"EDIT PAR 'Pattern' \"{tpName}\"");
-                    powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");
-                    powerMILL.Execute($"EDIT TOOLPATH \"{probing}\" REAPPLYFROMGUI\rYes");
-                    session.Toolpaths.ActiveItem.Calculate();
-
-                    powerMILL.Execute("FORM COLLISION");
-                    powerMILL.Execute("EDIT COLLISION APPLY");
-                    powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
-                    powerMILL.Execute("EDIT COLLISION APPLY");
-                    powerMILL.Execute("COLLISION ACCEPT");
-
-                    //取两个三等分点
-                    int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{probing}').Statistics.PlungesIntoStock\"").ToString());
-                    powerMILL.Execute("FORM TPLIST");
-                    for (int i = 0; i < count; i++)
+                    powerMILL.Execute("edit model all deselect all");
+                    powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
+                    //从配置找角度的层名
+                    LevelConfig config = colors.FirstOrDefault(c => c.Method == "角度");
+                    if (config != null)
                     {
-                        if (i == count / 3 || i == count - count / 3)
-                        {
-                            continue;
-                        }
-                        powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {i} TOGGLE");
+                        CalculateBottom(tpPrefix, tpName, diameter, ConfigurationManager.AppSettings["ENDMILL"], level, config.Level);
                     }
-                    powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
-                    powerMILL.Execute("TPLIST ACCEPT");
+                    else
+                    {
+                        CalculateBottom(tpPrefix, tpName, diameter, ConfigurationManager.AppSettings["ENDMILL"], level);
+                    }                    
                 }
             }
             else if (method == "角度")
@@ -970,9 +912,19 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {count - 1} TOGGLE");
                 powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
                 powerMILL.Execute("TPLIST ACCEPT");
+
+                if (App.Current.Resources["workplane"] == null)
+                {
+                    MessageBox.Show($"{method}必须先计算U型槽模型比对。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                    return;
+                }
+
+                //底面是用槽的曲面和坐标系计算                
+                double radius = double.Parse(ConfigurationManager.AppSettings["radius"]);
+                CalculateBottom(tpName + "_底面", tpName, radius, ConfigurationManager.AppSettings["ENDMILL_D10"], level);
             }
-            else if (method == "U型槽底面模型比对")
-            {
+            else if (method == "U型槽底面模型比对")//放到U型槽结尾自动做
+            {/*
                 if (App.Current.Resources["workplane"] == null)
                 {
                     MessageBox.Show($"{method}必须先计算U型槽模型比对。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
@@ -981,75 +933,9 @@ namespace Hongyang
 
                 //底面是用槽的曲面和坐标系计算
                 string workplane = App.Current.Resources["workplane"].ToString();
-                level = App.Current.Resources["level"].ToString();                
-                powerMILL.Execute("edit model all deselect all");
-                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
-
-                string finishing = tpName + "_Finishing";
-                string probing = tpName + "_Probing";                
-                powerMILL.Execute($"DELETE TOOLPATH \"{probing}\"");
-                powerMILL.Execute($"DELETE PATTERN \"{tpName}\"");
-                powerMILL.Execute($"DELETE TOOLPATH \"{finishing}\"");
-                powerMILL.Execute($"ACTIVATE WORKPLANE \"{workplane}\"");
-                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Raster-Finishing.002.ptf\"");
-                session.Refresh();
-                session.Toolpaths.ActiveItem.Name = finishing;
-                powerMILL.Execute($"ACTIVATE TOOLPATH \"{finishing}\" FORM TOOLPATH");
-                powerMILL.Execute("FORM THICKNESS EDIT THICKNESS TAB COMPONENTS TOOLPATH");
-                powerMILL.Execute("EDIT TOOLPATH THICKNESS LIST UPDATE\r 1 NEW");
-                powerMILL.Execute("EDIT TOOLPATH ; THICKNESS COMPONENTS MACHINE");
-                powerMILL.Execute("THICKNESS ACCEPT");
-                powerMILL.Execute("EDIT PAR 'Tolerance' \"0.1\"");
-                powerMILL.Execute("EDIT TPPAGE SWBlock");
-                powerMILL.Execute("EDIT BLOCK RESET");
+                level = App.Current.Resources["level"].ToString();
                 double radius = double.Parse(ConfigurationManager.AppSettings["radius"]);
-                double minX = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MinX\").Value").ToString());
-                powerMILL.Execute($"EDIT BLOCK XMIN \"{minX + radius}\"");
-                double minY = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MinY\").Value").ToString());
-                powerMILL.Execute($"EDIT BLOCK YMIN \"{minY + radius}\"");
-                double maxX = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MaxX\").Value").ToString());
-                powerMILL.Execute($"EDIT BLOCK XMAX \"{maxX - radius}\"");
-                double maxY = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MaxY\").Value").ToString());
-                powerMILL.Execute($"EDIT BLOCK YMAX \"{maxY - radius}\"");
-                powerMILL.Execute($"ACTIVATE TOOL \"{ConfigurationManager.AppSettings["ENDMILL_D10"]}\"");
-                //powerMILL.Execute($"ACTIVATE WORKPLANE \"{workplane}\"");
-                powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");
-                powerMILL.Execute("EDIT TOOLAXIS LEAN 0.0");
-                powerMILL.Execute("EDIT PAR 'ToolAxis.LeadLeanMode' 'contact_normal'");
-                powerMILL.Execute($"EDIT TOOLPATH \"{finishing}\" REAPPLYFROMGUI\rYes");
-                session.Toolpaths.ActiveItem.Calculate();
-
-                powerMILL.Execute($"CREATE PATTERN {tpName}");
-                powerMILL.Execute($"EDIT PATTERN \"{tpName}\" INSERT TOOLPATH ;");
-
-                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
-                session.Refresh();
-                session.Toolpaths.ActiveItem.Name = probing;
-                powerMILL.Execute($"ACTIVATE TOOLPATH \"{probing}\" FORM TOOLPATH");
-                powerMILL.Execute($"EDIT PAR 'Pattern' \"{tpName}\"");
-                powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");
-                powerMILL.Execute($"EDIT TOOLPATH \"{probing}\" REAPPLYFROMGUI\rYes");
-                session.Toolpaths.ActiveItem.Calculate();
-
-                powerMILL.Execute("FORM COLLISION");
-                powerMILL.Execute("EDIT COLLISION APPLY");
-                powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
-                powerMILL.Execute("EDIT COLLISION APPLY");
-                powerMILL.Execute("COLLISION ACCEPT");
-
-                //取两个三等分点
-                int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{probing}').Statistics.PlungesIntoStock\"").ToString());
-                powerMILL.Execute("FORM TPLIST");
-                for (int i = 0; i < count; i++)
-                {
-                    if (i == count / 3 || i == count - count / 3)
-                    {
-                        continue;
-                    }
-                    powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {i} TOGGLE");
-                }                
-                powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
-                powerMILL.Execute("TPLIST ACCEPT");
+                CalculateBottom(tpName, workplane, radius, level);*/
             }
             else if (method == "顶端平面")
             {
@@ -1288,6 +1174,88 @@ namespace Hongyang
             }
 
             RefreshToolpaths();
+        }
+
+        /// <summary>
+        /// 计算底面
+        /// </summary>
+        /// <param name="tpPrefix">刀路前缀</param>
+        /// <param name="workplane">坐标系</param>
+        /// <param name="shrink">毛坯缩小值</param>
+        /// <param name="tool">刀具</param>
+        /// <param name="levels">层</param>
+        public void CalculateBottom(string tpPrefix, string workplane, double shrink, string tool, params string[] levels)
+        {
+            powerMILL.Execute("edit model all deselect all");
+            foreach (string level in levels)
+            {
+                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
+            }
+
+            string finishing = tpPrefix + "_Finishing";
+            string probing = tpPrefix + "_Probing";
+            powerMILL.Execute($"DELETE TOOLPATH \"{probing}\"");
+            powerMILL.Execute($"DELETE PATTERN \"{tpPrefix}\"");
+            powerMILL.Execute($"DELETE TOOLPATH \"{finishing}\"");
+            powerMILL.Execute($"ACTIVATE WORKPLANE \"{workplane}\"");
+            powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Raster-Finishing.002.ptf\"");
+            session.Refresh();
+            session.Toolpaths.ActiveItem.Name = finishing;
+            powerMILL.Execute($"ACTIVATE TOOLPATH \"{finishing}\" FORM TOOLPATH");
+            powerMILL.Execute("FORM THICKNESS EDIT THICKNESS TAB COMPONENTS TOOLPATH");
+            powerMILL.Execute("EDIT TOOLPATH THICKNESS LIST UPDATE\r 1 NEW");
+            powerMILL.Execute("EDIT TOOLPATH ; THICKNESS COMPONENTS MACHINE");
+            powerMILL.Execute("THICKNESS ACCEPT");
+            powerMILL.Execute("EDIT PAR 'Tolerance' \"0.1\"");
+            powerMILL.Execute("EDIT TPPAGE SWBlock");
+            powerMILL.Execute("EDIT BLOCK RESET");            
+            double minX = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MinX\").Value").ToString());
+            powerMILL.Execute($"EDIT BLOCK XMIN \"{minX + shrink}\"");
+            double minY = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MinY\").Value").ToString());
+            powerMILL.Execute($"EDIT BLOCK YMIN \"{minY + shrink}\"");
+            double maxX = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MaxX\").Value").ToString());
+            powerMILL.Execute($"EDIT BLOCK XMAX \"{maxX - shrink}\"");
+            double maxY = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MaxY\").Value").ToString());
+            powerMILL.Execute($"EDIT BLOCK YMAX \"{maxY - shrink}\"");
+            powerMILL.Execute($"ACTIVATE TOOL \"{tool}\"");
+            //powerMILL.Execute($"ACTIVATE WORKPLANE \"{workplane}\"");
+            powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");
+            powerMILL.Execute("EDIT TOOLAXIS LEAN 0.0");
+            powerMILL.Execute("EDIT PAR 'ToolAxis.LeadLeanMode' 'contact_normal'");
+            powerMILL.Execute($"EDIT TOOLPATH \"{finishing}\" REAPPLYFROMGUI\rYes");
+            session.Toolpaths.ActiveItem.Calculate();
+
+            powerMILL.Execute($"CREATE PATTERN {tpPrefix}");
+            powerMILL.Execute($"EDIT PATTERN \"{tpPrefix}\" INSERT TOOLPATH ;");
+
+            powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
+            session.Refresh();
+            session.Toolpaths.ActiveItem.Name = probing;
+            powerMILL.Execute($"ACTIVATE TOOLPATH \"{probing}\" FORM TOOLPATH");
+            powerMILL.Execute($"EDIT PAR 'Pattern' \"{tpPrefix}\"");
+            powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");
+            powerMILL.Execute($"EDIT TOOLPATH \"{probing}\" REAPPLYFROMGUI\rYes");
+            session.Toolpaths.ActiveItem.Calculate();
+
+            powerMILL.Execute("FORM COLLISION");
+            powerMILL.Execute("EDIT COLLISION APPLY");
+            powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
+            powerMILL.Execute("EDIT COLLISION APPLY");
+            powerMILL.Execute("COLLISION ACCEPT");
+
+            //取两个三等分点
+            int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{probing}').Statistics.PlungesIntoStock\"").ToString());
+            powerMILL.Execute("FORM TPLIST");
+            for (int i = 0; i < count; i++)
+            {
+                if (i == count / 3 || i == count - count / 3)
+                {
+                    continue;
+                }
+                powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {i} TOGGLE");
+            }
+            powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+            powerMILL.Execute("TPLIST ACCEPT");
         }
 
         /// <summary>
