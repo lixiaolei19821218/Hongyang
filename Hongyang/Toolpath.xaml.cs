@@ -1208,6 +1208,7 @@ namespace Hongyang
             powerMILL.Execute("THICKNESS ACCEPT");
             powerMILL.Execute("EDIT PAR 'Tolerance' \"0.1\"");
             powerMILL.Execute("EDIT TPPAGE SWBlock");
+            powerMILL.Execute("EDIT BLOCK COORDINATE WORKPLANE");
             powerMILL.Execute("EDIT BLOCK RESET");            
             double minX = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MinX\").Value").ToString());
             powerMILL.Execute($"EDIT BLOCK XMIN \"{minX + shrink}\"");
