@@ -821,24 +821,27 @@ namespace Hongyang
                 string probingTpName = tpName + "_Probing";
 
                 ClearToolpath_V2(probingTpName);
-
-                powerMILL.Execute("FORM THICKNESS EDIT THICKNESS TAB DEFAULT");
-                powerMILL.Execute("EDIT THICKNESS DEFAULTLIST UPDATE\r 0 NEW");
-                powerMILL.Execute("EDIT THICKNESS COMPONENTS MACHINE");
-                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
-                powerMILL.Execute("EDIT THICKNESS ACQUIRE");
-                powerMILL.Execute("EDIT THICKNESS DEFAULTLIST UPDATE\r 1 NEW");
-                powerMILL.Execute("EDIT THICKNESS COMPONENTS IGNORE");
-                powerMILL.Execute("EDIT MODEL ALL SELECT INVERT ALL");
-                powerMILL.Execute("EDIT THICKNESS ACQUIRE");
-                powerMILL.Execute("THICKNESS APPLY");
-                powerMILL.Execute("THICKNESS ACCEPT");
+             
                 powerMILL.Execute("edit model all deselect all");
 
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
                 session.Refresh();
                 session.Toolpaths.ActiveItem.Name = swarfTpName;
                 powerMILL.Execute($"ACTIVATE TOOLPATH \"{swarfTpName}\" FORM TOOLPATH");
+
+                powerMILL.Execute("FORM THICKNESS EDIT THICKNESS TAB COMPONENTS TOOLPATH");
+                powerMILL.Execute("EDIT TOOLPATH THICKNESS LIST UPDATE\r 0 NEW");
+                powerMILL.Execute("EDIT TOOLPATH ; THICKNESS COMPONENTS MACHINE");
+                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
+                powerMILL.Execute("EDIT TOOLPATH ; THICKNESS ACQUIRE");
+                powerMILL.Execute("EDIT TOOLPATH THICKNESS LIST UPDATE\r 1 NEW");
+                powerMILL.Execute("EDIT TOOLPATH ; THICKNESS COMPONENTS IGNORE");
+                powerMILL.Execute("EDIT MODEL ALL SELECT INVERT ALL");
+                powerMILL.Execute("EDIT TOOLPATH ; THICKNESS ACQUIRE");
+                powerMILL.Execute("THICKNESS APPLY");
+                powerMILL.Execute("THICKNESS ACCEPT");
+                powerMILL.Execute("edit model all deselect all");
+
                 powerMILL.Execute("ACTIVATE WORKPLANE \" \"");
                 powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
                 powerMILL.Execute("EDIT BLOCK RESET");
@@ -872,6 +875,21 @@ namespace Hongyang
                 session.Refresh();
                 session.Toolpaths.ActiveItem.Name = patternTpName;
                 powerMILL.Execute($"ACTIVATE TOOLPATH \"{patternTpName}\" FORM TOOLPATH");
+
+                powerMILL.Execute("edit model all deselect all");
+                powerMILL.Execute("FORM THICKNESS EDIT THICKNESS TAB COMPONENTS TOOLPATH");
+                powerMILL.Execute("EDIT TOOLPATH THICKNESS LIST UPDATE\r 0 NEW");
+                powerMILL.Execute("EDIT TOOLPATH ; THICKNESS COMPONENTS MACHINE");
+                powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
+                powerMILL.Execute("EDIT TOOLPATH ; THICKNESS ACQUIRE");
+                powerMILL.Execute("EDIT TOOLPATH THICKNESS LIST UPDATE\r 1 NEW");
+                powerMILL.Execute("EDIT TOOLPATH ; THICKNESS COMPONENTS IGNORE");
+                powerMILL.Execute("EDIT MODEL ALL SELECT INVERT ALL");
+                powerMILL.Execute("EDIT TOOLPATH ; THICKNESS ACQUIRE");
+                powerMILL.Execute("THICKNESS APPLY");
+                powerMILL.Execute("THICKNESS ACCEPT");
+                powerMILL.Execute("edit model all deselect all");
+
                 powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
                 powerMILL.Execute("EDIT PAR 'UseToolpathAsPattern' 1");
                 powerMILL.Execute($"EDIT PAR 'ReferenceToolpath' \"{swarfTpName}\"");
@@ -912,6 +930,8 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {count - 1} TOGGLE");
                 powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
                 powerMILL.Execute("TPLIST ACCEPT");
+
+                CollisionCheck(probingTpName, probingTpName);
 
                 if (App.Current.Resources["workplane"] == null)
                 {
@@ -1056,6 +1076,11 @@ namespace Hongyang
                 powerMILL.Execute("EDIT FEATURECREATE CREATEHOLES");
                 powerMILL.Execute("FORM CANCEL CREATEHOLE");
                 session.Refresh();
+                if (session.FeatureSets.ActiveItem == null)
+                {
+                    MessageBox.Show("无法产生特征集，请确认曲面是否是孔。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                    return;
+                }
                 session.FeatureSets.ActiveItem.Name = tpName;    
                 
                 double holeDiameter = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"EditHole.Shell.Geom.UpperDia\").Value").ToString());
@@ -1122,8 +1147,11 @@ namespace Hongyang
                 powerMILL.Execute("CURVEEDITOR MODE TRANSLATE");
                 PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
                 powerMILL.Execute($"MODE COORDINPUT COORDINATES 0 0 -{page.tbxHoleDistance.Text}");
-                //powerMILL.Execute("MODE TRANSFORM COPY YES");
-               // powerMILL.Execute($"MODE COORDINPUT COORDINATES 0 0 -{page.tbxHoleDepth.Text}");
+                if (method == "侧孔")
+                {
+                    powerMILL.Execute("MODE TRANSFORM COPY YES");
+                    powerMILL.Execute($"MODE COORDINPUT COORDINATES 0 0 -{page.tbxHoleDepth.Text}");
+                }
                 powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
 
                 if (method == "顶孔")
@@ -1257,6 +1285,8 @@ namespace Hongyang
             }
             powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
             powerMILL.Execute("TPLIST ACCEPT");
+
+            CollisionCheck(probing, probing);
         }
 
         /// <summary>
@@ -1266,6 +1296,7 @@ namespace Hongyang
         /// <param name="workplane">坐标系名</param>
         public void CreateWorkplanebySwarf(string swarf, string workplane)
         {
+            powerMILL.Execute($"DELETE TOOLPATH \"{swarf + "_1"}\"");
             powerMILL.Execute("ACTIVATE WORKPLANE \" \"");
             powerMILL.Execute($"ACTIVATE Toolpath \"{swarf}\"");
             powerMILL.Execute("QUIT EDITTOOLAXIS CANCEL FORM TPLIMIT");
@@ -1288,7 +1319,7 @@ namespace Hongyang
             powerMILL.Execute("WPETWIST ACCEPT");
             powerMILL.Execute("MODE WORKPLANE_EDIT FINISH ACCEPT");
             powerMILL.Execute($"ACTIVATE Workplane \"{workplane}\"");
-            //powerMILL.Execute($"DELETE TOOLPATH \"{newTP}\"");
+            powerMILL.Execute($"DELETE TOOLPATH \"{swarf}\"");
         }
 
         public void CalculateProbingPath(string probingTpName, string patternName)
@@ -1353,6 +1384,8 @@ namespace Hongyang
                 //上下两条线各4点
                 KeepPointsByPatternAndPoint(probingTpName, 2, 4);
             }
+
+            CollisionCheck(probingTpName, probingTpName);
         }
 
         /// <summary>
@@ -2576,8 +2609,21 @@ namespace Hongyang
                     int holdCount = int.Parse(msg.Split('\r')[4].Split(':')[1]);
                     int pointCount = n / holdCount;//每个孔的点数
 
-                    IGeometricGroup geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
-                    IPlane_ProbedItem plane = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                    IGeometricGroup geometric;
+                    IPlane_ProbedItem plane;
+                    if (Application.Current.Resources["顶端组"] == null)
+                    {
+                        geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
+                        plane = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                        Application.Current.Resources["顶端组"] = geometric;//顶端平面要用
+                        Application.Current.Resources["顶端平面"] = plane;//顶端平面要用
+                    }
+                    else
+                    {
+                        geometric = Application.Current.Resources["顶端组"] as IGeometricGroup;
+                        plane = Application.Current.Resources["顶端平面"] as IPlane_ProbedItem;
+                    }                
+
                     for (int i = 0; i < holdCount; i++)
                     {                        
                         IGeometricCircleItem circle = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Feat_ProbedCircle_) as IGeometricCircleItem;
@@ -2648,9 +2694,20 @@ namespace Hongyang
                     circle.BagOfPoints[measure].PasteFromClipboard();
                 }
                 else if (toolpath.Name.Contains("顶端平面"))
-                {
-                    IGeometricGroup geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
-                    IPlane_ProbedItem plane = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;                    
+                {                   
+                    IPlane_ProbedItem plane;
+                    if (Application.Current.Resources["顶端组"] == null)
+                    {
+                        IGeometricGroup geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
+                        plane = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                        geometric = Application.Current.Resources["顶端组"] as IGeometricGroup;
+                        plane = Application.Current.Resources["顶端平面"] as IPlane_ProbedItem;
+                    }
+                    else
+                    {
+                        plane = Application.Current.Resources["顶端平面"] as IPlane_ProbedItem;
+                    }
+                                       
                     indices = new int[points.Count];
                     for (int i = 0; i < points.Count; i++)
                     {
@@ -2665,7 +2722,7 @@ namespace Hongyang
                     }
                     index += n;
                     points.CopyToClipboard(indices);
-                    plane.BagOfPoints[measure].PasteFromClipboard();
+                    plane.BagOfPoints[measure].PasteFromClipboard();                   
                 }
                 else
                 {
