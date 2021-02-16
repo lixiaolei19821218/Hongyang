@@ -88,6 +88,7 @@ namespace Hongyang
         private void RefreshLevels()
         {
             session.Refresh();
+            lstAllLevel.ItemsSource = null;
             lstAllLevel.ItemsSource = session.LevelsAndSets;
         }
 
@@ -301,7 +302,14 @@ namespace Hongyang
 
                     foreach (PMLevelOrSet level in lstSelectedLevel.Items)
                     {
-                        Calculate(level.Name);
+                        try
+                        {
+                            Calculate(level.Name);
+                        }
+                        catch
+                        {
+                            MessageBox.Show("刀具计算异常，请检测策略设置。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                        }
                     }
                 }
                 else
@@ -310,7 +318,14 @@ namespace Hongyang
                     LoadColorConfig();
                     foreach (PMLevelOrSet level in lstAllLevel.Items)
                     {
-                        Calculate(level.Name);                        
+                        try
+                        {
+                            Calculate(level.Name);
+                        }
+                        catch
+                        {
+                            MessageBox.Show("刀具计算异常，请检测策略设置。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                        }
                     }
                 }
                 //(Application.Current.MainWindow as MainWindow).RefreshToolpaths();
@@ -1295,21 +1310,30 @@ namespace Hongyang
         /// <param name="swarf">Swarf刀路名</param>
         /// <param name="workplane">坐标系名</param>
         public void CreateWorkplanebySwarf(string swarf, string workplane)
-        {
-            powerMILL.Execute($"DELETE TOOLPATH \"{swarf + "_1"}\"");
+        {            
             powerMILL.Execute("ACTIVATE WORKPLANE \" \"");
             powerMILL.Execute($"ACTIVATE Toolpath \"{swarf}\"");
             powerMILL.Execute("QUIT EDITTOOLAXIS CANCEL FORM TPLIMIT");
             powerMILL.Execute("PROCESS TPLIMIT");
             powerMILL.Execute("FORM CANCEL TPLIMIT");
             session.Refresh();
-            if (session.Toolpaths.Any(t => t.Name == swarf + "_1"))
+            string toolpath = swarf + "_1";//用来建立坐标系的刀路，有些情况会新建
+            if (session.Toolpaths.Any(t => t.Name == toolpath))
             {
-                swarf = swarf + "_1";
-            }                      
-            powerMILL.Execute($"SIMULATE TOOLPATH \"{swarf}\" FORM RIBBON TAB SIMULATION");
+                toolpath = swarf + "_1";
+            }     
+            else
+            {
+                toolpath = swarf;
+            }
+            powerMILL.Execute($"SIMULATE TOOLPATH \"{toolpath}\" FORM RIBBON TAB SIMULATION");
             string elevation = powerMILL.ExecuteEx("print par terse $widget(\"ToolPosition.AxisDirection.AxisElevation\").Value").ToString();//仰角
             string azimuth = powerMILL.ExecuteEx("print par terse $widget(\"ToolPosition.AxisDirection.AxisAzimuth\").Value").ToString();//方位角
+            if (elevation == "" || azimuth == "")
+            {
+                MessageBox.Show("不能计算方位角，请检测刀路。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
             powerMILL.Execute($"CREATE WORKPLANE {workplane} EDITOR");
             powerMILL.Execute("MODE WORKPLANE_EDIT TWIST Z");
             powerMILL.Execute($"MODE WORKPLANE_EDIT TWIST \"{azimuth}\"");
@@ -1319,7 +1343,10 @@ namespace Hongyang
             powerMILL.Execute("WPETWIST ACCEPT");
             powerMILL.Execute("MODE WORKPLANE_EDIT FINISH ACCEPT");
             powerMILL.Execute($"ACTIVATE Workplane \"{workplane}\"");
-            powerMILL.Execute($"DELETE TOOLPATH \"{swarf}\"");
+            if (toolpath != swarf)
+            {
+                powerMILL.Execute($"DELETE TOOLPATH \"{toolpath}\"");
+            }
         }
 
         public void CalculateProbingPath(string probingTpName, string patternName)
