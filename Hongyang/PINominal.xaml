@@ -26,7 +26,7 @@
                         <TextBox Width="60" Text="{Binding ElementName=tbxDistance, Path=Text, Mode=OneWay}" Name="tbxMaxDistance" x:FieldModifier="public"/>
                     </StackPanel>
                 </GroupBox>
-            </StackPanel>
+                </StackPanel>
         </GroupBox>
         <GroupBox Header="顶端平面">
             <StackPanel Orientation="Horizontal">
@@ -56,6 +56,12 @@
                 <TextBox Width="60" Text="3" Name="tbxHoleDistance" x:FieldModifier="public"/>
                 <Label Content="继续下探深度"/>
                 <TextBox Width="60" Text="10" Name="tbxHoleDepth" x:FieldModifier="public"/>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox Header="后置文件" Margin="5">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="距离"/>
+                <ComboBox Name="cbxOPT" x:FieldModifier="public" Width="300"></ComboBox>
             </StackPanel>
         </GroupBox>
     </StackPanel>

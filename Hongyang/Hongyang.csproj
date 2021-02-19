@@ -193,14 +193,18 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
-    <None Include="Pmoptz\Fidia_KR199_OMV_V3.pmoptz" />
+    <None Include="Pmoptz\DMC_210P_OMV_TNC530.pmoptz">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Pmoptz\Fidia_KR199_OMV_V6.pmoptz">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Pmoptz\Results_Output_Generator_OMV2015.pmoptz">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Pmoptz\TNC530_OMV_DMC210P_20141115.pmoptz" />
+    <None Include="Pmoptz\TNC530_OMV_DMC210P_20141115.pmoptz">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

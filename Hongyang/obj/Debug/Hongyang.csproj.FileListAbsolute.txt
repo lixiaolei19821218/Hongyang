@@ -111,3 +111,5 @@ C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Report\Autodesk200
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Hongyang_Content.g.cs
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Report\GroupHeadBackground.gif
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Report\Hongyang.png
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Pmoptz\DMC_210P_OMV_TNC530.pmoptz
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Pmoptz\TNC530_OMV_DMC210P_20141115.pmoptz

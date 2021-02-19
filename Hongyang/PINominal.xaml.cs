@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,7 +23,18 @@ namespace Hongyang
     {
         public PINominal()
         {
-            InitializeComponent();            
+            InitializeComponent();
+            
+            //读取后处理文件
+            foreach(string file in System.IO.Directory.GetFiles(@"Pmoptz"))
+            {
+                string opt = System.IO.Path.GetFileNameWithoutExtension(file);
+                if (opt != ConfigurationManager.AppSettings["totalPmoptz"])
+                {
+                    cbxOPT.Items.Add(opt);
+                }                
+            }
+            cbxOPT.SelectedIndex = 0;
         }
     }
 }

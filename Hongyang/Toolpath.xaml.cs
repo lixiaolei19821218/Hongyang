@@ -1083,6 +1083,8 @@ namespace Hongyang
                 powerMILL.Execute("FORM TPLIST");
                 powerMILL.Execute("EDIT TOOLPATH REORDER N");
                 powerMILL.Execute("TPLIST ACCEPT");
+
+                CollisionCheck(probing, probing);
             }     
             else if (method == "顶孔" || method == "侧孔")
             {
