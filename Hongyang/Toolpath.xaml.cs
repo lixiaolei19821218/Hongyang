@@ -2030,7 +2030,12 @@ namespace Hongyang
             }
         }
 
-        private void BtnGenerateNC_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// 产出Fidia设备的后处理文件
+        /// </summary>
+        /// <param name="uPmoptz">分角度的后处理</param>
+        /// <param name="totalPmoptz">Total后处理</param>
+        private void GenerateFidiaNC(string uPmoptz, string totalPmoptz)
         {
             if (powerMILL == null)
             {
@@ -2045,7 +2050,7 @@ namespace Hongyang
             ActivateWorldPlane();
             powerMILL.Execute($"DELETE NCPROGRAM ALL");
 
-            
+
             foreach (NCOutput n in NCOutputs)
             {
                 powerMILL.Execute($"CREATE NCPROGRAM '{n.NC}'");
@@ -2070,17 +2075,17 @@ namespace Hongyang
                     powerMILL.Execute($"ACTIVATE NCProgram \"{output.NC}\"");
                     powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
                 }
-            }            
+            }
 
             List<string> ncFiles = new List<string>();
-            string opt = AppContext.BaseDirectory + ConfigurationManager.AppSettings["uPmoptz"];
+            string opt = uPmoptz;
             foreach (NCOutput n in NCOutputs)
             {
                 if (ConfigurationManager.AppSettings["mock"] == "true")
                 {
                     //产生测试用的tap
-                    opt = AppContext.BaseDirectory + ConfigurationManager.AppSettings["totalPmoptz"];
-                }                
+                    opt = totalPmoptz;
+                }
                 ncFiles.Add(ExportNC(n.NC, opt, n.Workplane));
             }
             if (ConfigurationManager.AppSettings["mock"] == "true")
@@ -2151,15 +2156,73 @@ namespace Hongyang
                 foreach (PMToolpath toolpath in program.Toolpaths)
                 {
                     powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
-                }                
+                }
             }
             
-            opt = AppContext.BaseDirectory + ConfigurationManager.AppSettings["totalPmoptz"]; ;
-            ExportNC("Total", opt, "NC");
+            ExportNC("Total", totalPmoptz, "NC");
             powerMILL.Execute("PROJECT SAVE");
 
             MessageBox.Show("NC程序生成完成。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
             Application.Current.MainWindow.WindowState = WindowState.Normal;
+        }
+
+        /// <summary>
+        /// 产生其他设备的后置
+        /// </summary>
+        /// <param name="totalPmoptz">后处理文件</param>
+        private void GenerateOtherNC(string totalPmoptz)
+        {
+            if (powerMILL == null)
+            {
+                MessageBox.Show("未连接PowerMILl，请导入模型开始。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+
+            Application.Current.MainWindow.WindowState = WindowState.Minimized;
+
+            powerMILL.Execute("PROJECT SAVE");
+            powerMILL.DialogsOff();
+            ActivateWorldPlane();
+            powerMILL.Execute($"DELETE NCPROGRAM ALL");
+            powerMILL.Execute($"CREATE NCPROGRAM 'Total'");
+            powerMILL.Execute($"ACTIVATE NCProgram \"Total\"");
+            session.Refresh();
+
+            foreach (PMToolpath toolpath in session.Toolpaths.Where(tp => tp.IsCalculated))
+            {
+                string strategy = powerMILL.ExecuteEx($"PRINT PAR terse \"entity('toolpath', '{toolpath.Name}').Strategy\"").ToString();
+                if (strategy == "surface_inspection")
+                {                    
+                    powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
+                }
+            }            
+
+            string tap = ExportNC("Total", totalPmoptz, "NC");
+            //修改.tap为.nc
+            FileInfo f = new FileInfo(tap);
+            f.MoveTo(System.IO.Path.ChangeExtension(tap, ".nc"));
+
+            powerMILL.Execute("PROJECT SAVE");
+
+            MessageBox.Show("NC程序生成完成。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+            Application.Current.MainWindow.WindowState = WindowState.Normal;
+        }
+
+        private void BtnGenerateNC_Click(object sender, RoutedEventArgs e)
+        {
+            PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
+
+            if (page.cbxOPT.Text == ConfigurationManager.AppSettings["uPmoptz"])//Fidia
+            {
+                string uPmoptz = AppContext.BaseDirectory + @"\Pmoptz\" + ConfigurationManager.AppSettings["uPmoptz"] + ".pmoptz";
+                string totalPmoptz = AppContext.BaseDirectory + @"\Pmoptz\" + ConfigurationManager.AppSettings["totalPmoptz"] + ".pmoptz";
+                GenerateFidiaNC(uPmoptz, totalPmoptz);
+            }
+            else
+            {
+                string totalPmoptz = AppContext.BaseDirectory + @"\Pmoptz\" + page.cbxOPT.Text + ".pmoptz";
+                GenerateOtherNC(totalPmoptz);
+            }
         }
 
         /// <summary>
@@ -2168,7 +2231,7 @@ namespace Hongyang
         /// <param name="nc">PM中的NC程序名</param>
         /// <param name="opt">后置文件完整路径</param>
         /// <param name="workplane">PM中的坐标系名</param>
-        /// <returns></returns>
+        /// <returns>生成的后置文件</returns>
         public string ExportNC(string nc, string opt, string workplane)
         {
             session.Refresh();
@@ -2299,9 +2362,13 @@ namespace Hongyang
                     //创建NC坐标系
                     powerMILL.Execute("DELETE WORKPLANE ALL");
 
-                    foreach (NCOutput output in NCOutputs)
+                    PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
+                    if (page.cbxOPT.Text == ConfigurationManager.AppSettings["uPmoptz"])
                     {
-                        CreateNCWorkplane(output.Workplane, output.Angle);
+                        foreach (NCOutput output in NCOutputs)
+                        {
+                            CreateNCWorkplane(output.Workplane, output.Angle);
+                        }
                     }
 
                     string tag = DateTime.Now.ToString("yyyyMMdd_HHmmss");
