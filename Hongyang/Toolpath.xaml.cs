@@ -2071,7 +2071,7 @@ namespace Hongyang
                     {
                         azimuth = double.Parse(powerMILL.ExecuteEx($"PRINT PAR terse \"entity('workplane', '{toolpath.WorkplaneName}').Azimuth\"").ToString());
                     }
-                    NCOutput output = NCOutputs.First(n => n.Angle >= azimuth);
+                    NCOutput output = NCOutputs.First(n => azimuth >= n.Angle && azimuth < n.Angle + int.Parse(ConfigurationManager.AppSettings["uAngle"]));
                     powerMILL.Execute($"ACTIVATE NCProgram \"{output.NC}\"");
                     powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
                 }
@@ -2195,7 +2195,7 @@ namespace Hongyang
                 {                    
                     powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
                 }
-            }            
+            }
 
             string tap = ExportNC("Total", totalPmoptz, "NC");
             //修改.tap为.nc
@@ -2844,7 +2844,9 @@ namespace Hongyang
             }
 
             string pmFolder = powerMILL.ExecuteEx("print $project_pathname(0)").ToString().Trim();
-            string file = $"{Directory.GetParent(pmFolder)}\\PI_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pwi";
+            string piFolder = $"{Directory.GetParent(pmFolder)}\\PI";
+            Directory.CreateDirectory(piFolder);
+            string file = $"{piFolder}\\{tbxPart.Text}_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pwi";
             doc.SaveAs(file, false);
 
             //改报告模板，把零件名写到产品名称栏位
