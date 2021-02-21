@@ -161,7 +161,7 @@
                             </DockPanel>
                             <DockPanel>
                                 <Image Source="Icon\total.jpg" Width="25"/>
-                                <Button Margin="5" VerticalAlignment="Bottom" Height="26" Name="btnMergeTotal" Click="BtnMergeTotal_Click">整合Total Tap</Button>
+                                <Button Margin="5" VerticalAlignment="Bottom" Height="26" Name="btnMergeTotal" Click="BtnMergeTotal_Click">整合Fidia后置文件</Button>
                             </DockPanel>
                         </StackPanel>
                     </GroupBox>

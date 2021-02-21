@@ -71,7 +71,7 @@ namespace Hongyang
 
         private void LoadColorConfig()
         {
-            StreamReader reader = new StreamReader(AppContext.BaseDirectory + @"color.txt");
+            StreamReader reader = new StreamReader(AppContext.BaseDirectory + ConfigurationManager.AppSettings["SavedData"] + @"\color.txt");
             string json = reader.ReadToEnd();
             reader.Close();
             colors = JsonConvert.DeserializeObject<IEnumerable<LevelConfig>>(json).Where(c => c.Method != "不计算");
@@ -2035,7 +2035,8 @@ namespace Hongyang
         /// </summary>
         /// <param name="uPmoptz">分角度的后处理</param>
         /// <param name="totalPmoptz">Total后处理</param>
-        private void GenerateFidiaNC(string uPmoptz, string totalPmoptz)
+        /// <param name="totalNCFile">输出的NC文件名</param>
+        private void GenerateFidiaNC(string uPmoptz, string totalPmoptz, string totalNCFile)
         {
             if (powerMILL == null)
             {
@@ -2049,7 +2050,6 @@ namespace Hongyang
             powerMILL.DialogsOff();
             ActivateWorldPlane();
             powerMILL.Execute($"DELETE NCPROGRAM ALL");
-
 
             foreach (NCOutput n in NCOutputs)
             {
@@ -2086,8 +2086,9 @@ namespace Hongyang
                     //产生测试用的tap
                     opt = totalPmoptz;
                 }
-                ncFiles.Add(ExportNC(n.NC, opt, n.Workplane));
+                ncFiles.Add(ExportNC(n.NC, opt, n.Workplane, n.NC + ".tap"));
             }
+
             if (ConfigurationManager.AppSettings["mock"] == "true")
             {
                 //生成测试用的msr
@@ -2122,8 +2123,9 @@ namespace Hongyang
                 }
 
                 StreamReader reader = new StreamReader(AppContext.BaseDirectory + @"\NC\NC_Header.tap");
-                StreamWriter writer = new StreamWriter(totalFolder + "\\Total.nc", false);
-                writer.Write(reader.ReadToEnd().Replace("OMV", $"OMV_{tbxPart.Text.Trim()}"));//DGT => IPC C:\MSR\OMV.msr这个行替换成OMV_零件名.msr
+                StreamWriter writer = new StreamWriter($"{totalFolder}\\{totalNCFile}", false);
+
+                writer.Write(reader.ReadToEnd().Replace("OMV", totalNCFile.Replace(".nc", "-00X")));//DGT => IPC C:\MSR\OMV.msr这个行替换成OMV_零件名.msr
                 reader.Close();
                 writer.WriteLine();
 
@@ -2159,7 +2161,7 @@ namespace Hongyang
                 }
             }
             
-            ExportNC("Total", totalPmoptz, "NC");
+            ExportNC("Total", totalPmoptz, "NC", totalNCFile.Replace(".nc", ".tap"));
             powerMILL.Execute("PROJECT SAVE");
 
             MessageBox.Show("NC程序生成完成。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
@@ -2170,7 +2172,8 @@ namespace Hongyang
         /// 产生其他设备的后置
         /// </summary>
         /// <param name="totalPmoptz">后处理文件</param>
-        private void GenerateOtherNC(string totalPmoptz)
+        /// <param name="ncFile">输出的NC文件</param>
+        private void GenerateOtherNC(string totalPmoptz, string ncFile)
         {
             if (powerMILL == null)
             {
@@ -2180,12 +2183,12 @@ namespace Hongyang
 
             Application.Current.MainWindow.WindowState = WindowState.Minimized;
 
+            string ncProgram = "Total";
             powerMILL.Execute("PROJECT SAVE");
             powerMILL.DialogsOff();
             ActivateWorldPlane();
             powerMILL.Execute($"DELETE NCPROGRAM ALL");
-            powerMILL.Execute($"CREATE NCPROGRAM 'Total'");
-            powerMILL.Execute($"ACTIVATE NCProgram \"Total\"");
+            powerMILL.Execute($"CREATE NCPROGRAM '{ncProgram}'");            
             session.Refresh();
 
             foreach (PMToolpath toolpath in session.Toolpaths.Where(tp => tp.IsCalculated))
@@ -2197,11 +2200,7 @@ namespace Hongyang
                 }
             }
 
-            string tap = ExportNC("Total", totalPmoptz, "NC");
-            //修改.tap为.nc
-            FileInfo f = new FileInfo(tap);
-            f.MoveTo(System.IO.Path.ChangeExtension(tap, ".nc"));
-
+            ExportNC(ncProgram, totalPmoptz, "NC", ncFile);//"NC"在PM输出中表示世界坐标系
             powerMILL.Execute("PROJECT SAVE");
 
             MessageBox.Show("NC程序生成完成。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
@@ -2211,61 +2210,113 @@ namespace Hongyang
         private void BtnGenerateNC_Click(object sender, RoutedEventArgs e)
         {
             PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
+            string part = page.tbxPart.Text.Trim();
+            if (string.IsNullOrEmpty(part))
+            {
+                MessageBox.Show("请在参数设置页输入零件名称。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+            string partNumber = page.tbxPartNumber.Text.Trim();
+            if (string.IsNullOrEmpty(partNumber))
+            {
+                MessageBox.Show("请在参数设置页输入零件代码。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+            string equipment = page.tbxEquipment.Text.Trim();
+            if (string.IsNullOrEmpty(equipment))
+            {
+                MessageBox.Show("请在参数设置页输入测量设备。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+            string process = page.tbxProcess.Text.Trim();
+            if (string.IsNullOrEmpty(process))
+            {
+                MessageBox.Show("请在参数设置页输入工序号。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+            string ncFile = $"OMV-{partNumber}-{equipment}-{process}.nc";
 
             if (page.cbxOPT.Text == ConfigurationManager.AppSettings["uPmoptz"])//Fidia
             {
                 string uPmoptz = AppContext.BaseDirectory + @"\Pmoptz\" + ConfigurationManager.AppSettings["uPmoptz"] + ".pmoptz";
                 string totalPmoptz = AppContext.BaseDirectory + @"\Pmoptz\" + ConfigurationManager.AppSettings["totalPmoptz"] + ".pmoptz";
-                GenerateFidiaNC(uPmoptz, totalPmoptz);
+                GenerateFidiaNC(uPmoptz, totalPmoptz, ncFile);
             }
             else
             {
                 string totalPmoptz = AppContext.BaseDirectory + @"\Pmoptz\" + page.cbxOPT.Text + ".pmoptz";
-                GenerateOtherNC(totalPmoptz);
+                GenerateOtherNC(totalPmoptz, ncFile);
             }
         }
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="nc">PM中的NC程序名</param>
+        /// <param name="ncProgram">PM中的NC程序名</param>
         /// <param name="opt">后置文件完整路径</param>
         /// <param name="workplane">PM中的坐标系名</param>
-        /// <returns>生成的后置文件</returns>
-        public string ExportNC(string nc, string opt, string workplane)
+        /// <param name="ncFile">输出的NC文件名</param>
+        /// <returns>生成的后置文件完整路径</returns>
+        public string ExportNC(string ncProgram, string opt, string workplane, string ncFile)
         {
             session.Refresh();
-            PMNCProgram program = session.NCPrograms.FirstOrDefault(n => n.Name == nc);
-            string ncFile = string.Empty;
+            PMNCProgram program = session.NCPrograms.FirstOrDefault(n => n.Name == ncProgram);
+            string ncPath = string.Empty;
+            
             if (program != null)
             {
                 string output = powerMILL.ExecuteEx($"EDIT NCPROGRAM '{program.Name}' LIST").ToString();
                 string[] toolpaths = output.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
                 if (toolpaths.Length > 3)
                 {
-                    powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" QUIT FORM NCTOOLPATH");
+                    powerMILL.Execute($"EDIT NCPROGRAM \"{ncProgram}\" QUIT FORM NCTOOLPATH");
                     //string path = powerMILL.ExecuteEx($"print par terse \"entity('ncprogram', '{nc}').filename\"").ToString();
                     //path = path.Insert(path.IndexOf("{ncprogram}"), nc + "/");
                     string projectName = powerMILL.ExecuteEx("print $project_pathname(1)").ToString().Trim();
-                    string path = ConfigurationManager.AppSettings["ncFolder"] + "\\" + projectName + "\\" + nc;
+                    string path = ConfigurationManager.AppSettings["ncFolder"] + "\\" + projectName + "\\" + ncProgram;
                     if (!Directory.Exists(path))
                     {
                         Directory.CreateDirectory(path);
                     }
-                    powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" FILENAME FILESAVE\r'{path}\\{nc}'");
-                    powerMILL.Execute($"EDIT NCPROGRAM '{nc}' SET WORKPLANE \"{workplane}\"");
-                    powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TAPEOPTIONS \"{opt}\" FORM ACCEPT SelectOptionFile");
+                    ncPath = path + "\\" + ncFile;
+                    powerMILL.Execute($"EDIT NCPROGRAM \"{ncProgram}\" FILENAME FILESAVE\r'{ncPath}'");
+                    powerMILL.Execute($"EDIT NCPROGRAM '{ncProgram}' SET WORKPLANE \"{workplane}\"");
+                    powerMILL.Execute($"EDIT NCPROGRAM \"{ncProgram}\" TAPEOPTIONS \"{opt}\" FORM ACCEPT SelectOptionFile");
 
-                    powerMILL.Execute($"EDIT NCPROGRAM \"{nc}\" TOOLCOORDS CENTRE");
-                    powerMILL.Execute($"ACTIVATE NCPROGRAM \"{nc}\" KEEP NCPROGRAM ;\rYes\rYes");
+                    powerMILL.Execute($"EDIT NCPROGRAM \"{ncProgram}\" TOOLCOORDS CENTRE");
+                    powerMILL.Execute($"ACTIVATE NCPROGRAM \"{ncProgram}\" KEEP NCPROGRAM ;\rYes\rYes");
 
                     powerMILL.Execute($"NCTOOLPATH ACCEPT FORM ACCEPT NCTOOLPATHLIST FORM ACCEPT NCTOOLLIST FORM ACCEPT PROBINGNCOPTS");
                     powerMILL.Execute("TEXTINFO ACCEPT");
 
-                    ncFile = path + "\\" + nc + ".tap";                   
+                    //保存刀路信息，生成PI报告的时候要用
+                    if (ncProgram == "Total")
+                    {
+                        string pmFolder = powerMILL.ExecuteEx("print $project_pathname(0)").ToString().Trim();
+                        string piFolder = $"{Directory.GetParent(pmFolder)}\\PI";
+
+                        List<Model.Toolpath> saved = new List<Model.Toolpath>();
+                        foreach (PMToolpath p in program.Toolpaths)
+                        {
+                            Model.Toolpath save = new Model.Toolpath() { Name = p.Name };
+                            save.Point = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{save.Name}').Statistics.PlungesIntoStock\"").ToString());//点数
+                            if (save.Name.Contains("顶孔"))
+                            {
+                                string feature = save.Name.Replace("_Probing", "");
+                                string msg = powerMILL.ExecuteEx($"SIZE FEATURESET \"{feature}\"").ToString();
+                                save.Hole = int.Parse(msg.Split('\r')[4].Split(':')[1]);
+                            }
+                            saved.Add(save);
+                        }
+                        string json = JsonConvert.SerializeObject(saved);
+                        string savedFile = AppContext.BaseDirectory + ConfigurationManager.AppSettings["SavedData"] + "\\" + ncFile.Replace(".nc", ".txt");
+                        StreamWriter writer = new StreamWriter(savedFile, false);
+                        writer.Write(json);
+                        writer.Close();
+                    }
                 }
             }
-            return ncFile;
+            return ncPath;
         }
 
         private void BtnImportModel_Click(object sender, RoutedEventArgs e)
@@ -2516,21 +2567,17 @@ namespace Hongyang
 
         private void BtnReport_Click(object sender, RoutedEventArgs e)
         {
-            powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
-            session = powerMILL.ActiveProject;
-            if (powerMILL == null)
-            {
-                MessageBox.Show("未连接PowerMILl，请导入模型开始。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
-                return;
-            }
+            PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
 
-            session.Refresh();
-            PMNCProgram program = session.NCPrograms.FirstOrDefault(n => n.Name == "Total");
-            if (program == null)
-            {
-                MessageBox.Show("没有在PowerMILL中找到名为Total的NC程序。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
-                return;
-            }
+            //零件信息
+            string part = page.tbxPart.Text.Trim();
+            string partNumber = page.tbxPartNumber.Text.Trim();
+            string equipment = page.tbxEquipment.Text.Trim();
+            string process = page.tbxProcess.Text.Trim();
+
+            //读取保存的PM检测路径信息
+            string partFile = $"{ConfigurationManager.AppSettings["SavedData"]}\\OMV-{part}-{equipment}-{process}.txt";
+            List<Model.Toolpath> toolpaths = JsonConvert.DeserializeObject<List<Model.Toolpath>>(partFile);            
 
             IApplication application = new PIApplication() as IApplication;
             IPIDocument doc = application.ActiveDocument;
@@ -2555,22 +2602,20 @@ namespace Hongyang
                 inspect1.SequenceItems[i].OutputToReport = false;
             }
 
-            //取设置的名义值
-            PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
+            //取设置的名义值            
             double nAngle, nDistance, nMinDistance, nMaxDistance;
             double.TryParse(page.tbxAngle.Text, out nAngle);
             double.TryParse(page.tbxDistance.Text, out nDistance);
             double.TryParse(page.tbxMinDistance.Text, out nMinDistance);
             double.TryParse(page.tbxMaxDistance.Text, out nMaxDistance);
 
-            PINominal config = (Application.Current.MainWindow as MainWindow).PINominal;
-            bool model1 = config.rbMode1.IsChecked == true;//角度或距离
+            bool model1 = page.rbMode1.IsChecked == true;//角度或距离
 
             ISequenceGroup geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
             int index = 1;
-            foreach (PMToolpath toolpath in program.Toolpaths)
+            foreach (Model.Toolpath toolpath in toolpaths)
             {
-                int n = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{toolpath.Name}').Statistics.PlungesIntoStock\"").ToString());//点数
+                int n = toolpath.Point;//点数
                 int a = n / 2;//前面一半
                 int b = n - a;//后面一半
                 int[] indices;
@@ -2698,12 +2743,9 @@ namespace Hongyang
                     plane4.BagOfPoints[measure].PasteFromClipboard();
                 }
                 else if (toolpath.Name.Contains("顶孔"))
-                {
-                    string feature = toolpath.Name.Replace("_Probing", "");
-                    //获取孔数量
-                    string msg = powerMILL.ExecuteEx($"SIZE FEATURESET \"{feature}\"").ToString();
-                    int holdCount = int.Parse(msg.Split('\r')[4].Split(':')[1]);
-                    int pointCount = n / holdCount;//每个孔的点数
+                {                    
+                    int holeCount = toolpath.Hole;
+                    int pointCount = n / holeCount;//每个孔的点数
 
                     IGeometricGroup geometric;
                     IPlane_ProbedItem plane;
@@ -2720,7 +2762,7 @@ namespace Hongyang
                         plane = Application.Current.Resources["顶端平面"] as IPlane_ProbedItem;
                     }                
 
-                    for (int i = 0; i < holdCount; i++)
+                    for (int i = 0; i < holeCount; i++)
                     {                        
                         IGeometricCircleItem circle = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Feat_ProbedCircle_) as IGeometricCircleItem;
                         foreach(IFeature f in circle.ReferencePlane.PossibleFeatures)

@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,6 +23,8 @@ namespace Hongyang
     /// </summary>
     public partial class PINominal : Page
     {
+        private string partFile = AppContext.BaseDirectory + ConfigurationManager.AppSettings["SavedData"] + @"\part.txt";
+
         public PINominal()
         {
             InitializeComponent();
@@ -35,6 +39,30 @@ namespace Hongyang
                 }                
             }
             cbxOPT.SelectedIndex = 0;
+
+            //读取保存的零件信息
+            StreamReader reader = new StreamReader(partFile);
+            string json = reader.ReadToEnd();
+            reader.Close();
+            Dictionary<string, string> part = JsonConvert.DeserializeObject< Dictionary<string, string>> (json);
+            tbxPart.Text = part["Part"];
+            tbxPartNumber.Text = part["PartNumber"];
+            tbxEquipment.Text = part["Equipment"];
+            tbxProcess.Text = part["Process"];
+        }
+
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Dictionary<string, string> part = new Dictionary<string, string>();//保存零件名称，代号，设备，工序
+            part.Add("Part", tbxPart.Text.Trim());
+            part.Add("PartNumber", tbxPartNumber.Text.Trim());
+            part.Add("Equipment", tbxEquipment.Text.Trim());
+            part.Add("Process", tbxProcess.Text.Trim());
+
+            string json = JsonConvert.SerializeObject(part);
+            StreamWriter writer = new StreamWriter(partFile, false);
+            writer.Write(json);
+            writer.Close();
         }
     }
 }

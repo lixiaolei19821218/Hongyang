@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:Hongyang"
       mc:Ignorable="d" 
       d:DesignHeight="800" d:DesignWidth="800"
-      Title="PI Nominal">
+      Title="PI Nominal" Unloaded="Page_Unloaded">
     <StackPanel>
         <GroupBox Header="PI名义值">
             <StackPanel>
@@ -62,6 +62,18 @@
             <StackPanel Orientation="Horizontal">
                 <Label Content="距离"/>
                 <ComboBox Name="cbxOPT" x:FieldModifier="public" Width="300"></ComboBox>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox Header="零件" Margin="5">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="零件名称"/>
+                <TextBox Width="60" Name="tbxPart" x:FieldModifier="public"/>
+                <Label Content="零件代号"/>
+                <TextBox Width="120" Name="tbxPartNumber" x:FieldModifier="public"/>
+                <Label Content="测量设备"/>
+                <TextBox Width="60" Name="tbxEquipment" x:FieldModifier="public"/>
+                <Label Content="工序号"/>
+                <TextBox Width="60" Name="tbxProcess" x:FieldModifier="public"/>
             </StackPanel>
         </GroupBox>
     </StackPanel>

@@ -26,7 +26,7 @@ namespace Hongyang
     public partial class Config : Page
     {
         private ObservableCollection<LevelConfig> levelConfigs;
-        private string colorFile = AppContext.BaseDirectory + @"color.txt";        
+        private string colorFile = AppContext.BaseDirectory + ConfigurationManager.AppSettings["SavedData"] + @"\color.txt";        
 
         public static ObservableCollection<string> MethodList = new ObservableCollection<string>(ConfigurationManager.AppSettings["methods"].Split(','));
 
