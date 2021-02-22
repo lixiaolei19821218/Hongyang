@@ -37,8 +37,6 @@
             <StackPanel Margin="5" Orientation="Horizontal">
                 <Image Source="Icon\file.gif" Width="25"/>
                 <Button HorizontalAlignment="Right" Margin="5,6,5,0" Name="btnImportModel" Width="80" Height="26" Click="BtnImportModel_Click" VerticalAlignment="Top">导入模型..</Button>
-                <Label Margin="50 0 0 0" VerticalContentAlignment="Center">零件名</Label>
-                <TextBox Margin="0" Name="tbxPart" Width="50" Height="25" HorizontalAlignment="Left" Text="Total"></TextBox>
             </StackPanel>
         </GroupBox>
         <GroupBox Header="当前刀具" Grid.Row="1" Grid.ColumnSpan="4">

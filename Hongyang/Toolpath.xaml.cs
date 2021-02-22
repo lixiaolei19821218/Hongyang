@@ -2291,23 +2291,25 @@ namespace Hongyang
 
                     //保存刀路信息，生成PI报告的时候要用
                     if (ncProgram == "Total")
-                    {
+                    {                        
                         string pmFolder = powerMILL.ExecuteEx("print $project_pathname(0)").ToString().Trim();
                         string piFolder = $"{Directory.GetParent(pmFolder)}\\PI";
 
-                        List<Model.Toolpath> saved = new List<Model.Toolpath>();
+                        List<Model.Toolpath> probed = new List<Model.Toolpath>();
                         foreach (PMToolpath p in program.Toolpaths)
                         {
-                            Model.Toolpath save = new Model.Toolpath() { Name = p.Name };
-                            save.Point = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{save.Name}').Statistics.PlungesIntoStock\"").ToString());//点数
-                            if (save.Name.Contains("顶孔"))
+                            Model.Toolpath probe = new Model.Toolpath() { Name = p.Name };
+                            probe.Point = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{probe.Name}').Statistics.PlungesIntoStock\"").ToString());//点数
+                            if (probe.Name.Contains("顶孔"))
                             {
-                                string feature = save.Name.Replace("_Probing", "");
+                                string feature = probe.Name.Replace("_Probing", "");
                                 string msg = powerMILL.ExecuteEx($"SIZE FEATURESET \"{feature}\"").ToString();
-                                save.Hole = int.Parse(msg.Split('\r')[4].Split(':')[1]);
+                                probe.Hole = int.Parse(msg.Split('\r')[4].Split(':')[1]);
                             }
-                            saved.Add(save);
+                            probed.Add(probe);
                         }
+
+                        var saved = new { PIFolder = piFolder, Probed = probed };
                         string json = JsonConvert.SerializeObject(saved);
                         string savedFile = AppContext.BaseDirectory + ConfigurationManager.AppSettings["SavedData"] + "\\" + ncFile.Replace(".nc", ".txt");
                         StreamWriter writer = new StreamWriter(savedFile, false);
@@ -2574,11 +2576,12 @@ namespace Hongyang
             string partNumber = page.tbxPartNumber.Text.Trim();
             string equipment = page.tbxEquipment.Text.Trim();
             string process = page.tbxProcess.Text.Trim();
+            string product = $"OMV-{part}-{equipment}-{process}";
 
             //读取保存的PM检测路径信息
-            string partFile = $"{ConfigurationManager.AppSettings["SavedData"]}\\OMV-{part}-{equipment}-{process}.txt";
-            List<Model.Toolpath> toolpaths = JsonConvert.DeserializeObject<List<Model.Toolpath>>(partFile);            
-
+            string partFile = $"{ConfigurationManager.AppSettings["SavedData"]}\\{product}.txt";
+            var saved = JsonConvert.DeserializeAnonymousType(partFile, new { PIFolder = string.Empty, Probed = new List<Model.Toolpath>()});
+            
             IApplication application = new PIApplication() as IApplication;
             IPIDocument doc = application.ActiveDocument;
             if (doc == null)
@@ -2596,6 +2599,11 @@ namespace Hongyang
 
             IMeasure measure = doc.get_ActiveMeasure();
             ISurfaceGroup inspect1 = doc.SequenceItems[4] as ISurfaceGroup;//导入Total NC的初始检测组，设置点不输出到报告
+            if (inspect1.SequenceItems.Count != saved.Probed.Count)
+            {
+                MessageBox.Show("请导入PI的检测点数和保存的PM检测不一致，请确认是否导入了正确的TAP/MSR。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
             IBagOfPoints points = inspect1.BagOfPoints[measure];
             for (int i = 1; i <= inspect1.SequenceItems.Count; i++)
             {
@@ -2613,7 +2621,7 @@ namespace Hongyang
 
             ISequenceGroup geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
             int index = 1;
-            foreach (Model.Toolpath toolpath in toolpaths)
+            foreach (Model.Toolpath toolpath in saved.Probed)
             {
                 int n = toolpath.Point;//点数
                 int a = n / 2;//前面一半
@@ -2884,11 +2892,9 @@ namespace Hongyang
                     inspect2.BagOfPoints[measure].PasteFromClipboard();
                 }
             }
-
-            string pmFolder = powerMILL.ExecuteEx("print $project_pathname(0)").ToString().Trim();
-            string piFolder = $"{Directory.GetParent(pmFolder)}\\PI";
-            Directory.CreateDirectory(piFolder);
-            string file = $"{piFolder}\\{tbxPart.Text}_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pwi";
+            
+            Directory.CreateDirectory(saved.PIFolder);
+            string file = $"{saved.PIFolder}\\{product}_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pwi";
             doc.SaveAs(file, false);
 
             //改报告模板，把零件名写到产品名称栏位
@@ -2905,7 +2911,7 @@ namespace Hongyang
                 int start = content.IndexOf(prefix);
                 int end = content.IndexOf(suffix, start);
                 string oldHtml = content.Substring(start, end - start);
-                string newHtml = prefix + tbxPart.Text;
+                string newHtml = prefix + product;
                 writer.Write(content.Replace(oldHtml, newHtml));
                 writer.Close();
             }
