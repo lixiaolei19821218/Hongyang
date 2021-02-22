@@ -2086,8 +2086,8 @@ namespace Hongyang
                     //产生测试用的tap
                     opt = totalPmoptz;
                 }
-                ncFiles.Add(ExportNC(n.NC, opt, n.Workplane, n.NC + ".tap"));
-            }
+                ncFiles.Add(ExportNC(n.NC, opt, n.Workplane, n.NC + ".tap"));                
+            }            
 
             if (ConfigurationManager.AppSettings["mock"] == "true")
             {
@@ -2124,7 +2124,6 @@ namespace Hongyang
 
                 StreamReader reader = new StreamReader(AppContext.BaseDirectory + @"\NC\NC_Header.tap");
                 StreamWriter writer = new StreamWriter($"{totalFolder}\\{totalNCFile}", false);
-
                 writer.Write(reader.ReadToEnd().Replace("OMV", totalNCFile.Replace(".nc", "-00X")));//DGT => IPC C:\MSR\OMV.msr这个行替换成OMV_零件名.msr
                 reader.Close();
                 writer.WriteLine();
@@ -2288,12 +2287,10 @@ namespace Hongyang
 
                     powerMILL.Execute($"NCTOOLPATH ACCEPT FORM ACCEPT NCTOOLPATHLIST FORM ACCEPT NCTOOLLIST FORM ACCEPT PROBINGNCOPTS");
                     powerMILL.Execute("TEXTINFO ACCEPT");
-
-                    //保存刀路信息，生成PI报告的时候要用
-                    if (ncProgram == "Total")
+                    
+                    if (ncProgram == "Total")//保存刀路信息，生成PI报告的时候要用
                     {                        
-                        string pmFolder = powerMILL.ExecuteEx("print $project_pathname(0)").ToString().Trim();
-                        string piFolder = $"{Directory.GetParent(pmFolder)}\\PI";
+                        string pmFolder = powerMILL.ExecuteEx("print $project_pathname(0)").ToString().Trim();                        
 
                         List<Model.Toolpath> probed = new List<Model.Toolpath>();
                         foreach (PMToolpath p in program.Toolpaths)
@@ -2309,13 +2306,23 @@ namespace Hongyang
                             probed.Add(probe);
                         }
 
-                        var saved = new { PIFolder = piFolder, Probed = probed };
+                        //存Fidia分角度
+                        List<NCOutput> ncOutputs = new List<NCOutput>();
+                        foreach (PMNCProgram p in session.NCPrograms.Where(nc => nc.Name != "Total"))
+                        {
+                            double angle = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('ncprogram', '{p.Name}').OutputWorkplane.ZAngle\"").ToString()) / 180 * Math.PI;
+                            //nc程序中的点数                
+                            int count = program.Toolpaths.Sum(t => int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{t.Name}').Statistics.PlungesIntoStock\"").ToString()));
+                            ncOutputs.Add(new NCOutput { Name = p.Name, ZAngle = angle, Point = count });
+                        }
+
+                        var saved = new { PMFolder = pmFolder, Probed = probed, NCPrograms = ncOutputs };
                         string json = JsonConvert.SerializeObject(saved);
                         string savedFile = AppContext.BaseDirectory + ConfigurationManager.AppSettings["SavedData"] + "\\" + ncFile.Replace(".nc", ".txt");
                         StreamWriter writer = new StreamWriter(savedFile, false);
                         writer.Write(json);
                         writer.Close();
-                    }
+                    }                    
                 }
             }
             return ncPath;
@@ -2580,7 +2587,12 @@ namespace Hongyang
 
             //读取保存的PM检测路径信息
             string partFile = $"{ConfigurationManager.AppSettings["SavedData"]}\\{product}.txt";
-            var saved = JsonConvert.DeserializeAnonymousType(partFile, new { PIFolder = string.Empty, Probed = new List<Model.Toolpath>()});
+            if (!File.Exists(partFile))
+            {
+                MessageBox.Show($"未找到{partFile}，请检查零件信息是否输入正确。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+            var saved = JsonConvert.DeserializeAnonymousType(partFile, new { PMFolder = string.Empty, Probed = new List<Model.Toolpath>()});
             
             IApplication application = new PIApplication() as IApplication;
             IPIDocument doc = application.ActiveDocument;
@@ -2892,9 +2904,10 @@ namespace Hongyang
                     inspect2.BagOfPoints[measure].PasteFromClipboard();
                 }
             }
-            
-            Directory.CreateDirectory(saved.PIFolder);
-            string file = $"{saved.PIFolder}\\{product}_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pwi";
+
+            string piFolder = $"{Directory.GetParent(saved.PMFolder)}\\PI";
+            Directory.CreateDirectory(piFolder);
+            string file = $"{piFolder}\\{product}_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.pwi";
             doc.SaveAs(file, false);
 
             //改报告模板，把零件名写到产品名称栏位
@@ -2922,14 +2935,48 @@ namespace Hongyang
 
         private void BtnMergeTotal_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(tbxPart.Text))
+            PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
+            string part = page.tbxPart.Text.Trim();
+            if (string.IsNullOrEmpty(part))
             {
-                MessageBox.Show($"请输入零件名。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
-                tbxPart.Focus();
+                MessageBox.Show("请在参数设置页输入零件名称。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
             }
-            
-            string msr = ConfigurationManager.AppSettings["msrFolder"] + "\\" + $"OMV_{tbxPart.Text.Trim()}.msr";
+            string partNumber = page.tbxPartNumber.Text.Trim();
+            if (string.IsNullOrEmpty(partNumber))
+            {
+                MessageBox.Show("请在参数设置页输入零件代码。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+            string equipment = page.tbxEquipment.Text.Trim();
+            if (string.IsNullOrEmpty(equipment))
+            {
+                MessageBox.Show("请在参数设置页输入测量设备。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+            string process = page.tbxProcess.Text.Trim();
+            if (string.IsNullOrEmpty(process))
+            {
+                MessageBox.Show("请在参数设置页输入工序号。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+            string product = $"OMV-{partNumber}-{equipment}-{process}";
+            //读取保存的PM检测路径信息
+            string partFile = $"{ConfigurationManager.AppSettings["SavedData"]}\\{product}.txt";
+            if (!File.Exists(partFile))
+            {
+                MessageBox.Show($"未找到{partFile}，请检查零件信息是否输入正确。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+            var saved = JsonConvert.DeserializeAnonymousType(partFile, new { PMFolder = string.Empty, NCPrograms = new List<NCOutput>() });
+
+            string[] msrFiles = Directory.GetFiles(ConfigurationManager.AppSettings["msrFolder"], $"{product}-*.msr");
+            if (msrFiles.Length == 0)
+            {
+                MessageBox.Show($"未在{ConfigurationManager.AppSettings["msrFolder"]}找到格式为{product}-XXX的MSR文件。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+            string msr = msrFiles.OrderBy(m => m).Last();
             if (!File.Exists(msr))
             {
                 MessageBox.Show($"没有找到mrs文件：{msr}，请检测设定并在该路径放置了msr文件。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
@@ -2947,10 +2994,9 @@ namespace Hongyang
                 points.Enqueue(new Autodesk.Geometry.Point() { X = x, Y = y, Z = z });
                 line = reader.ReadLine();
             }
-            reader.Close();
-
-            powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
-            string project = powerMILL.ExecuteEx("print $project_pathname(1)").ToString().Trim();
+            reader.Close(); 
+            
+            string project = System.IO.Path.GetDirectoryName(saved.PMFolder);
             string total = $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total\\Total.tap";
             if (!File.Exists(total))
             {
@@ -2976,16 +3022,14 @@ namespace Hongyang
             }
 
             //保存并转换msr中的坐标值
-            List<string> transformed = new List<string>();
-            powerMILL.DialogsOff();
-            session.Refresh();                      
+            List<string> transformed = new List<string>();                              
             int n = 0;//整合文件的行Index
             int totalCount = 0;
-            foreach (PMNCProgram program in session.NCPrograms.Where(nc => nc.Name != "Total"))
+            foreach (NCOutput program in saved.NCPrograms)
             {
-                double angle = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('ncprogram', '{program.Name}').OutputWorkplane.ZAngle\"").ToString()) / 180 * Math.PI;
+                double angle = program.ZAngle;
                 //nc程序中的点数                
-                int count = program.Toolpaths.Sum(t => int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{t.Name}').Statistics.PlungesIntoStock\"").ToString()));
+                int count = program.Point;
                 totalCount += count;//continue;
                 if (points.Count < count)
                 {
