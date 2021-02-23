@@ -2092,9 +2092,10 @@ namespace Hongyang
             if (ConfigurationManager.AppSettings["mock"] == "true")
             {
                 //生成测试用的msr
-                StreamWriter writer = new StreamWriter(ConfigurationManager.AppSettings["msrFolder"] + "\\OMV_Total.msr", false);
+                string msr = System.IO.Path.GetFileNameWithoutExtension(totalNCFile);
+                StreamWriter writer = new StreamWriter(ConfigurationManager.AppSettings["msrFolder"] + $"\\{msr}-001.msr", false);
                 int i = 0;
-                foreach (string tap in ncFiles)
+                foreach (string tap in ncFiles.Where(n => !string.IsNullOrWhiteSpace(n)))
                 {
                     StreamReader reader = new StreamReader(tap);
                     string line = reader.ReadLine();
@@ -2310,15 +2311,19 @@ namespace Hongyang
                         List<NCOutput> ncOutputs = new List<NCOutput>();
                         foreach (PMNCProgram p in session.NCPrograms.Where(nc => nc.Name != "Total"))
                         {
-                            double angle = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('ncprogram', '{p.Name}').OutputWorkplane.ZAngle\"").ToString()) / 180 * Math.PI;
-                            //nc程序中的点数                
-                            int count = program.Toolpaths.Sum(t => int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{t.Name}').Statistics.PlungesIntoStock\"").ToString()));
-                            ncOutputs.Add(new NCOutput { Name = p.Name, ZAngle = angle, Point = count });
+                            string status = powerMILL.ExecuteEx($"print par terse \"entity('ncprogram', '{p.Name}').Status\"").ToString();
+                            if (status == "written")
+                            {
+                                double angle = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('ncprogram', '{p.Name}').OutputWorkplane.ZAngle\"").ToString()) / 180 * Math.PI;
+                                //nc程序中的点数                
+                                int count = p.Toolpaths.Sum(t => int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{t.Name}').Statistics.PlungesIntoStock\"").ToString()));
+                                ncOutputs.Add(new NCOutput { Name = p.Name, ZAngle = angle, Point = count });
+                            }
                         }
 
                         var saved = new { PMFolder = pmFolder, Probed = probed, NCPrograms = ncOutputs };
                         string json = JsonConvert.SerializeObject(saved);
-                        string savedFile = AppContext.BaseDirectory + ConfigurationManager.AppSettings["SavedData"] + "\\" + ncFile.Replace(".nc", ".txt");
+                        string savedFile = AppContext.BaseDirectory + ConfigurationManager.AppSettings["SavedData"] + "\\" + ncFile.Replace(".nc", ".txt").Replace(".tap", ".txt");
                         StreamWriter writer = new StreamWriter(savedFile, false);
                         writer.Write(json);
                         writer.Close();
@@ -2423,12 +2428,10 @@ namespace Hongyang
                     powerMILL.Execute("DELETE WORKPLANE ALL");
 
                     PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
-                    if (page.cbxOPT.Text == ConfigurationManager.AppSettings["uPmoptz"])
+
+                    foreach (NCOutput output in NCOutputs)
                     {
-                        foreach (NCOutput output in NCOutputs)
-                        {
-                            CreateNCWorkplane(output.Workplane, output.Angle);
-                        }
+                        CreateNCWorkplane(output.Workplane, output.Angle);
                     }
 
                     string tag = DateTime.Now.ToString("yyyyMMdd_HHmmss");
@@ -2583,17 +2586,19 @@ namespace Hongyang
             string partNumber = page.tbxPartNumber.Text.Trim();
             string equipment = page.tbxEquipment.Text.Trim();
             string process = page.tbxProcess.Text.Trim();
-            string product = $"OMV-{part}-{equipment}-{process}";
+            string product = $"OMV-{partNumber}-{equipment}-{process}";
 
             //读取保存的PM检测路径信息
-            string partFile = $"{ConfigurationManager.AppSettings["SavedData"]}\\{product}.txt";
+            string partFile = AppContext.BaseDirectory + $"{ConfigurationManager.AppSettings["SavedData"]}\\{product}.txt";
             if (!File.Exists(partFile))
             {
                 MessageBox.Show($"未找到{partFile}，请检查零件信息是否输入正确。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
             }
-            var saved = JsonConvert.DeserializeAnonymousType(partFile, new { PMFolder = string.Empty, Probed = new List<Model.Toolpath>()});
-            
+            StreamReader reader = new StreamReader(partFile);
+            var saved = JsonConvert.DeserializeAnonymousType(reader.ReadToEnd(), new { PMFolder = string.Empty, Probed = new List<Model.Toolpath>(), NCPrograms = new List<NCOutput>()});
+            reader.Close();
+
             IApplication application = new PIApplication() as IApplication;
             IPIDocument doc = application.ActiveDocument;
             if (doc == null)
@@ -2611,7 +2616,7 @@ namespace Hongyang
 
             IMeasure measure = doc.get_ActiveMeasure();
             ISurfaceGroup inspect1 = doc.SequenceItems[4] as ISurfaceGroup;//导入Total NC的初始检测组，设置点不输出到报告
-            if (inspect1.SequenceItems.Count != saved.Probed.Count)
+            if (inspect1.SequenceItems.Count != saved.Probed.Sum(p => p.Point))
             {
                 MessageBox.Show("请导入PI的检测点数和保存的PM检测不一致，请确认是否导入了正确的TAP/MSR。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
@@ -2914,7 +2919,7 @@ namespace Hongyang
             string layout = AppContext.BaseDirectory + @"Report\Layout.html";
             if (File.Exists(layout))
             {
-                StreamReader reader = new StreamReader(layout, System.Text.Encoding.GetEncoding("GB2312"));
+                reader = new StreamReader(layout, System.Text.Encoding.GetEncoding("GB2312"));
                 string content = reader.ReadToEnd();                
                 reader.Close();
                 StreamWriter writer = new StreamWriter(layout, false, System.Text.Encoding.GetEncoding("GB2312"));
@@ -2968,7 +2973,10 @@ namespace Hongyang
                 MessageBox.Show($"未找到{partFile}，请检查零件信息是否输入正确。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
             }
-            var saved = JsonConvert.DeserializeAnonymousType(partFile, new { PMFolder = string.Empty, NCPrograms = new List<NCOutput>() });
+
+            StreamReader reader = new StreamReader(partFile);
+            var saved = JsonConvert.DeserializeAnonymousType(reader.ReadToEnd(), new { PMFolder = string.Empty, NCPrograms = new List<NCOutput>() });
+            reader.Close();
 
             string[] msrFiles = Directory.GetFiles(ConfigurationManager.AppSettings["msrFolder"], $"{product}-*.msr");
             if (msrFiles.Length == 0)
@@ -2984,7 +2992,7 @@ namespace Hongyang
             }
 
             Queue<Autodesk.Geometry.Point> points = new Queue<Autodesk.Geometry.Point>();
-            StreamReader reader = new StreamReader(msr);
+            reader = new StreamReader(msr);
             string line = reader.ReadLine();
             while (line != null)
             {
@@ -2996,8 +3004,9 @@ namespace Hongyang
             }
             reader.Close(); 
             
-            string project = System.IO.Path.GetDirectoryName(saved.PMFolder);
-            string total = $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total\\Total.tap";
+            string project = new DirectoryInfo(saved.PMFolder).Name;            
+
+            string total = $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total\\{product}.tap";
             if (!File.Exists(total))
             {
                 MessageBox.Show($"没有找到{total}。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
@@ -3051,7 +3060,7 @@ namespace Hongyang
                 return;
             }
 
-            string integrated = $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total\\Total_Integrated.tap";
+            string integrated = $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total\\{System.IO.Path.GetFileNameWithoutExtension(msr) + ".tap"}";
             StreamWriter writer = new StreamWriter(integrated, false);
             n = 0;
             foreach (string l in totalLines)

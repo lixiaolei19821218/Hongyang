@@ -213,6 +213,9 @@
     <Content Include="Report\Autodesk2003.pxm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Report\Autodesk2015.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

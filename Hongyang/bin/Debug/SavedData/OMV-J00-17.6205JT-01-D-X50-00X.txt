@@ -1,1 +1,0 @@
-[{"Name":"Red_角度_Probing","Point":8,"Hole":0},{"Name":"Green_模型比对_Probing","Point":10,"Hole":0},{"Name":"Blue_距离_Probing","Point":8,"Hole":0},{"Name":"Yellow_模型比对_Probing","Point":10,"Hole":0}]

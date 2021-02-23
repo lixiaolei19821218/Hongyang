@@ -44,7 +44,7 @@ namespace Hongyang
             StreamReader reader = new StreamReader(partFile);
             string json = reader.ReadToEnd();
             reader.Close();
-            Dictionary<string, string> part = JsonConvert.DeserializeObject< Dictionary<string, string>> (json);
+            Dictionary<string, string> part = JsonConvert.DeserializeObject<Dictionary<string, string>> (json);
             tbxPart.Text = part["Part"];
             tbxPartNumber.Text = part["PartNumber"];
             tbxEquipment.Text = part["Equipment"];
