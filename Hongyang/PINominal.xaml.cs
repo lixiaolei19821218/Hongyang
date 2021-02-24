@@ -49,15 +49,17 @@ namespace Hongyang
             tbxPartNumber.Text = part["PartNumber"];
             tbxEquipment.Text = part["Equipment"];
             tbxProcess.Text = part["Process"];
+            tbxStage.Text = part["Stage"];
         }
 
         private void Page_Unloaded(object sender, RoutedEventArgs e)
         {
-            Dictionary<string, string> part = new Dictionary<string, string>();//保存零件名称，代号，设备，工序
+            Dictionary<string, string> part = new Dictionary<string, string>();//保存零件名称，代号，设备，工序，阶段标记
             part.Add("Part", tbxPart.Text.Trim());
             part.Add("PartNumber", tbxPartNumber.Text.Trim());
             part.Add("Equipment", tbxEquipment.Text.Trim());
             part.Add("Process", tbxProcess.Text.Trim());
+            part.Add("Stage", tbxStage.Text.Trim());
 
             string json = JsonConvert.SerializeObject(part);
             StreamWriter writer = new StreamWriter(partFile, false);

@@ -70,10 +70,12 @@
                 <TextBox Width="60" Name="tbxPart" x:FieldModifier="public"/>
                 <Label Content="零件代号"/>
                 <TextBox Width="120" Name="tbxPartNumber" x:FieldModifier="public"/>
-                <Label Content="测量设备"/>
-                <TextBox Width="60" Name="tbxEquipment" x:FieldModifier="public"/>
+                <Label Content="阶段标记"/>
+                <TextBox Width="60" Name="tbxStage" x:FieldModifier="public"/>
                 <Label Content="工序号"/>
                 <TextBox Width="60" Name="tbxProcess" x:FieldModifier="public"/>
+                <Label Content="测量设备"/>
+                <TextBox Width="60" Name="tbxEquipment" x:FieldModifier="public"/>
             </StackPanel>
         </GroupBox>
     </StackPanel>

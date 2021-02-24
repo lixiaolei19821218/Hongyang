@@ -2036,7 +2036,8 @@ namespace Hongyang
         /// <param name="uPmoptz">分角度的后处理</param>
         /// <param name="totalPmoptz">Total后处理</param>
         /// <param name="totalNCFile">输出的NC文件名</param>
-        private void GenerateFidiaNC(string uPmoptz, string totalPmoptz, string totalNCFile)
+        /// <param name="ncProgram">PM中的NC程序名</param>
+        private void GenerateFidiaNC(string uPmoptz, string totalPmoptz, string totalNCFile, string ncProgram)
         {
             if (powerMILL == null)
             {
@@ -2142,10 +2143,10 @@ namespace Hongyang
                 reader.Close();
                 writer.Close();
             }
-
-            powerMILL.Execute($"CREATE NCPROGRAM 'Total'");
+            
+            powerMILL.Execute($"CREATE NCPROGRAM '{ncProgram}'");
             session.Refresh();
-            foreach (PMNCProgram program in session.NCPrograms.Where(n => n.Name != "Total"))
+            foreach (PMNCProgram program in session.NCPrograms.Where(n => n.Name != ncProgram))
             {
                 /*
                 string output = powerMILL.ExecuteEx($"EDIT NCPROGRAM '{program.Name}' LIST").ToString();
@@ -2161,7 +2162,7 @@ namespace Hongyang
                 }
             }
             
-            ExportNC("Total", totalPmoptz, "NC", totalNCFile.Replace(".nc", ".tap"));
+            ExportNC(ncProgram, totalPmoptz, "NC", totalNCFile.Replace(".nc", ".tap"));
             powerMILL.Execute("PROJECT SAVE");
 
             MessageBox.Show("NC程序生成完成。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
@@ -2173,7 +2174,8 @@ namespace Hongyang
         /// </summary>
         /// <param name="totalPmoptz">后处理文件</param>
         /// <param name="ncFile">输出的NC文件</param>
-        private void GenerateOtherNC(string totalPmoptz, string ncFile)
+        /// <param name="ncProgram">PM中的NC程序名称</param>
+        private void GenerateOtherNC(string totalPmoptz, string ncFile, string ncProgram)
         {
             if (powerMILL == null)
             {
@@ -2182,8 +2184,7 @@ namespace Hongyang
             }
 
             Application.Current.MainWindow.WindowState = WindowState.Minimized;
-
-            string ncProgram = "Total";
+            
             powerMILL.Execute("PROJECT SAVE");
             powerMILL.DialogsOff();
             ActivateWorldPlane();
@@ -2234,18 +2235,26 @@ namespace Hongyang
                 MessageBox.Show("请在参数设置页输入工序号。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
             }
-            string ncFile = $"OMV-{partNumber}-{equipment}-{process}.nc";
+            string stage = page.tbxStage.Text.Trim();
+            if (string.IsNullOrEmpty(stage))
+            {
+                MessageBox.Show("请在参数设置页输入阶段标记。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+
+            string ncProgram = $"{partNumber}.{stage}.{process}.ZQJC.{equipment}.001";
+            string ncFile = $"OMV.{partNumber}.{stage}.{process}.nc";            
 
             if (page.cbxOPT.Text == ConfigurationManager.AppSettings["uPmoptz"])//Fidia
             {
                 string uPmoptz = AppContext.BaseDirectory + @"\Pmoptz\" + ConfigurationManager.AppSettings["uPmoptz"] + ".pmoptz";
                 string totalPmoptz = AppContext.BaseDirectory + @"\Pmoptz\" + ConfigurationManager.AppSettings["totalPmoptz"] + ".pmoptz";
-                GenerateFidiaNC(uPmoptz, totalPmoptz, ncFile);
+                GenerateFidiaNC(uPmoptz, totalPmoptz, ncFile, ncProgram);
             }
             else
             {
                 string totalPmoptz = AppContext.BaseDirectory + @"\Pmoptz\" + page.cbxOPT.Text + ".pmoptz";
-                GenerateOtherNC(totalPmoptz, ncFile);
+                GenerateOtherNC(totalPmoptz, ncFile, ncProgram);
             }
         }
 
@@ -2289,7 +2298,7 @@ namespace Hongyang
                     powerMILL.Execute($"NCTOOLPATH ACCEPT FORM ACCEPT NCTOOLPATHLIST FORM ACCEPT NCTOOLLIST FORM ACCEPT PROBINGNCOPTS");
                     powerMILL.Execute("TEXTINFO ACCEPT");
                     
-                    if (ncProgram == "Total")//保存刀路信息，生成PI报告的时候要用
+                    if (ncProgram.Contains("ZXJC")) //保存刀路信息，生成PI报告的时候要用
                     {                        
                         string pmFolder = powerMILL.ExecuteEx("print $project_pathname(0)").ToString().Trim();                        
 
@@ -2586,7 +2595,8 @@ namespace Hongyang
             string partNumber = page.tbxPartNumber.Text.Trim();
             string equipment = page.tbxEquipment.Text.Trim();
             string process = page.tbxProcess.Text.Trim();
-            string product = $"OMV-{partNumber}-{equipment}-{process}";
+            string stage = page.tbxStage.Text.Trim();
+            string product = $"OMV.{partNumber}.{stage}.{process}";
 
             //读取保存的PM检测路径信息
             string partFile = AppContext.BaseDirectory + $"{ConfigurationManager.AppSettings["SavedData"]}\\{product}.txt";
@@ -2965,7 +2975,14 @@ namespace Hongyang
                 MessageBox.Show("请在参数设置页输入工序号。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
             }
-            string product = $"OMV-{partNumber}-{equipment}-{process}";
+            string stage = page.tbxStage.Text.Trim();
+            if (string.IsNullOrEmpty(stage))
+            {
+                MessageBox.Show("请在参数设置页输入工序号。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                return;
+            }
+
+            string product = $"OMV.{partNumber}.{stage}.{process}.nc";
             //读取保存的PM检测路径信息
             string partFile = $"{ConfigurationManager.AppSettings["SavedData"]}\\{product}.txt";
             if (!File.Exists(partFile))
@@ -2978,10 +2995,10 @@ namespace Hongyang
             var saved = JsonConvert.DeserializeAnonymousType(reader.ReadToEnd(), new { PMFolder = string.Empty, NCPrograms = new List<NCOutput>() });
             reader.Close();
 
-            string[] msrFiles = Directory.GetFiles(ConfigurationManager.AppSettings["msrFolder"], $"{product}-*.msr");
+            string[] msrFiles = Directory.GetFiles(ConfigurationManager.AppSettings["msrFolder"], $"{product}.*.msr");
             if (msrFiles.Length == 0)
             {
-                MessageBox.Show($"未在{ConfigurationManager.AppSettings["msrFolder"]}找到格式为{product}-XXX的MSR文件。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                MessageBox.Show($"未在{ConfigurationManager.AppSettings["msrFolder"]}找到格式为{product}.XXX的MSR文件。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
             }
             string msr = msrFiles.OrderBy(m => m).Last();

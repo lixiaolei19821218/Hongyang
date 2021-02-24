@@ -1,1 +1,1 @@
-{"Part":"舱段1","PartNumber":"J00-17.6205JT-01","Equipment":"D","Process":"X50"}
+﻿{"Part":"舱段1","PartNumber":"J00-17.6205JT-01","Equipment":"Q","Process":"X50","Stage":"D"}
