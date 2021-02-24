@@ -4,6 +4,7 @@ using Hongyang.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -50,7 +51,6 @@ namespace Hongyang
 
             PowerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
             Session = PowerMILL.ActiveProject;
-            //cbxToolpaths.ItemsSource = Toolpaths;
 
             InitPages();
 
