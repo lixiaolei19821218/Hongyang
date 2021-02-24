@@ -2118,7 +2118,7 @@ namespace Hongyang
             else
             {
                 string projectName = powerMILL.ExecuteEx("print $project_pathname(1)").ToString().Trim();
-                string totalFolder = ConfigurationManager.AppSettings["ncFolder"] + "\\" + projectName + "\\Total";
+                string totalFolder = ConfigurationManager.AppSettings["ncFolder"] + "\\" + projectName + $"\\{ncProgram}";
                 if (!Directory.Exists(totalFolder))
                 {
                     Directory.CreateDirectory(totalFolder);
@@ -2242,7 +2242,7 @@ namespace Hongyang
                 return;
             }
 
-            string ncProgram = $"{partNumber}.{stage}.{process}.ZQJC.{equipment}.001";
+            string ncProgram = $"{partNumber}.{stage}.{process}.ZXJC.{equipment}.001";
             string ncFile = $"OMV.{partNumber}.{stage}.{process}.nc";            
 
             if (page.cbxOPT.Text == ConfigurationManager.AppSettings["uPmoptz"])//Fidia
@@ -2318,7 +2318,7 @@ namespace Hongyang
 
                         //存Fidia分角度
                         List<NCOutput> ncOutputs = new List<NCOutput>();
-                        foreach (PMNCProgram p in session.NCPrograms.Where(nc => nc.Name != "Total"))
+                        foreach (PMNCProgram p in session.NCPrograms.Where(nc => !nc.Name.Contains("ZXJC")))
                         {
                             string status = powerMILL.ExecuteEx($"print par terse \"entity('ncprogram', '{p.Name}').Status\"").ToString();
                             if (status == "written")
@@ -2930,22 +2930,33 @@ namespace Hongyang
             if (File.Exists(layout))
             {
                 reader = new StreamReader(layout, System.Text.Encoding.GetEncoding("GB2312"));
-                string content = reader.ReadToEnd();                
+                string html = reader.ReadToEnd();                
                 reader.Close();
                 StreamWriter writer = new StreamWriter(layout, false, System.Text.Encoding.GetEncoding("GB2312"));
-                //找出"<span id="idReportVariable" m_name="Customer" m_is_value="true">产品名称</span>这样的字符串，并替换其中的产品名称
-                string prefix = "<span id=\"idReportVariable\" m_name=\"Customer\" m_is_value=\"true\">";
-                string suffix = "</span>";
-                int start = content.IndexOf(prefix);
-                int end = content.IndexOf(suffix, start);
-                string oldHtml = content.Substring(start, end - start);
-                string newHtml = prefix + product;
-                writer.Write(content.Replace(oldHtml, newHtml));
+                //找出"<span id="idReportVariable" m_name="Customer" m_is_value="true">产品名称</span>这样的字符串，并替换其中的产品名称                
+                html = FillHtml(html, "Customer", part);
+                html = FillHtml(html, "Inspector", partNumber);
+                html = FillHtml(html, "Part No.", equipment);
+                html = FillHtml(html, "Customer phone No.", DateTime.Now.ToString("yyyy-MM-dd"));
+                html = FillHtml(html, "Customer fax No.", process);
+                writer.Write(html);
                 writer.Close();
             }
 
             MessageBox.Show("检测完成。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
             Application.Current.MainWindow.WindowState = WindowState.Normal;
+        }
+
+        private string FillHtml(string html, string name, string value)
+        {
+            string prefix = $"<span id=\"idReportVariable\" m_name=\"{name}\" m_is_value=\"true\">";
+            string suffix = "</span>";
+            int start = html.IndexOf(prefix);
+            int end = html.IndexOf(suffix, start);
+            string oldHtml = html.Substring(start, end - start);
+            string newHtml = prefix + value;
+
+            return html.Replace(oldHtml, newHtml);
         }
 
         private void BtnMergeTotal_Click(object sender, RoutedEventArgs e)
@@ -2982,7 +2993,7 @@ namespace Hongyang
                 return;
             }
 
-            string product = $"OMV.{partNumber}.{stage}.{process}.nc";
+            string product = $"OMV.{partNumber}.{stage}.{process}";
             //读取保存的PM检测路径信息
             string partFile = $"{ConfigurationManager.AppSettings["SavedData"]}\\{product}.txt";
             if (!File.Exists(partFile))
@@ -3021,9 +3032,10 @@ namespace Hongyang
             }
             reader.Close(); 
             
-            string project = new DirectoryInfo(saved.PMFolder).Name;            
+            string project = new DirectoryInfo(saved.PMFolder).Name;
+            string ncProgram = $"{partNumber}.{stage}.{process}.ZXJC.{equipment}.001";
 
-            string total = $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total\\{product}.tap";
+            string total = $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\{ncProgram}\\{product}.tap";
             if (!File.Exists(total))
             {
                 MessageBox.Show($"没有找到{total}。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
