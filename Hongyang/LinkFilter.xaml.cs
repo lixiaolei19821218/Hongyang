@@ -28,8 +28,8 @@ namespace Hongyang
         {
             InitializeComponent();
 
-            PowerMILL = (Application.Current.MainWindow as MainWindow).PowerMILL;
-            Session = (Application.Current.MainWindow as MainWindow).Session;
+            PowerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
+            Session = PowerMILL.ActiveProject;
 
             //Refresh();
         }
