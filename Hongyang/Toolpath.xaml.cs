@@ -43,9 +43,12 @@ namespace Hongyang
             session = (Application.Current.MainWindow as MainWindow).Session;
 
             cbxMethod.ItemsSource = ConfigurationManager.AppSettings["methods"].Split(',');
+
+            /*
             cbxTool.ItemsSource = session.Tools.Select(t => t.Name);
             RefreshToolpaths();
             RefreshLevels();            
+            */
 
             Style itemContainerStyle = new Style(typeof(ListBoxItem));
             itemContainerStyle.Setters.Add(new Setter(ListBoxItem.AllowDropProperty, true));
@@ -67,6 +70,17 @@ namespace Hongyang
             {
                 NCOutputs.Add(new NCOutput { Angle = uAngle * i });
             }
+        }
+
+        private void ConnectToPM()
+        {
+            powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
+            session = powerMILL.ActiveProject;
+            session.Refresh();
+            cbxTool.ItemsSource = session.Tools.Select(t => t.Name);
+            lstToolpath.ItemsSource = session.Toolpaths.Where(t => t.IsCalculated && t.Name.EndsWith("Probing"));
+            lstAllLevel.ItemsSource = null;
+            lstAllLevel.ItemsSource = session.LevelsAndSets;
         }
 
         private void LoadColorConfig()
@@ -178,6 +192,8 @@ namespace Hongyang
         }
         private void BtnCalculate_Click(object sender, RoutedEventArgs e)
         {
+            ConnectToPM();
+
             if (powerMILL == null)
             {
                 MessageBox.Show("未连接PowerMILl，请导入模型开始。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
@@ -2210,6 +2226,8 @@ namespace Hongyang
 
         private void BtnGenerateNC_Click(object sender, RoutedEventArgs e)
         {
+            ConnectToPM();
+
             PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
             string part = page.tbxPart.Text.Trim();
             if (string.IsNullOrEmpty(part))
@@ -2346,8 +2364,8 @@ namespace Hongyang
         {
             Application.Current.MainWindow.WindowState = WindowState.Minimized;
 
-            //powerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);            
-            //session = powerMILL.ActiveProject;
+            ConnectToPM();
+            
             powerMILL.DialogsOff();
             string reset = powerMILL.ExecuteEx("project reset").ToString();
 
@@ -2961,6 +2979,8 @@ namespace Hongyang
 
         private void BtnMergeTotal_Click(object sender, RoutedEventArgs e)
         {
+            ConnectToPM();
+
             PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
             string part = page.tbxPart.Text.Trim();
             if (string.IsNullOrEmpty(part))
