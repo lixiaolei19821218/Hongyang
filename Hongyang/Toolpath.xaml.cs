@@ -995,10 +995,20 @@ namespace Hongyang
                 string surface = tpName + "_Surface";
                 string pattern = tpName + "_Pattern";
                 string probing = tpName + "_Probing";
+                string patternU0 = pattern + "_U0";
+                string patternU180 = pattern + "_U180";
+                string probingU0 = probing + "_U0";
+                string probingU180 = probing + "_U180";
 
                 powerMILL.Execute($"DELETE TOOLPATH \"{probing}\"");
+                powerMILL.Execute($"DELETE TOOLPATH \"{probingU0}\"");
+                powerMILL.Execute($"DELETE TOOLPATH \"{probingU180}\"");
                 powerMILL.Execute($"DELETE PATTERN \"{tpName}\"");
+                powerMILL.Execute($"DELETE PATTERN \"{patternU0}\"");
+                powerMILL.Execute($"DELETE PATTERN \"{patternU180}\"");
                 powerMILL.Execute($"DELETE TOOLPATH \"{pattern}\"");
+                powerMILL.Execute($"DELETE TOOLPATH \"{patternU0}\"");
+                powerMILL.Execute($"DELETE TOOLPATH \"{patternU180}\"");
                 powerMILL.Execute($"DELETE TOOLPATH \"{surface}\"");
                 powerMILL.Execute($"DELETE BOUNDARY \"{boundary1}\"");
                 powerMILL.Execute($"DELETE BOUNDARY \"{boundary2}\"");
@@ -1066,41 +1076,47 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT TOOLPATH \"{pattern}\" REAPPLYFROMGUI\rYes");
                 session.Toolpaths.ActiveItem.Calculate();
 
-                powerMILL.Execute($"CREATE PATTERN {tpName}");
-                powerMILL.Execute($"EDIT PATTERN \"{tpName}\" INSERT TOOLPATH ;");
-
-                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
-                session.Refresh();
-                session.Toolpaths.ActiveItem.Name = probing;
-                powerMILL.Execute($"ACTIVATE TOOLPATH \"{probing}\" FORM TOOLPATH");
-                powerMILL.Execute($"EDIT PAR 'Pattern' \"{tpName}\"");
-                powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");
-                powerMILL.Execute($"EDIT TOOLPATH \"{probing}\" REAPPLYFROMGUI\rYes");
-                session.Toolpaths.ActiveItem.Calculate();
-
-                //删除奇数点
-                int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{probing}').Statistics.PlungesIntoStock\"").ToString());
-                powerMILL.Execute("FORM TPLIST");
-                for (int i = 0; i < count; i++)
+                if (page.cbxOPT.Text == ConfigurationManager.AppSettings["uPmoptz"])//Fidia
                 {
-                    if (i % 2 == 1)
-                    {
-                        powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {i} TOGGLE");
-                    }
-                }
-                powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
-                powerMILL.Execute("TPLIST ACCEPT");
-                powerMILL.Execute("EDIT TOOLPATH LEADS RAISEFORM");
-                powerMILL.Execute("EDIT TOOLPATH SAFEAREA CALCULATE_DIMENSIONS");
-                powerMILL.Execute("EDIT TOOLPATH START TYPE POINT_SAFE");
-                powerMILL.Execute("RESET TOOLPATH START_END");
-                powerMILL.Execute("PROCESS TPLEADS");
-                powerMILL.Execute("LEADS ACCEPT");
-                powerMILL.Execute("FORM TPLIST");
-                powerMILL.Execute("EDIT TOOLPATH REORDER N");
-                powerMILL.Execute("TPLIST ACCEPT");
+                    string pattern1 = pattern + "_U0";
+                    string pattern2 = pattern + "_U180";                    
 
-                CollisionCheck(probing, probing);
+                    //复制一条用来在U180坐标系下面裁剪
+                    powerMILL.Execute($"ACTIVATE Toolpath \"{pattern}\"");
+                    powerMILL.Execute($"EDIT TOOLPATH \"{pattern}\" CLONE");
+                    session.Refresh();
+                    PMToolpath cloned = session.Toolpaths.ActiveItem;
+                    cloned.Calculate();
+
+                    powerMILL.Execute("ACTIVATE WORKPLANE \" \"");
+                    powerMILL.Execute($"ACTIVATE Toolpath \"{pattern}\"");
+                    powerMILL.Execute($"QUIT EDITTOOLAXIS CANCEL FORM TPLIMIT");
+                    powerMILL.Execute("EDIT TOOLPATH LIMIT PLANEOPTIONS SELECT Y");
+                    powerMILL.Execute("EDIT TOOLPATH LIMIT KEEP OUTER");
+                    powerMILL.Execute("EDIT TOOLPATH LIMIT DELETE Y");
+                    powerMILL.Execute("PROCESS TPLIMIT");
+                    powerMILL.Execute("FORM CANCEL TPLIMIT");
+                    session.Refresh();
+                    session.Toolpaths.ActiveItem.Name = pattern1;
+
+                    powerMILL.Execute("ACTIVATE WORKPLANE \"U180\"");
+                    powerMILL.Execute($"ACTIVATE Toolpath \"{cloned.Name}\"");
+                    powerMILL.Execute($"QUIT EDITTOOLAXIS CANCEL FORM TPLIMIT");
+                    powerMILL.Execute("EDIT TOOLPATH LIMIT PLANEOPTIONS SELECT Y");
+                    powerMILL.Execute("EDIT TOOLPATH LIMIT KEEP OUTER");
+                    powerMILL.Execute("EDIT TOOLPATH LIMIT DELETE Y");
+                    powerMILL.Execute("PROCESS TPLIMIT");
+                    powerMILL.Execute("FORM CANCEL TPLIMIT");
+                    session.Refresh();
+                    session.Toolpaths.ActiveItem.Name = pattern2;
+
+                    CalculateTop(patternU0, "U0", probingU0);
+                    CalculateTop(patternU180, "U180", probingU180);
+                }
+                else
+                {
+                    CalculateTop(tpName, " ", probing);//" "是世界坐标系
+                }           
             }     
             else if (method == "顶孔" || method == "侧孔")
             {
@@ -1235,6 +1251,52 @@ namespace Hongyang
             }
 
             RefreshToolpaths();
+        }
+
+        /// <summary>
+        /// 参考线精加工之后的顶端计算
+        /// </summary>
+        /// <param name="pattern">参考线名称</param>
+        /// <param name="workplane">坐标系</param>
+        /// <param name="probing">检测路径名称</param>
+        private void CalculateTop(string pattern, string workplane, string probing)
+        {
+            powerMILL.Execute($"CREATE PATTERN {pattern}");
+            powerMILL.Execute($"EDIT PATTERN \"{pattern}\" INSERT TOOLPATH ;");
+
+            powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
+            session.Refresh();
+            session.Toolpaths.ActiveItem.Name = probing;
+            powerMILL.Execute($"ACTIVATE TOOLPATH \"{probing}\" FORM TOOLPATH");
+            powerMILL.Execute($"ACTIVATE WORKPLANE \"{workplane}\"");
+            powerMILL.Execute($"EDIT PAR 'Pattern' \"{pattern}\"");
+            powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");
+            powerMILL.Execute($"EDIT TOOLPATH \"{probing}\" REAPPLYFROMGUI\rYes");
+            session.Toolpaths.ActiveItem.Calculate();
+
+            //删除奇数点
+            int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{probing}').Statistics.PlungesIntoStock\"").ToString());
+            powerMILL.Execute("FORM TPLIST");
+            for (int i = 0; i < count; i++)
+            {
+                if (i % 2 == 1)
+                {
+                    powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {i} TOGGLE");
+                }
+            }
+            powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+            powerMILL.Execute("TPLIST ACCEPT");
+            powerMILL.Execute("EDIT TOOLPATH LEADS RAISEFORM");
+            powerMILL.Execute("EDIT TOOLPATH SAFEAREA CALCULATE_DIMENSIONS");
+            powerMILL.Execute("EDIT TOOLPATH START TYPE POINT_SAFE");
+            powerMILL.Execute("RESET TOOLPATH START_END");
+            powerMILL.Execute("PROCESS TPLEADS");
+            powerMILL.Execute("LEADS ACCEPT");
+            powerMILL.Execute("FORM TPLIST");
+            powerMILL.Execute("EDIT TOOLPATH REORDER N");
+            powerMILL.Execute("TPLIST ACCEPT");
+
+            CollisionCheck(probing, probing);
         }
 
         /// <summary>
@@ -2086,7 +2148,7 @@ namespace Hongyang
                     }
                     else
                     {
-                        azimuth = double.Parse(powerMILL.ExecuteEx($"PRINT PAR terse \"entity('workplane', '{toolpath.WorkplaneName}').Azimuth\"").ToString());
+                        azimuth = double.Parse(powerMILL.ExecuteEx($"PRINT PAR terse \"entity('workplane', '{toolpath.WorkplaneName}').ZAngle\"").ToString());
                     }
                     NCOutput output = NCOutputs.First(n => azimuth >= n.Angle && azimuth < n.Angle + int.Parse(ConfigurationManager.AppSettings["uAngle"]));
                     powerMILL.Execute($"ACTIVATE NCProgram \"{output.NC}\"");
@@ -2365,7 +2427,8 @@ namespace Hongyang
             Application.Current.MainWindow.WindowState = WindowState.Minimized;
 
             ConnectToPM();
-            
+            cbxTool.SelectedIndex = 0;
+
             powerMILL.DialogsOff();
             string reset = powerMILL.ExecuteEx("project reset").ToString();
 
@@ -2515,6 +2578,8 @@ namespace Hongyang
 
         private void BtnTransform_Click(object sender, RoutedEventArgs e)
         {
+            ConnectToPM();
+
             if (powerMILL == null)
             {
                 MessageBox.Show("未连接PowerMILl，请导入模型开始。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
@@ -2891,8 +2956,8 @@ namespace Hongyang
                     {
                         IGeometricGroup geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
                         plane = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
-                        geometric = Application.Current.Resources["顶端组"] as IGeometricGroup;
-                        plane = Application.Current.Resources["顶端平面"] as IPlane_ProbedItem;
+                        Application.Current.Resources["顶端组"] = geometric;
+                        Application.Current.Resources["顶端平面"] = plane;
                     }
                     else
                     {
@@ -2978,9 +3043,7 @@ namespace Hongyang
         }
 
         private void BtnMergeTotal_Click(object sender, RoutedEventArgs e)
-        {
-            ConnectToPM();
-
+        {            
             PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
             string part = page.tbxPart.Text.Trim();
             if (string.IsNullOrEmpty(part))
@@ -3109,7 +3172,8 @@ namespace Hongyang
                 return;
             }
 
-            string integrated = $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total\\{System.IO.Path.GetFileNameWithoutExtension(msr) + ".tap"}";
+            string integrated = $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\{ncProgram}\\{System.IO.Path.GetFileNameWithoutExtension(msr) + ".tap"}";
+            
             StreamWriter writer = new StreamWriter(integrated, false);
             n = 0;
             foreach (string l in totalLines)
@@ -3127,7 +3191,7 @@ namespace Hongyang
 
             if (MessageBox.Show("生成整合文件Total_Integrated.tap完成，是否打开所在文件夹？", "Info", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes, MessageBoxOptions.DefaultDesktopOnly) == MessageBoxResult.Yes)
             {
-                System.Diagnostics.Process.Start("explorer.exe", $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\Total");
+                System.Diagnostics.Process.Start("explorer.exe", $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\{ncProgram}");
             }
         }
 

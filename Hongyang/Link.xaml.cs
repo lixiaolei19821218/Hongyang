@@ -26,16 +26,16 @@ namespace Hongyang
 
         public Link()
         {
-            InitializeComponent();
-
-            PowerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
-            Session = PowerMILL.ActiveProject;
+            InitializeComponent();           
 
             //Refresh();
         }
 
         public void Apply(string tpName)
-        {            
+        {
+            PowerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
+            Session = PowerMILL.ActiveProject;
+
             PowerMILL.Execute($"EDIT PAR 'Connections.Link[0].ProbingType' '{(cbxType0.SelectedItem as ComboBoxItem).Tag}'");
             PowerMILL.Execute("EDIT PAR 'Connections.Link[0].ApplyConstraints' '1'");
             PowerMILL.Execute("EDIT PAR 'Connections.Link[0].Constraint[0].Type' 'distance'");

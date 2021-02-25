@@ -26,16 +26,16 @@ namespace Hongyang
 
         public SPoint()
         {
-            InitializeComponent();
-
-            PowerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
-            Session = PowerMILL.ActiveProject;
+            InitializeComponent();            
 
             //Refresh();
         }
 
         public void Apply()
         {
+            PowerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
+            Session = PowerMILL.ActiveProject;
+
             if (imgLock.Source.ToString().Contains("unlock"))
             {
                 PowerMILL.Execute("EDIT TOOLPATH START MODE AUTOMATIC");

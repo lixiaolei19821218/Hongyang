@@ -167,6 +167,8 @@ namespace Hongyang
                 default:
                     break;
             }
+            lblBanner.Content = treeItem.Name;
+            /*
             if (Session.Toolpaths.ActiveItem != null && treeItem.Name == "连接")
             {
                 lblBanner.Content = treeItem.Name + " " + Session.Toolpaths.ActiveItem.Name;
@@ -174,7 +176,7 @@ namespace Hongyang
             else
             {
                 lblBanner.Content = treeItem.Name;
-            }
+            }*/
         }
 
         private void BtnCalculate_Click(object sender, RoutedEventArgs e)

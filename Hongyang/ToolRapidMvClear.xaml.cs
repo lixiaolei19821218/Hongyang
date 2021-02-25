@@ -26,16 +26,16 @@ namespace Hongyang
 
         public ToolRapidMvClear()
         {
-            InitializeComponent();
-
-            PowerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
-            Session = PowerMILL.ActiveProject;
+            InitializeComponent();            
 
             //Refresh();
         }
 
         public void Apply()
         {
+            PowerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
+            Session = PowerMILL.ActiveProject;
+
             PowerMILL.Execute($"EDIT TOOLPATH LEADS LINK MOVE_DIR {(cbxMoveDir.SelectedItem as ComboBoxItem).Tag}");
             PowerMILL.Execute($"EDIT TOOLPATH LEADS RETRACTDIST \"{tbxRetract.Text}\"");
             PowerMILL.Execute($"EDIT TOOLPATH LEADS APPROACHDIST \"{tbxApproach.Text}\"" );

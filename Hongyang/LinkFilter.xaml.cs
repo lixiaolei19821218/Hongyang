@@ -26,16 +26,16 @@ namespace Hongyang
 
         public LinkFilter()
         {
-            InitializeComponent();
-
-            PowerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
-            Session = PowerMILL.ActiveProject;
+            InitializeComponent();            
 
             //Refresh();
         }
 
         public void Apply()
         {
+            PowerMILL = new PMAutomation(Autodesk.ProductInterface.InstanceReuse.UseExistingInstance);
+            Session = PowerMILL.ActiveProject;
+
             if (chxUseSetting.IsChecked ?? false)
             {
                 PowerMILL.Execute("EDIT PAR 'Connections.PointDistribution.UseToolpathSettings' 1");
