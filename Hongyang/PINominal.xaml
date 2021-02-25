@@ -60,7 +60,7 @@
         </GroupBox>
         <GroupBox Header="后置文件" Margin="5">
             <StackPanel Orientation="Horizontal">
-                <Label Content="距离"/>
+                <Label Content="后置文件"/>
                 <ComboBox Name="cbxOPT" x:FieldModifier="public" Width="300"></ComboBox>
             </StackPanel>
         </GroupBox>
