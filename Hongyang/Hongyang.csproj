@@ -228,6 +228,9 @@
     <Content Include="Report\Autodesk2003.pxm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Ptf\Tools2019.ptf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Report\Autodesk2015.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -269,7 +272,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Doc\" />
-    <Folder Include="Ptf\" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icon\tooltipdiscu.png" />

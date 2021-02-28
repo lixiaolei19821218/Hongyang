@@ -44,7 +44,6 @@ C:\Users\arthur.li\Source\repos\Hongyang\Hongyang\obj\Debug\LinkFilter.baml
 C:\Users\arthur.li\Source\repos\Hongyang\Hongyang\obj\Debug\SPoint.baml
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Interop.CMMPARAMETERLib.dll
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Interop.PowerINSPECTAutomation.dll
-C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Interop.PROBEPATHLIB.dll
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Interop.PSAddinManager.dll
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Interop.pwiCOMGeometry.dll
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Interop.PWICOMMANDBARSLib.dll
@@ -95,7 +94,6 @@ C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Hongyang.csproj.Co
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Hongyang.csproj.CopyComplete
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Hongyang.exe
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Hongyang.pdb
-C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Hongyang.csprojAssemblyReference.cache
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Config.g.cs
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Config.baml
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\PINominal.g.cs
@@ -114,3 +112,6 @@ C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Report\Hongyang.pn
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Pmoptz\DMC_210P_OMV_TNC530.pmoptz
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Pmoptz\TNC530_OMV_DMC210P_20141115.pmoptz
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Report\Autodesk2015.xls
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Interop.PROBEPATHLIB.dll
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Hongyang.csprojAssemblyReference.cache
+C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Ptf\Tools2019.ptf

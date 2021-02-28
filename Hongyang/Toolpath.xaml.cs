@@ -1087,9 +1087,9 @@ namespace Hongyang
                     session.Refresh();
                     PMToolpath cloned = session.Toolpaths.ActiveItem;
                     cloned.Calculate();
-
-                    powerMILL.Execute("ACTIVATE WORKPLANE \" \"");
+                    
                     powerMILL.Execute($"ACTIVATE Toolpath \"{pattern}\"");
+                    powerMILL.Execute("ACTIVATE WORKPLANE \" \"");
                     powerMILL.Execute($"QUIT EDITTOOLAXIS CANCEL FORM TPLIMIT");
                     powerMILL.Execute("EDIT TOOLPATH LIMIT PLANEOPTIONS SELECT Y");
                     powerMILL.Execute("EDIT TOOLPATH LIMIT KEEP OUTER");
@@ -1098,9 +1098,9 @@ namespace Hongyang
                     powerMILL.Execute("FORM CANCEL TPLIMIT");
                     session.Refresh();
                     session.Toolpaths.ActiveItem.Name = pattern1;
-
-                    powerMILL.Execute("ACTIVATE WORKPLANE \"U180\"");
+                    
                     powerMILL.Execute($"ACTIVATE Toolpath \"{cloned.Name}\"");
+                    powerMILL.Execute("ACTIVATE WORKPLANE \"U180\"");
                     powerMILL.Execute($"QUIT EDITTOOLAXIS CANCEL FORM TPLIMIT");
                     powerMILL.Execute("EDIT TOOLPATH LIMIT PLANEOPTIONS SELECT Y");
                     powerMILL.Execute("EDIT TOOLPATH LIMIT KEEP OUTER");
@@ -1110,12 +1110,12 @@ namespace Hongyang
                     session.Refresh();
                     session.Toolpaths.ActiveItem.Name = pattern2;
 
-                    CalculateTop(patternU0, "U0", probingU0);
-                    CalculateTop(patternU180, "U180", probingU180);
+                    CalculateTop(pattern1, patternU0, "U0", probingU0);
+                    CalculateTop(pattern2, patternU180, "U180", probingU180);
                 }
                 else
                 {
-                    CalculateTop(tpName, " ", probing);//" "是世界坐标系
+                    CalculateTop(pattern, tpName, " ", probing);//" "是世界坐标系
                 }           
             }     
             else if (method == "顶孔" || method == "侧孔")
@@ -1256,11 +1256,13 @@ namespace Hongyang
         /// <summary>
         /// 参考线精加工之后的顶端计算
         /// </summary>
+        /// <param name="toolpath">插入参考线的刀路</param>
         /// <param name="pattern">参考线名称</param>
         /// <param name="workplane">坐标系</param>
         /// <param name="probing">检测路径名称</param>
-        private void CalculateTop(string pattern, string workplane, string probing)
+        private void CalculateTop(string toolpath, string pattern, string workplane, string probing)
         {
+            powerMILL.Execute($"ACTIVATE TOOLPATH \"{toolpath}\"");
             powerMILL.Execute($"CREATE PATTERN {pattern}");
             powerMILL.Execute($"EDIT PATTERN \"{pattern}\" INSERT TOOLPATH ;");
 
@@ -1341,10 +1343,14 @@ namespace Hongyang
             powerMILL.Execute($"EDIT BLOCK XMAX \"{maxX - shrink}\"");
             double maxY = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MaxY\").Value").ToString());
             powerMILL.Execute($"EDIT BLOCK YMAX \"{maxY - shrink}\"");
+            double minZ = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MinZ\").Value").ToString());
+            powerMILL.Execute($"EDIT BLOCK ZMIN \"{minZ - 10}\"");//Z最小固定减少10
+            
             powerMILL.Execute($"ACTIVATE TOOL \"{tool}\"");
             //powerMILL.Execute($"ACTIVATE WORKPLANE \"{workplane}\"");
-            powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");
-            powerMILL.Execute("EDIT TOOLAXIS LEAN 0.0");
+            //powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");            
+            //powerMILL.Execute("EDIT TOOLAXIS LEAN 0.0");
+            powerMILL.Execute("EDIT TOOLAXIS TYPE VERTICAL");
             powerMILL.Execute("EDIT PAR 'ToolAxis.LeadLeanMode' 'contact_normal'");
             powerMILL.Execute($"EDIT TOOLPATH \"{finishing}\" REAPPLYFROMGUI\rYes");
             session.Toolpaths.ActiveItem.Calculate();
@@ -2149,6 +2155,10 @@ namespace Hongyang
                     else
                     {
                         azimuth = double.Parse(powerMILL.ExecuteEx($"PRINT PAR terse \"entity('workplane', '{toolpath.WorkplaneName}').ZAngle\"").ToString());
+                        if (azimuth < 0.0)
+                        {
+                            azimuth = 360 + azimuth;
+                        }
                     }
                     NCOutput output = NCOutputs.First(n => azimuth >= n.Angle && azimuth < n.Angle + int.Parse(ConfigurationManager.AppSettings["uAngle"]));
                     powerMILL.Execute($"ACTIVATE NCProgram \"{output.NC}\"");

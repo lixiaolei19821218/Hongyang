@@ -26,7 +26,7 @@
                         <TextBox Width="60" Text="{Binding ElementName=tbxDistance, Path=Text, Mode=OneWay}" Name="tbxMaxDistance" x:FieldModifier="public"/>
                     </StackPanel>
                 </GroupBox>
-                </StackPanel>
+            </StackPanel>
         </GroupBox>
         <GroupBox Header="顶端平面">
             <StackPanel Orientation="Horizontal">
@@ -34,7 +34,7 @@
                 <TextBox Width="60" Text="1000.0" Name="tbxDiameter" x:FieldModifier="public"/>
                 <Label Content="最小距离"/>
                 <TextBox Width="60" Text="50.0" Name="tbxMinWidth" x:FieldModifier="public"/>
-                </StackPanel>
+            </StackPanel>
         </GroupBox>
         <GroupBox Header="顶端内侧圆弧">
             <StackPanel Orientation="Horizontal">
@@ -65,17 +65,21 @@
             </StackPanel>
         </GroupBox>
         <GroupBox Header="零件" Margin="5">
-            <StackPanel Orientation="Horizontal">
-                <Label Content="零件名称"/>
-                <TextBox Width="60" Name="tbxPart" x:FieldModifier="public"/>
-                <Label Content="零件代号"/>
-                <TextBox Width="120" Name="tbxPartNumber" x:FieldModifier="public"/>
-                <Label Content="阶段标记"/>
-                <TextBox Width="60" Name="tbxStage" x:FieldModifier="public"/>
-                <Label Content="工序号"/>
-                <TextBox Width="60" Name="tbxProcess" x:FieldModifier="public"/>
-                <Label Content="测量设备"/>
-                <TextBox Width="60" Name="tbxEquipment" x:FieldModifier="public"/>
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="零件名称"/>
+                    <TextBox Width="60" Name="tbxPart" x:FieldModifier="public"/>
+                    <Label Content="零件代号"/>
+                    <TextBox Width="120" Name="tbxPartNumber" x:FieldModifier="public"/>
+                    <Label Content="阶段标记"/>
+                    <TextBox Width="60" Name="tbxStage" x:FieldModifier="public"/>
+                    <Label Content="工序号"/>
+                    <TextBox Width="60" Name="tbxProcess" x:FieldModifier="public"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="测量设备"/>
+                    <TextBox Width="60" Name="tbxEquipment" x:FieldModifier="public"/>
+                </StackPanel>
             </StackPanel>
         </GroupBox>
     </StackPanel>

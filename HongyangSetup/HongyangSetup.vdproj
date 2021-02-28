@@ -15,6 +15,12 @@
     {
         "Entry"
         {
+        "MsmKey" = "8:_006458F1D2B147B0A4915DA625A7A1A2"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_178C7781414408E9B91DFA92BB72F519"
         "OwnerKey" = "8:_B7B124BE700F7AD5358BDCC7B1BCE166"
         "MsmSig" = "8:_UNDEFINED"
@@ -63,8 +69,20 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_35DA930A67B6400FB1FC2ABAC82941F4"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_422EB762BEC5EBE23B9CB309BC8FA3C7"
         "OwnerKey" = "8:_51711BD2D422440306BB305A2DC15E48"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_44A8CBDC157143F6A912932C15EDE27B"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -77,6 +95,12 @@
         {
         "MsmKey" = "8:_51711BD2D422440306BB305A2DC15E48"
         "OwnerKey" = "8:_9EB5F088BBD74BC2B6E29B54F4EDAD73"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_56193D73F2F646009AE884C67B15053E"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -117,7 +141,49 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_670FF63DA53B4E74BCE22B9817AE35B2"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_747D7A09250F4174BEEF23D956605202"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_7DBA1CB2C7C145EA837E0456E88F37BC"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_8514D31FA15747428C4A941908477919"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_8E2429FEB3B74EFEBD9376CDB893AA4F"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_90079D3D8B21469085EDAEE6499AB7F9"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_9EB5F088BBD74BC2B6E29B54F4EDAD73"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_A31435F1CE32403A88519DDCB3851576"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -141,6 +207,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_BDAB162E008742AEB989FA1B006F313B"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_C0045130B417536F1B71E4B37A247796"
         "OwnerKey" = "8:_51711BD2D422440306BB305A2DC15E48"
         "MsmSig" = "8:_UNDEFINED"
@@ -149,6 +221,12 @@
         {
         "MsmKey" = "8:_C1AC1361F3C1B3531CC1C3A6A9FE5E06"
         "OwnerKey" = "8:_9EB5F088BBD74BC2B6E29B54F4EDAD73"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_C9968B58809D4CBDB0541DDA0B325035"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -195,8 +273,32 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_D810272972214B84B1B6CAA7D5864660"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_E1DD67782F754720B9F75F89089BA237"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_E506B5E066AA19D1FE52BFA87E7632B9"
         "OwnerKey" = "8:_9EB5F088BBD74BC2B6E29B54F4EDAD73"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_E944C636D6EB49C894BA95F751C497DD"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_FBD74FCF53694E6FABB509AC7A6D6434"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -326,6 +428,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.6.1"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.6.1 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.6.1"
+                    }
+                }
             }
         }
         "Release"
@@ -380,6 +490,26 @@
         }
         "File"
         {
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_006458F1D2B147B0A4915DA625A7A1A2"
+            {
+            "SourcePath" = "8:..\\Hongyang\\Pmoptz\\Fidia_KR199_OMV_V6.pmoptz"
+            "TargetName" = "8:Fidia_KR199_OMV_V6.pmoptz"
+            "Tag" = "8:"
+            "Folder" = "8:_00DC50AAC6DC4627B91BEA4968B1D7F0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_178C7781414408E9B91DFA92BB72F519"
             {
             "SourcePath" = "8:ProbePathLib.dll"
@@ -396,7 +526,7 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:4"
-            "Exclude" = "11:FALSE"
+            "Exclude" = "11:TRUE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -478,7 +608,7 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:4"
-            "Exclude" = "11:FALSE"
+            "Exclude" = "11:TRUE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -560,8 +690,28 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:4"
-            "Exclude" = "11:FALSE"
+            "Exclude" = "11:TRUE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_35DA930A67B6400FB1FC2ABAC82941F4"
+            {
+            "SourcePath" = "8:..\\Hongyang\\NC\\NC_Header.tap"
+            "TargetName" = "8:NC_Header.tap"
+            "Tag" = "8:"
+            "Folder" = "8:_07AABA08975A49B79715359864E87E11"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_422EB762BEC5EBE23B9CB309BC8FA3C7"
@@ -593,6 +743,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_44A8CBDC157143F6A912932C15EDE27B"
+            {
+            "SourcePath" = "8:..\\Hongyang\\Pmoptz\\TNC530_OMV_DMC210P_20141115.pmoptz"
+            "TargetName" = "8:TNC530_OMV_DMC210P_20141115.pmoptz"
+            "Tag" = "8:"
+            "Folder" = "8:_00DC50AAC6DC4627B91BEA4968B1D7F0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_4D76ABDA1485886C712F7F0BCB24F73D"
@@ -657,6 +827,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_56193D73F2F646009AE884C67B15053E"
+            {
+            "SourcePath" = "8:..\\Hongyang\\Surface-Inspection.ico"
+            "TargetName" = "8:Surface-Inspection.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_5A6CA9DE04D2437F9C0A27C3E612FFF7"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_5B6E5D1213E25ADDBED8A9EE2D936EEC"
             {
             "SourcePath" = "8:pwiCOMGeometry.dll"
@@ -673,7 +863,7 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:4"
-            "Exclude" = "11:FALSE"
+            "Exclude" = "11:TRUE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -724,7 +914,7 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:4"
-            "Exclude" = "11:FALSE"
+            "Exclude" = "11:TRUE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -744,8 +934,148 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:4"
-            "Exclude" = "11:FALSE"
+            "Exclude" = "11:TRUE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_670FF63DA53B4E74BCE22B9817AE35B2"
+            {
+            "SourcePath" = "8:..\\Hongyang\\Report\\Hongyang.png"
+            "TargetName" = "8:Hongyang.png"
+            "Tag" = "8:"
+            "Folder" = "8:_0DF178B2B7214A46A6DEF3BDA51224AC"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_747D7A09250F4174BEEF23D956605202"
+            {
+            "SourcePath" = "8:..\\Hongyang\\Report\\Autodesk2003.pxm"
+            "TargetName" = "8:Autodesk2003.pxm"
+            "Tag" = "8:"
+            "Folder" = "8:_0DF178B2B7214A46A6DEF3BDA51224AC"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7DBA1CB2C7C145EA837E0456E88F37BC"
+            {
+            "SourcePath" = "8:..\\Hongyang\\bin\\Debug\\SavedData\\OMV-J00-17.6205JT-01-D-X50.txt"
+            "TargetName" = "8:OMV-J00-17.6205JT-01-D-X50.txt"
+            "Tag" = "8:"
+            "Folder" = "8:_E12EC742C9DB44E0A1A0ECB2B3685DCC"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_8514D31FA15747428C4A941908477919"
+            {
+            "SourcePath" = "8:..\\Hongyang\\Pmoptz\\DMC_210P_OMV_TNC530.pmoptz"
+            "TargetName" = "8:DMC_210P_OMV_TNC530.pmoptz"
+            "Tag" = "8:"
+            "Folder" = "8:_00DC50AAC6DC4627B91BEA4968B1D7F0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_8E2429FEB3B74EFEBD9376CDB893AA4F"
+            {
+            "SourcePath" = "8:..\\Hongyang\\Report\\Layout.html"
+            "TargetName" = "8:Layout.html"
+            "Tag" = "8:"
+            "Folder" = "8:_0DF178B2B7214A46A6DEF3BDA51224AC"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_90079D3D8B21469085EDAEE6499AB7F9"
+            {
+            "SourcePath" = "8:..\\Hongyang\\NC\\NC_Booter.tap"
+            "TargetName" = "8:NC_Booter.tap"
+            "Tag" = "8:"
+            "Folder" = "8:_07AABA08975A49B79715359864E87E11"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A31435F1CE32403A88519DDCB3851576"
+            {
+            "SourcePath" = "8:..\\Hongyang\\Pmoptz\\Results_Output_Generator_OMV2015.pmoptz"
+            "TargetName" = "8:Results_Output_Generator_OMV2015.pmoptz"
+            "Tag" = "8:"
+            "Folder" = "8:_00DC50AAC6DC4627B91BEA4968B1D7F0"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_B7B124BE700F7AD5358BDCC7B1BCE166"
@@ -810,6 +1140,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_BDAB162E008742AEB989FA1B006F313B"
+            {
+            "SourcePath" = "8:..\\Hongyang\\bin\\Debug\\SavedData\\color.txt"
+            "TargetName" = "8:color.txt"
+            "Tag" = "8:"
+            "Folder" = "8:_E12EC742C9DB44E0A1A0ECB2B3685DCC"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_C0045130B417536F1B71E4B37A247796"
             {
             "AssemblyRegister" = "3:1"
@@ -872,6 +1222,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C9968B58809D4CBDB0541DDA0B325035"
+            {
+            "SourcePath" = "8:..\\Hongyang\\Report\\GroupHeadBackground.gif"
+            "TargetName" = "8:GroupHeadBackground.gif"
+            "Tag" = "8:"
+            "Folder" = "8:_0DF178B2B7214A46A6DEF3BDA51224AC"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D00D79D8714351D4D308C015DD4E41FD"
             {
             "SourcePath" = "8:PWIMathBox.dll"
@@ -888,7 +1258,7 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:4"
-            "Exclude" = "11:FALSE"
+            "Exclude" = "11:TRUE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -954,6 +1324,46 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D810272972214B84B1B6CAA7D5864660"
+            {
+            "SourcePath" = "8:..\\Hongyang\\Report\\Styles.css"
+            "TargetName" = "8:Styles.css"
+            "Tag" = "8:"
+            "Folder" = "8:_0DF178B2B7214A46A6DEF3BDA51224AC"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_E1DD67782F754720B9F75F89089BA237"
+            {
+            "SourcePath" = "8:..\\Hongyang\\Report\\Autodesk2015.xls"
+            "TargetName" = "8:Autodesk2015.xls"
+            "Tag" = "8:"
+            "Folder" = "8:_0DF178B2B7214A46A6DEF3BDA51224AC"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_E506B5E066AA19D1FE52BFA87E7632B9"
             {
             "AssemblyRegister" = "3:1"
@@ -985,6 +1395,46 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_E944C636D6EB49C894BA95F751C497DD"
+            {
+            "SourcePath" = "8:..\\Hongyang\\bin\\Debug\\SavedData\\OMV.J00-17.6205JT-01.D.X50.txt"
+            "TargetName" = "8:OMV.J00-17.6205JT-01.D.X50.txt"
+            "Tag" = "8:"
+            "Folder" = "8:_E12EC742C9DB44E0A1A0ECB2B3685DCC"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_FBD74FCF53694E6FABB509AC7A6D6434"
+            {
+            "SourcePath" = "8:..\\Hongyang\\bin\\Debug\\SavedData\\part.txt"
+            "TargetName" = "8:part.txt"
+            "Tag" = "8:"
+            "Folder" = "8:_E12EC742C9DB44E0A1A0ECB2B3685DCC"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_FFCA723BD9C5DB4B0F45C316F3AEF27D"
             {
             "SourcePath" = "8:PowerINSPECTAutomation.dll"
@@ -1001,7 +1451,7 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:4"
-            "Exclude" = "11:FALSE"
+            "Exclude" = "11:TRUE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -1032,6 +1482,50 @@
             "Property" = "8:TARGETDIR"
                 "Folders"
                 {
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_00DC50AAC6DC4627B91BEA4968B1D7F0"
+                    {
+                    "Name" = "8:Pmoptz"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_11DE542AA4164F06B6C7177EAFB7B6B8"
+                        "Folders"
+                        {
+                        }
+                    }
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_07AABA08975A49B79715359864E87E11"
+                    {
+                    "Name" = "8:NC"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_35CE4E287A734FE59D2937A60A8F03D0"
+                        "Folders"
+                        {
+                        }
+                    }
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_0DF178B2B7214A46A6DEF3BDA51224AC"
+                    {
+                    "Name" = "8:Report"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_AFEA5810221A4FFBAE181B9431F47552"
+                        "Folders"
+                        {
+                        }
+                    }
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_E12EC742C9DB44E0A1A0ECB2B3685DCC"
+                    {
+                    "Name" = "8:SavedData"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_B5DB519C62E74C13B83BB4ED4FCDF8A2"
+                        "Folders"
+                        {
+                        }
+                    }
                 }
             }
             "{1525181F-901A-416C-8A58-119130FE478E}:_D95DD82FC5DB4B679A1D379B2644D3D2"
@@ -1043,6 +1537,28 @@
             "Property" = "8:ProgramMenuFolder"
                 "Folders"
                 {
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_98773C154F1B43399B9AA00B27C147EF"
+                    {
+                    "Name" = "8:成都景惟科技有限公司"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_687BF448D1604DE7954F316CD0FB5CA5"
+                        "Folders"
+                        {
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_43F348A4D62A4E0982985F4F45F1BD96"
+                            {
+                            "Name" = "8:在线检测系统"
+                            "AlwaysCreate" = "11:FALSE"
+                            "Condition" = "8:"
+                            "Transitive" = "11:FALSE"
+                            "Property" = "8:_D5CCA473C514481E859B55B87CF1D9E4"
+                                "Folders"
+                                {
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1062,7 +1578,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:红阳在线检测系统"
         "ProductCode" = "8:{DF5032EE-7CEB-4BD4-B930-0042BE3AF12D}"
-        "PackageCode" = "8:{8BA0199F-931C-4D3D-85D5-79906156E803}"
+        "PackageCode" = "8:{A920EC25-0701-480C-9883-DD6111799671}"
         "UpgradeCode" = "8:{AB38FE0F-5ABD-42B8-9F9E-8F18F5B8A288}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -1182,6 +1698,20 @@
         }
         "Shortcut"
         {
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_531A27019E0B4E7EBC62E140360B2CA7"
+            {
+            "Name" = "8:在线检测系统"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_9EB5F088BBD74BC2B6E29B54F4EDAD73"
+            "Folder" = "8:_43F348A4D62A4E0982985F4F45F1BD96"
+            "WorkingFolder" = "8:_5A6CA9DE04D2437F9C0A27C3E612FFF7"
+            "Icon" = "8:_56193D73F2F646009AE884C67B15053E"
+            "Feature" = "8:"
+            }
             "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_ECE5EF59E8FC479AA34BC12E8ECEBA5E"
             {
             "Name" = "8:自动化检测项目"
@@ -1193,7 +1723,7 @@
             "Target" = "8:_9EB5F088BBD74BC2B6E29B54F4EDAD73"
             "Folder" = "8:_189CE55FA2014A15B1233C023C3B30AE"
             "WorkingFolder" = "8:_5A6CA9DE04D2437F9C0A27C3E612FFF7"
-            "Icon" = "8:"
+            "Icon" = "8:_56193D73F2F646009AE884C67B15053E"
             "Feature" = "8:"
             }
         }
