@@ -1348,9 +1348,9 @@ namespace Hongyang
             
             powerMILL.Execute($"ACTIVATE TOOL \"{tool}\"");
             //powerMILL.Execute($"ACTIVATE WORKPLANE \"{workplane}\"");
-            //powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");            
-            //powerMILL.Execute("EDIT TOOLAXIS LEAN 0.0");
-            powerMILL.Execute("EDIT TOOLAXIS TYPE VERTICAL");
+            powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");            
+            powerMILL.Execute("EDIT TOOLAXIS LEAN 0.0");
+            //powerMILL.Execute("EDIT TOOLAXIS TYPE VERTICAL");
             powerMILL.Execute("EDIT PAR 'ToolAxis.LeadLeanMode' 'contact_normal'");
             powerMILL.Execute($"EDIT TOOLPATH \"{finishing}\" REAPPLYFROMGUI\rYes");
             session.Toolpaths.ActiveItem.Calculate();
@@ -1366,12 +1366,14 @@ namespace Hongyang
             powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");
             powerMILL.Execute($"EDIT TOOLPATH \"{probing}\" REAPPLYFROMGUI\rYes");
             session.Toolpaths.ActiveItem.Calculate();
-
+            /*
             powerMILL.Execute("FORM COLLISION");
             powerMILL.Execute("EDIT COLLISION APPLY");
             powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
             powerMILL.Execute("EDIT COLLISION APPLY");
             powerMILL.Execute("COLLISION ACCEPT");
+            */
+            CollisionCheck(probing, probing);
 
             //取两个三等分点
             int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{probing}').Statistics.PlungesIntoStock\"").ToString());
@@ -1386,8 +1388,7 @@ namespace Hongyang
             }
             powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
             powerMILL.Execute("TPLIST ACCEPT");
-
-            CollisionCheck(probing, probing);
+            //CollisionCheck(probing, probing);
         }
 
         /// <summary>
