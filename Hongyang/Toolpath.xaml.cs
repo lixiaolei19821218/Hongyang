@@ -564,7 +564,7 @@ namespace Hongyang
             powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
             powerMILL.Execute("ACTIVATE WORKPLANE \" \"");
 
-            if (method == "距离")
+            if (method == "横面（距离）")
             {
                 string swarfTpName = tpName + "_Swarf";
                 string probingTpName = tpName + "_Probing";
@@ -621,6 +621,10 @@ namespace Hongyang
                     double diameter = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('tool', '{cbxTool.Text}').Diameter\"").ToString());//测头直径
                     powerMILL.Execute("edit model all deselect all");
                     powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
+
+                    CalculateBottom(tpPrefix, tpName, diameter, ConfigurationManager.AppSettings["ENDMILL"], level);
+
+                    /*先注释掉，怕竖面和横面不是一个槽的，毛坯就会算错
                     //从配置找角度的层名
                     LevelConfig config = colors.FirstOrDefault(c => c.Method == "角度");
                     if (config != null)
@@ -630,10 +634,10 @@ namespace Hongyang
                     else
                     {
                         CalculateBottom(tpPrefix, tpName, diameter, ConfigurationManager.AppSettings["ENDMILL"], level);
-                    }                    
+                    } */                   
                 }
             }
-            else if (method == "角度")
+            else if (method == "竖面（角度）" || method == "竖面（距离）")
             {
                 string swarfTpName = tpName + "_Swarf";
                 string patternTpName = tpName + "_Pattern";
@@ -2749,7 +2753,7 @@ namespace Hongyang
                 int b = n - a;//后面一半
                 int[] indices;
 
-                if (toolpath.Name.Contains("角度") && model1)//角度
+                if (toolpath.Name.Contains("竖面（角度）") && model1)//角度
                 {
                     //存检测角度的两个平面，红面
                     IPlane_ProbedItem plane1 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
@@ -2813,7 +2817,7 @@ namespace Hongyang
                     points.CopyToClipboard(indices);
                     plane2.BagOfPoints[measure].PasteFromClipboard();
                 }
-                else if (toolpath.Name.Contains("距离") && model1)//距离
+                else if (toolpath.Name.Contains("距离") && model1)//横面距离或竖面距离
                 {
                     //存检测距离的两个平面，蓝面
                     IPlane_ProbedItem plane3 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
