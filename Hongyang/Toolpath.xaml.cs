@@ -617,7 +617,7 @@ namespace Hongyang
                 PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;                
                 if (page.rbMode2.IsChecked == true)
                 {
-                    string tpPrefix = tpName + "_底面";
+                    string tpPrefix = tpName + "底面";
                     double diameter = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('tool', '{cbxTool.Text}').Diameter\"").ToString());//测头直径
                     powerMILL.Execute("edit model all deselect all");
                     powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
@@ -976,7 +976,7 @@ namespace Hongyang
 
                 //底面是用槽的曲面和坐标系计算                
                 double radius = double.Parse(ConfigurationManager.AppSettings["radius"]);
-                CalculateBottom(tpName + "_底面", tpName, radius, ConfigurationManager.AppSettings["ENDMILL_D10"], level);
+                CalculateBottom(tpName + "底面", tpName, radius, ConfigurationManager.AppSettings["ENDMILL_D10"], level);
             }
             else if (method == "U型槽底面模型比对")//放到U型槽结尾自动做
             {/*
@@ -1471,6 +1471,7 @@ namespace Hongyang
             powerMILL.Execute("PROCESS TPLEADS");
             powerMILL.Execute("LEADS ACCEPT");
 
+            /*
             powerMILL.Execute("EDIT COLLISION TYPE GOUGE");
             string message = powerMILL.ExecuteEx("EDIT COLLISION APPLY").ToString();
             if (message == "信息： 整个刀具路径过切" || message == "信息： 找不到过切")
@@ -1483,9 +1484,11 @@ namespace Hongyang
                 powerMILL.Execute($"DELETE TOOLPATH \"{probingTpName + "_2"}\"");
                 powerMILL.Execute($"RENAME Toolpath \"{probingTpName + "_1"}\" \"{probingTpName}\"");
             }
+            */
+            CollisionCheck(probingTpName, probingTpName);
 
             string method = probingTpName.Split('_')[1];
-            if (method == "角度" || method == "距离")
+            if (method == "竖面（角度）" || method == "竖面（距离）" || method == "横面（距离）")
             {
                 KeepPointsByPattern(probingTpName);
             }
@@ -1502,8 +1505,22 @@ namespace Hongyang
                 //上下两条线各4点
                 KeepPointsByPatternAndPoint(probingTpName, 2, 4);
             }
-
-            CollisionCheck(probingTpName, probingTpName);
+            else if (method.Contains("底面"))
+            {
+                //取两个三等分点
+                int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{probingTpName}').Statistics.PlungesIntoStock\"").ToString());
+                powerMILL.Execute("FORM TPLIST");
+                for (int i = 0; i < count; i++)
+                {
+                    if (i == count / 3 || i == count - count / 3)
+                    {
+                        continue;
+                    }
+                    powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {i} TOGGLE");
+                }
+                powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+                powerMILL.Execute("TPLIST ACCEPT");
+            }            
         }
 
         /// <summary>
