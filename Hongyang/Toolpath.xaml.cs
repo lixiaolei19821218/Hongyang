@@ -617,7 +617,7 @@ namespace Hongyang
                 PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;                
                 if (page.rbMode2.IsChecked == true)
                 {
-                    string tpPrefix = tpName + "底面";
+                    string tpPrefix = level + "_" + method;
                     double diameter = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('tool', '{cbxTool.Text}').Diameter\"").ToString());//测头直径
                     powerMILL.Execute("edit model all deselect all");
                     powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
@@ -958,25 +958,25 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT TOOLPATH \"{probingTpName}\" REAPPLYFROMGUI\rYes");
                 session.Toolpaths.ActiveItem.Calculate();
 
+                CollisionCheck(probingTpName, probingTpName);
+
                 //删除第一和最后一点
                 int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{probingTpName}').Statistics.PlungesIntoStock\"").ToString());
                 powerMILL.Execute("FORM TPLIST");
                 powerMILL.Execute("EDIT TPSELECT ; TPLIST UPDATE\r 0 NEW");
                 powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {count - 1} TOGGLE");
                 powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
-                powerMILL.Execute("TPLIST ACCEPT");
-
-                CollisionCheck(probingTpName, probingTpName);
+                powerMILL.Execute("TPLIST ACCEPT");               
 
                 if (App.Current.Resources["workplane"] == null)
                 {
-                    MessageBox.Show($"{method}必须先计算U型槽模型比对。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                    MessageBox.Show($"必须先计算U型槽模型比对。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                     return;
                 }
 
                 //底面是用槽的曲面和坐标系计算                
                 double radius = double.Parse(ConfigurationManager.AppSettings["radius"]);
-                CalculateBottom(tpName + "底面", tpName, radius, ConfigurationManager.AppSettings["ENDMILL_D10"], level);
+                CalculateBottom(level + "_底面" + "_" + method, tpName, radius, ConfigurationManager.AppSettings["ENDMILL_D10"], level);
             }
             else if (method == "U型槽底面模型比对")//放到U型槽结尾自动做
             {/*
@@ -1280,6 +1280,8 @@ namespace Hongyang
             powerMILL.Execute($"EDIT TOOLPATH \"{probing}\" REAPPLYFROMGUI\rYes");
             session.Toolpaths.ActiveItem.Calculate();
 
+            CollisionCheck(probing, probing);
+
             //删除奇数点
             int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{probing}').Statistics.PlungesIntoStock\"").ToString());
             powerMILL.Execute("FORM TPLIST");
@@ -1300,9 +1302,7 @@ namespace Hongyang
             powerMILL.Execute("LEADS ACCEPT");
             powerMILL.Execute("FORM TPLIST");
             powerMILL.Execute("EDIT TOOLPATH REORDER N");
-            powerMILL.Execute("TPLIST ACCEPT");
-
-            CollisionCheck(probing, probing);
+            powerMILL.Execute("TPLIST ACCEPT");            
         }
 
         /// <summary>
@@ -1505,7 +1505,7 @@ namespace Hongyang
                 //上下两条线各4点
                 KeepPointsByPatternAndPoint(probingTpName, 2, 4);
             }
-            else if (method.Contains("底面"))
+            else if (method == "底面")
             {
                 //取两个三等分点
                 int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{probingTpName}').Statistics.PlungesIntoStock\"").ToString());
@@ -1520,7 +1520,32 @@ namespace Hongyang
                 }
                 powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
                 powerMILL.Execute("TPLIST ACCEPT");
-            }            
+            }
+            else if (method == "U型槽模型比对")
+            {
+                //删除第一和最后一点
+                int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{probingTpName}').Statistics.PlungesIntoStock\"").ToString());
+                powerMILL.Execute("FORM TPLIST");
+                powerMILL.Execute("EDIT TPSELECT ; TPLIST UPDATE\r 0 NEW");
+                powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {count - 1} TOGGLE");
+                powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+                powerMILL.Execute("TPLIST ACCEPT");
+            }
+            else if (method == "顶端平面")
+            {
+                //删除奇数点
+                int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{probingTpName}').Statistics.PlungesIntoStock\"").ToString());
+                powerMILL.Execute("FORM TPLIST");
+                for (int i = 0; i < count; i++)
+                {
+                    if (i % 2 == 1)
+                    {
+                        powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {i} TOGGLE");
+                    }
+                }
+                powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
+                powerMILL.Execute("TPLIST ACCEPT");
+            }
         }
 
         /// <summary>
@@ -2181,6 +2206,14 @@ namespace Hongyang
                         {
                             azimuth = 360 + azimuth;
                         }
+                        //对于U型槽出NC时，还需要将其坐标系方位角加上180度，然后再判断是否在0-360内，超出的减去360.使用这个值来分配到合适的分度角。
+                        if (toolpath.Name.Contains("U型槽模型比对"))
+                        {
+                            if (azimuth + 180 > 360)
+                            {
+                                azimuth = azimuth + 180 - 360;
+                            }
+                        }
                     }
                     NCOutput output = NCOutputs.First(n => azimuth >= n.Angle && azimuth < n.Angle + int.Parse(ConfigurationManager.AppSettings["uAngle"]));
                     powerMILL.Execute($"ACTIVATE NCProgram \"{output.NC}\"");
@@ -2761,7 +2794,10 @@ namespace Hongyang
 
             bool model1 = page.rbMode1.IsChecked == true;//角度或距离
 
-            ISequenceGroup geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
+            ISequenceGroup geometricGroup;//角度或距离的几何组
+            ISurfaceGroup inspect2;//角度和距离选择为模型比对之后，角度，距离，底面这些点建立在一个检测组
+            ISurfaceGroup inspect3;//U型槽的模型比对，包括底面，也是建立一个检测组
+
             int index = 1;
             foreach (Model.Toolpath toolpath in saved.Probed)
             {
@@ -2772,125 +2808,186 @@ namespace Hongyang
 
                 if (toolpath.Name.Contains("竖面（角度）") && model1)//角度
                 {
-                    //存检测角度的两个平面，红面
-                    IPlane_ProbedItem plane1 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
-                    IPlane_ProbedItem plane2 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
-                    IMeas_Angle2LinesItem angle = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Meas_Angle2Lines_) as IMeas_Angle2LinesItem;
-                    foreach (IFeature feature in angle.ReferencePlane.PossibleFeatures)
+                    if (model1)
                     {
-                        if (feature.Name == plane1.Name)
+                        if (geometricGroup == null)
                         {
-                            angle.ReferencePlane.Feature = feature;
-                            break;
+                            geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
                         }
-                    }
-                    foreach (IFeature feature in angle.ReferenceLine1.PossibleFeatures)
-                    {
-                        if (feature.Name == plane2.Name)
+                        //存检测角度的两个平面，红面
+                        IPlane_ProbedItem plane1 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                        IPlane_ProbedItem plane2 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                        IMeas_Angle2LinesItem angle = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Meas_Angle2Lines_) as IMeas_Angle2LinesItem;
+                        foreach (IFeature feature in angle.ReferencePlane.PossibleFeatures)
                         {
-                            angle.ReferenceLine1.Feature = feature;
-                            break;
+                            if (feature.Name == plane1.Name)
+                            {
+                                angle.ReferencePlane.Feature = feature;
+                                break;
+                            }
                         }
-                    }
-                    foreach (IFeature feature in angle.ReferenceLine2.PossibleFeatures)
-                    {
-                        if (feature.Name == "测量设备原点::平面 X(YOZ)")
+                        foreach (IFeature feature in angle.ReferenceLine1.PossibleFeatures)
                         {
-                            angle.ReferenceLine2.Feature = feature;
-                            break;
+                            if (feature.Name == plane2.Name)
+                            {
+                                angle.ReferenceLine1.Feature = feature;
+                                break;
+                            }
                         }
-                    }                    
-                    angle.PropertyAngle.Nominal = nAngle;
+                        foreach (IFeature feature in angle.ReferenceLine2.PossibleFeatures)
+                        {
+                            if (feature.Name == "测量设备原点::平面 X(YOZ)")
+                            {
+                                angle.ReferenceLine2.Feature = feature;
+                                break;
+                            }
+                        }
+                        angle.PropertyAngle.Nominal = nAngle;
 
-                    indices = new int[points.Count];
-                    for (int i = 0; i < points.Count; i++)
-                    {
-                        if (i < a)
+                        indices = new int[points.Count];
+                        for (int i = 0; i < points.Count; i++)
                         {
-                            indices[i] = index + i;
+                            if (i < a)
+                            {
+                                indices[i] = index + i;
+                            }
+                            else
+                            {
+                                indices[i] = index;
+                            }
                         }
-                        else
-                        {
-                            indices[i] = index;
-                        }
-                    }
-                    index += a;
-                    points.CopyToClipboard(indices);
-                    plane1.BagOfPoints[measure].PasteFromClipboard();
+                        index += a;
+                        points.CopyToClipboard(indices);
+                        plane1.BagOfPoints[measure].PasteFromClipboard();
 
-                    indices = new int[points.Count];
-                    for (int i = 0; i < points.Count; i++)
-                    {
-                        if (i < b)
+                        indices = new int[points.Count];
+                        for (int i = 0; i < points.Count; i++)
                         {
-                            indices[i] = index + i;
+                            if (i < b)
+                            {
+                                indices[i] = index + i;
+                            }
+                            else
+                            {
+                                indices[i] = index;
+                            }
                         }
-                        else
-                        {
-                            indices[i] = index;
-                        }
+                        index += b;
+                        points.CopyToClipboard(indices);
+                        plane2.BagOfPoints[measure].PasteFromClipboard();
                     }
-                    index += b;
-                    points.CopyToClipboard(indices);
-                    plane2.BagOfPoints[measure].PasteFromClipboard();
+                    else//模型比对
+                    {
+                        if (inspect2 == null)
+                        {
+                            inspect2 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_SurfPointsCNC) as ISurfaceGroup;
+                        }
+
+                        indices = new int[points.Count];
+                        for (int i = 0; i < points.Count; i++)
+                        {
+                            if (i < n)
+                            {
+                                indices[i] = index + i;
+                            }
+                            else
+                            {
+                                indices[i] = index;
+                            }
+                        }
+                        index += n;
+                        points.CopyToClipboard(indices);
+                        inspect2.BagOfPoints[measure].PasteFromClipboard();
+                    }
                 }
-                else if (toolpath.Name.Contains("距离") && model1)//横面距离或竖面距离
+                else if (toolpath.Name.Contains("距离"))//横面距离或竖面距离
                 {
-                    //存检测距离的两个平面，蓝面
-                    IPlane_ProbedItem plane3 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
-                    IPlane_ProbedItem plane4 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
-                    IMeas_Distance2PlanesItem distance = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_SimplMeas_Distance2Planes_) as IMeas_Distance2PlanesItem;
-                    foreach (IFeature feature in distance.ReferencePlane1.PossibleFeatures)
+                    if (model1)
                     {
-                        if (feature.Name == plane3.Name)
+                        if (geometricGroup == null)
                         {
-                            distance.ReferencePlane1.Feature = feature;
-                            break;
+                            geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
                         }
-                    }
-                    foreach (IFeature feature in distance.ReferencePlane1.PossibleFeatures)
-                    {
-                        if (feature.Name == plane4.Name)
-                        {
-                            distance.ReferencePlane2.Feature = feature;
-                            break;
-                        }
-                    }
-                    distance.PropertyDistance.Nominal = nDistance;
-                    distance.PropertyMaxDistance.Nominal = nMaxDistance;
-                    distance.PropertyMinDistance.Nominal = nMinDistance;
 
-                    indices = new int[points.Count];
-                    for (int i = 0; i < points.Count; i++)
-                    {
-                        if (i < a)
+                        //存检测距离的两个平面，蓝面
+                        IPlane_ProbedItem plane3 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                        IPlane_ProbedItem plane4 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                        IMeas_Distance2PlanesItem distance = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_SimplMeas_Distance2Planes_) as IMeas_Distance2PlanesItem;
+                        foreach (IFeature feature in distance.ReferencePlane1.PossibleFeatures)
                         {
-                            indices[i] = index + i;
+                            if (feature.Name == plane3.Name)
+                            {
+                                distance.ReferencePlane1.Feature = feature;
+                                break;
+                            }
                         }
-                        else
+                        foreach (IFeature feature in distance.ReferencePlane1.PossibleFeatures)
                         {
-                            indices[i] = index;
+                            if (feature.Name == plane4.Name)
+                            {
+                                distance.ReferencePlane2.Feature = feature;
+                                break;
+                            }
                         }
-                    }
-                    index += a;
-                    points.CopyToClipboard(indices);
-                    plane3.BagOfPoints[measure].PasteFromClipboard();
+                        distance.PropertyDistance.Nominal = nDistance;
+                        distance.PropertyMaxDistance.Nominal = nMaxDistance;
+                        distance.PropertyMinDistance.Nominal = nMinDistance;
 
-                    indices = new int[points.Count];
-                    for (int i = 0; i < points.Count; i++)
-                    {
-                        if (i < b)
+                        indices = new int[points.Count];
+                        for (int i = 0; i < points.Count; i++)
                         {
-                            indices[i] = index + i;
+                            if (i < a)
+                            {
+                                indices[i] = index + i;
+                            }
+                            else
+                            {
+                                indices[i] = index;
+                            }
                         }
-                        else
+                        index += a;
+                        points.CopyToClipboard(indices);
+                        plane3.BagOfPoints[measure].PasteFromClipboard();
+
+                        indices = new int[points.Count];
+                        for (int i = 0; i < points.Count; i++)
                         {
-                            indices[i] = index;
+                            if (i < b)
+                            {
+                                indices[i] = index + i;
+                            }
+                            else
+                            {
+                                indices[i] = index;
+                            }
                         }
+                        index += b;
+                        points.CopyToClipboard(indices);
+                        plane4.BagOfPoints[measure].PasteFromClipboard();
                     }
-                    index += b;
-                    points.CopyToClipboard(indices);
-                    plane4.BagOfPoints[measure].PasteFromClipboard();
+                    else//模型比对
+                    {
+                        if (inspect2 == null)
+                        {
+                            inspect2 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_SurfPointsCNC) as ISurfaceGroup;
+                        }
+
+                        indices = new int[points.Count];
+                        for (int i = 0; i < points.Count; i++)
+                        {
+                            if (i < n)
+                            {
+                                indices[i] = index + i;
+                            }
+                            else
+                            {
+                                indices[i] = index;
+                            }
+                        }
+                        index += n;
+                        points.CopyToClipboard(indices);
+                        inspect2.BagOfPoints[measure].PasteFromClipboard();
+                    }
                 }
                 else if (toolpath.Name.Contains("顶孔"))
                 {                    
@@ -3011,11 +3108,34 @@ namespace Hongyang
                     index += n;
                     points.CopyToClipboard(indices);
                     plane.BagOfPoints[measure].PasteFromClipboard();                   
+                }                
+                else if (toolpath.Name.Contains("U型槽模型比对"))
+                {
+                    if (inspect3 == null)
+                    {
+                        ISurfaceGroup inspect3 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_SurfPointsCNC) as ISurfaceGroup;
+                    }
+
+                    indices = new int[points.Count];
+                    for (int i = 0; i < points.Count; i++)
+                    {
+                        if (i < n)
+                        {
+                            indices[i] = index + i;
+                        }
+                        else
+                        {
+                            indices[i] = index;
+                        }
+                    }
+                    index += n;
+                    points.CopyToClipboard(indices);
+                    inspect3.BagOfPoints[measure].PasteFromClipboard();
                 }
                 else
                 {
-                    //存绿面
-                    ISurfaceGroup inspect2 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_SurfPointsCNC) as ISurfaceGroup;
+                    //其他模型比对
+                    ISurfaceGroup inspect4 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_SurfPointsCNC) as ISurfaceGroup;
 
                     indices = new int[points.Count];
                     for (int i = 0; i < points.Count; i++)
