@@ -111,7 +111,6 @@ C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Report\GroupHeadBa
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Report\Hongyang.png
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Pmoptz\DMC_210P_OMV_TNC530.pmoptz
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Pmoptz\TNC530_OMV_DMC210P_20141115.pmoptz
-C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Report\Autodesk2015.xls
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Interop.PROBEPATHLIB.dll
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\obj\Debug\Hongyang.csprojAssemblyReference.cache
 C:\Users\xiaolei\Documents\GitHub\Hongyang\Hongyang\bin\Debug\Ptf\Tools2019.ptf

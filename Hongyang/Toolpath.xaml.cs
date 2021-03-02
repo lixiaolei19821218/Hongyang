@@ -617,7 +617,7 @@ namespace Hongyang
                 PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;                
                 if (page.rbMode2.IsChecked == true)
                 {
-                    string tpPrefix = level + "_" + method;
+                    string tpPrefix = level + "_底面_" + method;
                     double diameter = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('tool', '{cbxTool.Text}').Diameter\"").ToString());//测头直径
                     powerMILL.Execute("edit model all deselect all");
                     powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
@@ -976,7 +976,7 @@ namespace Hongyang
 
                 //底面是用槽的曲面和坐标系计算                
                 double radius = double.Parse(ConfigurationManager.AppSettings["radius"]);
-                CalculateBottom(level + "_底面" + "_" + method, tpName, radius, ConfigurationManager.AppSettings["ENDMILL_D10"], level);
+                CalculateBottom(level + "_底面_" + method, tpName, radius, ConfigurationManager.AppSettings["ENDMILL_D10"], level);
             }
             else if (method == "U型槽底面模型比对")//放到U型槽结尾自动做
             {/*
@@ -2209,9 +2209,10 @@ namespace Hongyang
                         //对于U型槽出NC时，还需要将其坐标系方位角加上180度，然后再判断是否在0-360内，超出的减去360.使用这个值来分配到合适的分度角。
                         if (toolpath.Name.Contains("U型槽模型比对"))
                         {
-                            if (azimuth + 180 > 360)
+                            azimuth += 180;
+                            if (azimuth > 360)
                             {
-                                azimuth = azimuth + 180 - 360;
+                                azimuth -= 360;
                             }
                         }
                     }
@@ -2794,9 +2795,9 @@ namespace Hongyang
 
             bool model1 = page.rbMode1.IsChecked == true;//角度或距离
 
-            ISequenceGroup geometricGroup;//角度或距离的几何组
-            ISurfaceGroup inspect2;//角度和距离选择为模型比对之后，角度，距离，底面这些点建立在一个检测组
-            ISurfaceGroup inspect3;//U型槽的模型比对，包括底面，也是建立一个检测组
+            ISequenceGroup geometricGroup = null;//角度或距离的几何组
+            ISurfaceGroup inspect2 = null;//角度和距离选择为模型比对之后，角度，距离，底面这些点建立在一个检测组
+            ISurfaceGroup inspect3 = null;//U型槽的模型比对，包括底面，也是建立一个检测组
 
             int index = 1;
             foreach (Model.Toolpath toolpath in saved.Probed)
@@ -3113,7 +3114,7 @@ namespace Hongyang
                 {
                     if (inspect3 == null)
                     {
-                        ISurfaceGroup inspect3 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_SurfPointsCNC) as ISurfaceGroup;
+                        inspect3 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_SurfPointsCNC) as ISurfaceGroup;
                     }
 
                     indices = new int[points.Count];
@@ -3174,6 +3175,15 @@ namespace Hongyang
                 html = FillHtml(html, "Part No.", equipment);
                 html = FillHtml(html, "Customer phone No.", DateTime.Now.ToString("yyyy-MM-dd"));
                 html = FillHtml(html, "Customer fax No.", process);
+                //读取MSR文件名
+                string[] msrFiles = Directory.GetFiles(ConfigurationManager.AppSettings["msrFolder"], $"{product}.*.msr");
+                if (msrFiles.Length > 0)
+                {
+                    string msr = msrFiles.OrderBy(m => m).Last();
+                    string productCode = System.IO.Path.GetFileNameWithoutExtension(msr);
+                    html = FillHtml(html, "Customer contact", productCode);
+                }       
+                
                 writer.Write(html);
                 writer.Close();
             }
