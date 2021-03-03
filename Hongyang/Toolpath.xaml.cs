@@ -2846,6 +2846,7 @@ namespace Hongyang
                         if (geometricGroup == null)
                         {
                             geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
+                            geometricGroup.Name = "竖面（角度）";
                         }
                         //存检测角度的两个平面，红面
                         IPlane_ProbedItem plane1 = geometricGroup.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
@@ -2914,6 +2915,7 @@ namespace Hongyang
                         if (inspect2 == null)
                         {
                             inspect2 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_SurfPointsCNC) as ISurfaceGroup;
+                            inspect2.Name = "竖面/横面模型比对";
                         }
 
                         indices = new int[points.Count];
@@ -2940,6 +2942,7 @@ namespace Hongyang
                         if (geometricGroup == null)
                         {
                             geometricGroup = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup);
+                            geometricGroup.Name = "距离";
                         }
 
                         //存检测距离的两个平面，蓝面
@@ -3003,6 +3006,7 @@ namespace Hongyang
                         if (inspect2 == null)
                         {
                             inspect2 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_SurfPointsCNC) as ISurfaceGroup;
+                            inspect2.Name = "竖面/横面模型比对";
                         }
 
                         indices = new int[points.Count];
@@ -3032,7 +3036,9 @@ namespace Hongyang
                     if (Application.Current.Resources["顶端组"] == null)
                     {
                         geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
+                        geometric.Name = "顶端";
                         plane = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                        plane.Name = "顶端平面";
                         Application.Current.Resources["顶端组"] = geometric;//顶端平面要用
                         Application.Current.Resources["顶端平面"] = plane;//顶端平面要用
                     }
@@ -3073,6 +3079,7 @@ namespace Hongyang
                 else if (toolpath.Name.Contains("侧孔"))
                 {
                     IGeometricGroup geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
+                    geometric.Name = "侧孔";
                     IFeat_CylinderItem cylinder = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Feat_Cylinder_) as IFeat_CylinderItem;
                     indices = new int[points.Count];
                     for (int i = 0; i < points.Count; i++)
@@ -3093,7 +3100,9 @@ namespace Hongyang
                 else if (toolpath.Name.Contains("顶端内侧圆弧"))
                 {
                     IGeometricGroup geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
+                    geometric.Name = "顶端内侧圆弧";
                     IPlane_ProbedItem plane = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                    plane.Name = "顶端内侧圆弧";
                     IGeometricCircleItem circle = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Feat_ProbedCircle_) as IGeometricCircleItem;
                     indices = new int[points.Count];
                     for (int i = 0; i < points.Count; i++)
@@ -3117,7 +3126,9 @@ namespace Hongyang
                     if (Application.Current.Resources["顶端组"] == null)
                     {
                         IGeometricGroup geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
+                        geometric.Name = "顶端";
                         plane = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                        plane.Name = "顶端平面";
                         Application.Current.Resources["顶端组"] = geometric;
                         Application.Current.Resources["顶端平面"] = plane;
                     }
@@ -3147,6 +3158,7 @@ namespace Hongyang
                     if (inspect3 == null)
                     {
                         inspect3 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_SurfPointsCNC) as ISurfaceGroup;
+                        inspect3.Name = "U型槽模型比对";
                     }
 
                     indices = new int[points.Count];
@@ -3169,6 +3181,7 @@ namespace Hongyang
                 {
                     //其他模型比对
                     ISurfaceGroup inspect4 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_SurfPointsCNC) as ISurfaceGroup;
+                    inspect4.Name = toolpath.Name;
 
                     indices = new int[points.Count];
                     for (int i = 0; i < points.Count; i++)
@@ -3184,7 +3197,7 @@ namespace Hongyang
                     }
                     index += n;
                     points.CopyToClipboard(indices);
-                    inspect2.BagOfPoints[measure].PasteFromClipboard();
+                    inspect4.BagOfPoints[measure].PasteFromClipboard();
                 }
             }
 
