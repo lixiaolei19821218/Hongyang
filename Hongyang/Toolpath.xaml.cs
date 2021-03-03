@@ -3221,13 +3221,16 @@ namespace Hongyang
                 html = FillHtml(html, "Customer phone No.", DateTime.Now.ToString("yyyy-MM-dd"));
                 html = FillHtml(html, "Customer fax No.", process);
                 //读取MSR文件名
-                string[] msrFiles = Directory.GetFiles(ConfigurationManager.AppSettings["msrFolder"], $"{product}.*.msr");
-                if (msrFiles.Length > 0)
+                if (Directory.Exists(ConfigurationManager.AppSettings["msrFolder"]))
                 {
-                    string msr = msrFiles.OrderBy(m => m).Last();
-                    string productCode = System.IO.Path.GetFileNameWithoutExtension(msr);
-                    html = FillHtml(html, "Customer contact", productCode);
-                }       
+                    string[] msrFiles = Directory.GetFiles(ConfigurationManager.AppSettings["msrFolder"], $"{product}.*.msr");
+                    if (msrFiles.Length > 0)
+                    {
+                        string msr = msrFiles.OrderBy(m => m).Last();
+                        string productCode = System.IO.Path.GetFileNameWithoutExtension(msr);
+                        html = FillHtml(html, "Customer contact", productCode);
+                    }
+                }                
                 
                 writer.Write(html);
                 writer.Close();
