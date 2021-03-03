@@ -33,7 +33,7 @@ namespace Hongyang
         private PMProject session;
 
         private List<NCOutput> NCOutputs = new List<NCOutput>();
-        private IEnumerable<LevelConfig> colors;
+        private List<LevelConfig> colors;
 
         public Toolpath()
         {
@@ -88,7 +88,7 @@ namespace Hongyang
             StreamReader reader = new StreamReader(AppContext.BaseDirectory + ConfigurationManager.AppSettings["SavedData"] + @"\color.txt");
             string json = reader.ReadToEnd();
             reader.Close();
-            colors = JsonConvert.DeserializeObject<IEnumerable<LevelConfig>>(json).Where(c => c.Method != "不计算");
+            colors = JsonConvert.DeserializeObject<IEnumerable<LevelConfig>>(json).Where(c => c.Method != "不计算").ToList();
         }
 
         private void LoadPmoptz()
@@ -572,7 +572,26 @@ namespace Hongyang
                 //ClearToolpath(swarfTpName);
                 ClearToolpath_V2(probingTpName);
 
-                CreateWorkplane(level, tpName);
+                //获取配置中上一个竖面角度的坐标系
+                LevelConfig current = colors.FirstOrDefault(c => c.Level == level && c.Method == method);
+                if (current != null)
+                {
+                    int index = colors.IndexOf(current);
+                    LevelConfig last = colors.LastOrDefault(c => c.Method.Contains("竖面") && colors.IndexOf(c) < index);
+                    if (last != null)
+                    {
+                        string workplane = last.Level + "_" + last.Method;
+                        powerMILL.Execute($"ACTIVATE Workplane \"{workplane}\"");
+                    }
+                    else
+                    {
+                        CreateWorkplane(level, tpName);
+                    }
+                }
+                else
+                {
+                    CreateWorkplane(level, tpName);
+                }
 
                 powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
                 //Swarf刀路            
@@ -2188,6 +2207,7 @@ namespace Hongyang
                 powerMILL.Execute($"CREATE NCPROGRAM '{n.NC}'");
             }
 
+            List<Model.Toolpath> mToolpaths = new List<Model.Toolpath>();
             session.Refresh();
             foreach (PMToolpath toolpath in session.Toolpaths.Where(tp => tp.IsCalculated))
             {
@@ -2216,10 +2236,16 @@ namespace Hongyang
                             }
                         }
                     }
-                    NCOutput output = NCOutputs.First(n => azimuth >= n.Angle && azimuth < n.Angle + int.Parse(ConfigurationManager.AppSettings["uAngle"]));
-                    powerMILL.Execute($"ACTIVATE NCProgram \"{output.NC}\"");
-                    powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
+                    mToolpaths.Add(new Model.Toolpath { Name = toolpath.Name, ZAngle = azimuth });                    
                 }
+            }
+
+            //按方位角顺序写入NC
+            foreach (Model.Toolpath tp in mToolpaths.OrderBy(t => t.ZAngle))
+            {
+                NCOutput output = NCOutputs.First(n => tp.ZAngle >= n.Angle && tp.ZAngle < n.Angle + int.Parse(ConfigurationManager.AppSettings["uAngle"]));
+                powerMILL.Execute($"ACTIVATE NCProgram \"{output.NC}\"");
+                powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{tp.Name}\"");
             }
 
             List<string> ncFiles = new List<string>();
@@ -2289,23 +2315,29 @@ namespace Hongyang
             }
             
             powerMILL.Execute($"CREATE NCPROGRAM '{ncProgram}'");
+            //直接用存的检测路径
+            foreach (Model.Toolpath tp in mToolpaths.OrderBy(t => t.ZAngle))
+            {
+                powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{tp.Name}\"");
+            }
+
+            /*
             session.Refresh();
             foreach (PMNCProgram program in session.NCPrograms.Where(n => n.Name != ncProgram))
             {
-                /*
-                string output = powerMILL.ExecuteEx($"EDIT NCPROGRAM '{program.Name}' LIST").ToString();
-                string[] toolpaths = output.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
-                for (int i = 2; i < toolpaths.Length - 1; i++)
-                {
-                    powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpaths[i]}\"");
-                }*/
-                ///此方法有bug， program.Toolpaths包含的刀路是乱的
+                //string output = powerMILL.ExecuteEx($"EDIT NCPROGRAM '{program.Name}' LIST").ToString();
+                //string[] toolpaths = output.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                //for (int i = 2; i < toolpaths.Length - 1; i++)
+                //{
+                  //  powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpaths[i]}\"");
+                //}
+                //此方法有bug， program.Toolpaths包含的刀路是乱的
                 foreach (PMToolpath toolpath in program.Toolpaths)
                 {
                     powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
                 }
             }
-            
+            */
             ExportNC(ncProgram, totalPmoptz, "NC", totalNCFile.Replace(".nc", ".tap"));
             powerMILL.Execute("PROJECT SAVE");
 

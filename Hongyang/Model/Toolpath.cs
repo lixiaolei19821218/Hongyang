@@ -14,5 +14,6 @@ namespace Hongyang.Model
         public string Name{ get;set;}
         public int Point { get; set; }
         public int Hole { get; set; }
+        public double ZAngle { get; set; }
     }
 }
