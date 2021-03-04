@@ -292,13 +292,13 @@ namespace Hongyang
                         MessageBox.Show("请至少选择一个要计算的层。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                         return;
                     }
-                   
-                    uint v;                   
+
+                    uint v;
                     if (!uint.TryParse(tbxGreenPoints.Text, out v) || v == 0)
                     {
                         MessageBox.Show("曲面点数必须是正整数。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                         return;
-                    }                   
+                    }
                     double d;
                     if (double.TryParse(tbxStepdown.Text, out d))
                     {
@@ -633,7 +633,7 @@ namespace Hongyang
                 CalculateProbingPath(probingTpName, tpName);
 
                 //底面
-                PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;                
+                PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
                 if (page.rbMode2.IsChecked == true)
                 {
                     string tpPrefix = level + "_底面_" + method;
@@ -653,7 +653,7 @@ namespace Hongyang
                     else
                     {
                         CalculateBottom(tpPrefix, tpName, diameter, ConfigurationManager.AppSettings["ENDMILL"], level);
-                    } */                   
+                    } */
                 }
             }
             else if (method == "竖面（角度）" || method == "竖面（距离）")
@@ -664,7 +664,7 @@ namespace Hongyang
                 //ClearToolpath(probingTpName);
                 //ClearToolpath(patternTpName);
                 //ClearToolpath(swarfTpName);
-                ClearToolpath_V2(probingTpName);               
+                ClearToolpath_V2(probingTpName);
 
                 //Swarf刀路     
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
@@ -727,9 +727,9 @@ namespace Hongyang
                 string swarfTpName = tpName + "_Swarf";
                 string patternTpName = tpName + "_Pattern";
                 string probingTpName = tpName + "_Probing";
-               
+
                 ClearToolpath_V2(probingTpName);
-                
+
                 powerMILL.Execute($"ACTIVATE Tool \"{ConfigurationManager.AppSettings["ENDMILL"]}\"");
 
                 //Swarf刀路    
@@ -737,12 +737,12 @@ namespace Hongyang
                 session.Refresh();
                 session.Toolpaths.ActiveItem.Name = swarfTpName;
                 powerMILL.Execute($"ACTIVATE TOOLPATH \"{swarfTpName}\" FORM TOOLPATH");
-                powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");                
-                powerMILL.Execute("EDIT BLOCK RESET");                
+                powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
+                powerMILL.Execute("EDIT BLOCK RESET");
                 powerMILL.Execute("EDIT PAR 'Tolerance' \"0.01\"");
                 powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_down'");
-                powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");               
-                powerMILL.Execute("EDIT PAR 'StepdownLimit.Value' \"2\"");    
+                powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");
+                powerMILL.Execute("EDIT PAR 'StepdownLimit.Value' \"2\"");
                 if (method == "模型比对")
                 {
                     powerMILL.Execute("EDIT PAR 'Degouge.Active' 0");
@@ -775,7 +775,7 @@ namespace Hongyang
                     powerMILL.Execute("FORM APPLY CEREPOINTCURVE");
                     powerMILL.Execute("FORM CANCEL CEREPOINTCURVE");
                     powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
-                    
+
                     CreateWorkplanebySwarf(swarfTpName, tpName);
                 }
                 else if (method == "顶端内侧圆弧")
@@ -785,7 +785,7 @@ namespace Hongyang
                     {
                         if (i % 2 == 0)
                         {
-                            powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {i} TOGGLE");                           
+                            powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {i} TOGGLE");
                         }
                     }
                     powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
@@ -875,7 +875,7 @@ namespace Hongyang
                 string probingTpName = tpName + "_Probing";
 
                 ClearToolpath_V2(probingTpName);
-             
+
                 powerMILL.Execute("edit model all deselect all");
 
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
@@ -971,9 +971,9 @@ namespace Hongyang
                 session.Toolpaths.ActiveItem.Name = probingTpName;
                 powerMILL.Execute($"ACTIVATE TOOLPATH \"{probingTpName}\" FORM TOOLPATH");
                 powerMILL.Execute($"EDIT PAR 'Pattern' \"{tpName}\"");
-                powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");               
+                powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");
                 powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
-                powerMILL.Execute("EDIT TOOLPATH SAFEAREA CALCULATE_DIMENSIONS");                
+                powerMILL.Execute("EDIT TOOLPATH SAFEAREA CALCULATE_DIMENSIONS");
                 powerMILL.Execute($"EDIT TOOLPATH \"{probingTpName}\" REAPPLYFROMGUI\rYes");
                 session.Toolpaths.ActiveItem.Calculate();
 
@@ -985,7 +985,7 @@ namespace Hongyang
                 powerMILL.Execute("EDIT TPSELECT ; TPLIST UPDATE\r 0 NEW");
                 powerMILL.Execute($"EDIT TPSELECT ; TPLIST UPDATE\r {count - 1} TOGGLE");
                 powerMILL.Execute("DELETE TOOLPATH ; SELECTED");
-                powerMILL.Execute("TPLIST ACCEPT");               
+                powerMILL.Execute("TPLIST ACCEPT");
 
                 if (App.Current.Resources["workplane"] == null)
                 {
@@ -1040,7 +1040,7 @@ namespace Hongyang
                 PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
                 double diameter = double.Parse(page.tbxDiameter.Text);
                 double minWidth = double.Parse(page.tbxMinWidth.Text);
-                double factor = minWidth / diameter / 2;           
+                double factor = minWidth / diameter / 2;
 
                 //创建顶端曲面边界并缩小                
                 powerMILL.Execute($"CREATE BOUNDARY {boundary1} CONTACTPOINT FORM BOUNDARY");
@@ -1048,7 +1048,7 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT BOUNDARY \"{boundary1}\" INSERT MODEL");
                 powerMILL.Execute($"EDIT BOUNDARY \"{boundary1}\" ACCEPT BOUNDARY ACCEPT");
                 powerMILL.Execute($"EDIT BOUNDARY \"{boundary1}\" CURVEEDITOR START");
-                powerMILL.Execute("CURVEEDITOR MODE SCALE");                
+                powerMILL.Execute("CURVEEDITOR MODE SCALE");
                 powerMILL.Execute($"MODE TRANSFORM SCALE FACTOR \"{1 - factor}\"");
                 powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
 
@@ -1060,7 +1060,7 @@ namespace Hongyang
                 powerMILL.Execute($"EDIT BOUNDARY \"{boundary2}\" CURVEEDITOR START");
                 powerMILL.Execute("CURVEEDITOR MODE SCALE");
                 powerMILL.Execute($"MODE TRANSFORM SCALE FACTOR \"{1 + factor}\"");
-                powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");                
+                powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
 
                 //曲面精加工
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Surface-Finishing.ptf\"");
@@ -1102,7 +1102,7 @@ namespace Hongyang
                 if (page.cbxOPT.Text == ConfigurationManager.AppSettings["uPmoptz"])//Fidia
                 {
                     string pattern1 = pattern + "_U0";
-                    string pattern2 = pattern + "_U180";                    
+                    string pattern2 = pattern + "_U180";
 
                     //复制一条用来在U180坐标系下面裁剪
                     powerMILL.Execute($"ACTIVATE Toolpath \"{pattern}\"");
@@ -1110,7 +1110,7 @@ namespace Hongyang
                     session.Refresh();
                     PMToolpath cloned = session.Toolpaths.ActiveItem;
                     cloned.Calculate();
-                    
+
                     powerMILL.Execute($"ACTIVATE Toolpath \"{pattern}\"");
                     powerMILL.Execute("ACTIVATE WORKPLANE \" \"");
                     powerMILL.Execute($"QUIT EDITTOOLAXIS CANCEL FORM TPLIMIT");
@@ -1121,7 +1121,7 @@ namespace Hongyang
                     powerMILL.Execute("FORM CANCEL TPLIMIT");
                     session.Refresh();
                     session.Toolpaths.ActiveItem.Name = pattern1;
-                    
+
                     powerMILL.Execute($"ACTIVATE Toolpath \"{cloned.Name}\"");
                     powerMILL.Execute("ACTIVATE WORKPLANE \"U180\"");
                     powerMILL.Execute($"QUIT EDITTOOLAXIS CANCEL FORM TPLIMIT");
@@ -1139,8 +1139,8 @@ namespace Hongyang
                 else
                 {
                     CalculateTop(pattern, tpName, " ", probing);//" "是世界坐标系
-                }           
-            }     
+                }
+            }
             else if (method == "顶孔" || method == "侧孔")
             {
                 powerMILL.Execute($"DELETE FEATURESET \"{tpName}\"");
@@ -1153,8 +1153,8 @@ namespace Hongyang
                     MessageBox.Show("无法产生特征集，请确认曲面是否是孔。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                     return;
                 }
-                session.FeatureSets.ActiveItem.Name = tpName;    
-                
+                session.FeatureSets.ActiveItem.Name = tpName;
+
                 double holeDiameter = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"EditHole.Shell.Geom.UpperDia\").Value").ToString());
                 double toolDiameter = double.Parse(powerMILL.ExecuteEx($"print par terse \"entity('tool', '{cbxTool.Text}').Diameter\"").ToString());
                 if (holeDiameter < toolDiameter * 2)
@@ -1184,7 +1184,7 @@ namespace Hongyang
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
                 session.Refresh();
                 session.Toolpaths.ActiveItem.Name = swarf;
-                powerMILL.Execute($"ACTIVATE TOOLPATH \"{swarf}\" FORM TOOLPATH");                  
+                powerMILL.Execute($"ACTIVATE TOOLPATH \"{swarf}\" FORM TOOLPATH");
                 powerMILL.Execute("EDIT BLOCK RESET");
                 powerMILL.Execute($"ACTIVATE Tool \"{ConfigurationManager.AppSettings["ENDMILL"]}\"");
                 powerMILL.Execute("EDIT PAR 'Tolerance' \"0.01\"");
@@ -1199,12 +1199,12 @@ namespace Hongyang
                 powerMILL.Execute("RESET TOOLPATH START_END");
                 powerMILL.Execute("EDIT TOOLPATH SAFEAREA CALCULATE_DIMENSIONS");
                 powerMILL.Execute("PROCESS TPLEADS");
-                powerMILL.Execute("LEADS ACCEPT");                       
+                powerMILL.Execute("LEADS ACCEPT");
 
                 powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Pattern-Finishing.ptf\"");
                 session.Refresh();
                 session.Toolpaths.ActiveItem.Name = pattern;
-                powerMILL.Execute($"ACTIVATE TOOLPATH \"{pattern}\" FORM TOOLPATH");                
+                powerMILL.Execute($"ACTIVATE TOOLPATH \"{pattern}\" FORM TOOLPATH");
                 powerMILL.Execute("EDIT PAR 'UseToolpathAsPattern' 1");
                 powerMILL.Execute($"EDIT PAR 'ReferenceToolpath' \"{swarf}\"");
                 powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");
@@ -1266,7 +1266,7 @@ namespace Hongyang
                 powerMILL.Execute("PROCESS TPLEADS");
                 powerMILL.Execute("EDIT TOOLPATH END TYPE POINT_SAFE");
                 powerMILL.Execute("RESET TOOLPATH START_END");
-                powerMILL.Execute("LEADS ACCEPT");                
+                powerMILL.Execute("LEADS ACCEPT");
             }
             else
             {
@@ -1321,7 +1321,7 @@ namespace Hongyang
             powerMILL.Execute("LEADS ACCEPT");
             powerMILL.Execute("FORM TPLIST");
             powerMILL.Execute("EDIT TOOLPATH REORDER N");
-            powerMILL.Execute("TPLIST ACCEPT");            
+            powerMILL.Execute("TPLIST ACCEPT");
         }
 
         /// <summary>
@@ -1357,7 +1357,7 @@ namespace Hongyang
             powerMILL.Execute("EDIT PAR 'Tolerance' \"0.1\"");
             powerMILL.Execute("EDIT TPPAGE SWBlock");
             powerMILL.Execute("EDIT BLOCK COORDINATE WORKPLANE");
-            powerMILL.Execute("EDIT BLOCK RESET");            
+            powerMILL.Execute("EDIT BLOCK RESET");
             double minX = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MinX\").Value").ToString());
             powerMILL.Execute($"EDIT BLOCK XMIN \"{minX + shrink}\"");
             double minY = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MinY\").Value").ToString());
@@ -1368,10 +1368,10 @@ namespace Hongyang
             powerMILL.Execute($"EDIT BLOCK YMAX \"{maxY - shrink}\"");
             double minZ = double.Parse(powerMILL.ExecuteEx("print par terse $widget(\"SFRasterFin.Shell.SWBlock.LimitFrame.MinZ\").Value").ToString());
             powerMILL.Execute($"EDIT BLOCK ZMIN \"{minZ - 10}\"");//Z最小固定减少10
-            
+
             powerMILL.Execute($"ACTIVATE TOOL \"{tool}\"");
             //powerMILL.Execute($"ACTIVATE WORKPLANE \"{workplane}\"");
-            powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");            
+            powerMILL.Execute("EDIT TOOLAXIS TYPE LEADLEAN");
             powerMILL.Execute("EDIT TOOLAXIS LEAN 0.0");
             //powerMILL.Execute("EDIT TOOLAXIS TYPE VERTICAL");
             powerMILL.Execute("EDIT PAR 'ToolAxis.LeadLeanMode' 'contact_normal'");
@@ -1420,7 +1420,7 @@ namespace Hongyang
         /// <param name="swarf">Swarf刀路名</param>
         /// <param name="workplane">坐标系名</param>
         public void CreateWorkplanebySwarf(string swarf, string workplane)
-        {            
+        {
             powerMILL.Execute("ACTIVATE WORKPLANE \" \"");
             powerMILL.Execute($"ACTIVATE Toolpath \"{swarf}\"");
             powerMILL.Execute("QUIT EDITTOOLAXIS CANCEL FORM TPLIMIT");
@@ -1431,7 +1431,7 @@ namespace Hongyang
             if (session.Toolpaths.Any(t => t.Name == toolpath))
             {
                 toolpath = swarf + "_1";
-            }     
+            }
             else
             {
                 toolpath = swarf;
@@ -1467,7 +1467,7 @@ namespace Hongyang
             powerMILL.Execute($"ACTIVATE TOOLPATH \"{probingTpName}\" FORM TOOLPATH");
             powerMILL.Execute($"EDIT PAR 'Pattern' \"{patternName}\"");
             powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");
-            (Application.Current.MainWindow as MainWindow).Link.Apply(probingTpName);            
+            (Application.Current.MainWindow as MainWindow).Link.Apply(probingTpName);
             powerMILL.Execute($"EDIT TOOLPATH \"{probingTpName}\" REAPPLYFROMGUI\rYes");
             session.Toolpaths.ActiveItem.Calculate();
 
@@ -2236,7 +2236,7 @@ namespace Hongyang
                             }
                         }
                     }
-                    mToolpaths.Add(new Model.Toolpath { Name = toolpath.Name, ZAngle = azimuth });                    
+                    mToolpaths.Add(new Model.Toolpath { Name = toolpath.Name, ZAngle = azimuth });
                 }
             }
 
@@ -2257,8 +2257,8 @@ namespace Hongyang
                     //产生测试用的tap
                     opt = totalPmoptz;
                 }
-                ncFiles.Add(ExportNC(n.NC, opt, n.Workplane, n.NC + ".tap"));                
-            }            
+                ncFiles.Add(ExportNC(n.NC, opt, n.Workplane, n.NC + ".tap"));
+            }
 
             if (ConfigurationManager.AppSettings["mock"] == "true")
             {
@@ -2313,7 +2313,7 @@ namespace Hongyang
                 reader.Close();
                 writer.Close();
             }
-            
+
             powerMILL.Execute($"CREATE NCPROGRAM '{ncProgram}'");
             //直接用存的检测路径
             foreach (Model.Toolpath tp in mToolpaths.OrderBy(t => t.ZAngle))
@@ -2360,19 +2360,19 @@ namespace Hongyang
             }
 
             Application.Current.MainWindow.WindowState = WindowState.Minimized;
-            
+
             powerMILL.Execute("PROJECT SAVE");
             powerMILL.DialogsOff();
             ActivateWorldPlane();
             powerMILL.Execute($"DELETE NCPROGRAM ALL");
-            powerMILL.Execute($"CREATE NCPROGRAM '{ncProgram}'");            
+            powerMILL.Execute($"CREATE NCPROGRAM '{ncProgram}'");
             session.Refresh();
 
             foreach (PMToolpath toolpath in session.Toolpaths.Where(tp => tp.IsCalculated))
             {
                 string strategy = powerMILL.ExecuteEx($"PRINT PAR terse \"entity('toolpath', '{toolpath.Name}').Strategy\"").ToString();
                 if (strategy == "surface_inspection")
-                {                    
+                {
                     powerMILL.Execute($"EDIT NCPROGRAM ; APPEND TOOLPATH \"{toolpath.Name}\"");
                 }
             }
@@ -2421,7 +2421,7 @@ namespace Hongyang
             }
 
             string ncProgram = $"{partNumber}.{stage}.{process}.ZXJC.{equipment}.001";
-            string ncFile = $"OMV.{partNumber}.{stage}.{process}.nc";            
+            string ncFile = $"OMV.{partNumber}.{stage}.{process}.nc";
 
             if (page.cbxOPT.Text == ConfigurationManager.AppSettings["uPmoptz"])//Fidia
             {
@@ -2449,7 +2449,7 @@ namespace Hongyang
             session.Refresh();
             PMNCProgram program = session.NCPrograms.FirstOrDefault(n => n.Name == ncProgram);
             string ncPath = string.Empty;
-            
+
             if (program != null)
             {
                 string output = powerMILL.ExecuteEx($"EDIT NCPROGRAM '{program.Name}' LIST").ToString();
@@ -2475,10 +2475,10 @@ namespace Hongyang
 
                     powerMILL.Execute($"NCTOOLPATH ACCEPT FORM ACCEPT NCTOOLPATHLIST FORM ACCEPT NCTOOLLIST FORM ACCEPT PROBINGNCOPTS");
                     powerMILL.Execute("TEXTINFO ACCEPT");
-                    
+
                     if (ncProgram.Contains("ZXJC")) //保存刀路信息，生成PI报告的时候要用
-                    {                        
-                        string pmFolder = powerMILL.ExecuteEx("print $project_pathname(0)").ToString().Trim();                        
+                    {
+                        string pmFolder = powerMILL.ExecuteEx("print $project_pathname(0)").ToString().Trim();
 
                         List<Model.Toolpath> probed = new List<Model.Toolpath>();
                         foreach (PMToolpath p in program.Toolpaths)
@@ -2514,7 +2514,7 @@ namespace Hongyang
                         StreamWriter writer = new StreamWriter(savedFile, false);
                         writer.Write(json);
                         writer.Close();
-                    }                    
+                    }
                 }
             }
             return ncPath;
@@ -2605,8 +2605,8 @@ namespace Hongyang
                                     powerMILL.Execute($"edit model '{model.Name}' select '{items[0]}'");
                                     powerMILL.Execute($"EDIT LEVEL \"{level}\" ACQUIRE SELECTED");
                                 }
-                            }  */                          
-                        }                       
+                            }  */
+                        }
                     }
 
                     CreateTool();
@@ -2669,9 +2669,9 @@ namespace Hongyang
                 tbxStepdown.Text = ConfigurationManager.AppSettings["GreenStepdown"];
             }
             else if (method == "角度" || method == "距离" || method == "U型槽模型比对")
-            {                
+            {
                 tbxStepdown.Text = ConfigurationManager.AppSettings["Stepdown"];
-            }            
+            }
         }
 
         private void BtnTransform_Click(object sender, RoutedEventArgs e)
@@ -2787,7 +2787,7 @@ namespace Hongyang
                 return;
             }
             StreamReader reader = new StreamReader(partFile);
-            var saved = JsonConvert.DeserializeAnonymousType(reader.ReadToEnd(), new { PMFolder = string.Empty, Probed = new List<Model.Toolpath>(), NCPrograms = new List<NCOutput>()});
+            var saved = JsonConvert.DeserializeAnonymousType(reader.ReadToEnd(), new { PMFolder = string.Empty, Probed = new List<Model.Toolpath>(), NCPrograms = new List<NCOutput>() });
             reader.Close();
 
             IApplication application = new PIApplication() as IApplication;
@@ -2807,17 +2807,19 @@ namespace Hongyang
 
             IMeasure measure = doc.get_ActiveMeasure();
             ISurfaceGroup inspect1 = doc.SequenceItems[4] as ISurfaceGroup;//导入Total NC的初始检测组，设置点不输出到报告
+            inspect1.OutputToReport = false;
             if (inspect1.SequenceItems.Count != saved.Probed.Sum(p => p.Point))
             {
                 MessageBox.Show("请导入PI的检测点数和保存的PM检测不一致，请确认是否导入了正确的TAP/MSR。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 return;
             }
             IBagOfPoints points = inspect1.BagOfPoints[measure];
+            /*
             for (int i = 1; i <= inspect1.SequenceItems.Count; i++)
             {
                 inspect1.SequenceItems[i].OutputToReport = false;
             }
-
+            */
             //取设置的名义值            
             double nAngle, nDistance, nMinDistance, nMaxDistance;
             double.TryParse(page.tbxAngle.Text, out nAngle);
@@ -2830,6 +2832,8 @@ namespace Hongyang
             ISequenceGroup geometricGroup = null;//角度或距离的几何组
             ISurfaceGroup inspect2 = null;//角度和距离选择为模型比对之后，角度，距离，底面这些点建立在一个检测组
             ISurfaceGroup inspect3 = null;//U型槽的模型比对，包括底面，也是建立一个检测组
+            IGeometricGroup geometric = null;//顶端要用的几何组和平面
+            IPlane_ProbedItem plane = null;
 
             int index = 1;
             foreach (Model.Toolpath toolpath in saved.Probed)
@@ -3027,31 +3031,25 @@ namespace Hongyang
                     }
                 }
                 else if (toolpath.Name.Contains("顶孔"))
-                {                    
+                {
                     int holeCount = toolpath.Hole;
                     int pointCount = n / holeCount;//每个孔的点数
-
-                    IGeometricGroup geometric;
-                    IPlane_ProbedItem plane;
-                    if (Application.Current.Resources["顶端组"] == null)
+                    
+                    if (geometric == null)
                     {
                         geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
-                        geometric.Name = "顶端";
+                        geometric.Name = "顶端";                                         
+                    }
+                    if (plane == null)
+                    {
                         plane = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
                         plane.Name = "顶端平面";
-                        Application.Current.Resources["顶端组"] = geometric;//顶端平面要用
-                        Application.Current.Resources["顶端平面"] = plane;//顶端平面要用
                     }
-                    else
-                    {
-                        geometric = Application.Current.Resources["顶端组"] as IGeometricGroup;
-                        plane = Application.Current.Resources["顶端平面"] as IPlane_ProbedItem;
-                    }                
 
                     for (int i = 0; i < holeCount; i++)
-                    {                        
+                    {
                         IGeometricCircleItem circle = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Feat_ProbedCircle_) as IGeometricCircleItem;
-                        foreach(IFeature f in circle.ReferencePlane.PossibleFeatures)
+                        foreach (IFeature f in circle.ReferencePlane.PossibleFeatures)
                         {
                             if (f.Name == plane.Name)
                             {
@@ -3076,11 +3074,40 @@ namespace Hongyang
                         circle.BagOfPoints[measure].PasteFromClipboard();
                     }
                 }
+                else if (toolpath.Name.Contains("顶端平面"))
+                {
+                    if (geometric == null)
+                    {
+                        geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
+                        geometric.Name = "顶端";
+                    }
+                    if (plane == null)
+                    {
+                        plane = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                        plane.Name = "顶端平面";
+                    }
+
+                    indices = new int[points.Count];
+                    for (int i = 0; i < points.Count; i++)
+                    {
+                        if (i < n)
+                        {
+                            indices[i] = index + i;
+                        }
+                        else
+                        {
+                            indices[i] = index;
+                        }
+                    }
+                    index += n;
+                    points.CopyToClipboard(indices);
+                    plane.BagOfPoints[measure].PasteFromClipboard();
+                }
                 else if (toolpath.Name.Contains("侧孔"))
                 {
-                    IGeometricGroup geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
-                    geometric.Name = "侧孔";
-                    IFeat_CylinderItem cylinder = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Feat_Cylinder_) as IFeat_CylinderItem;
+                    IGeometricGroup geometric1 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
+                    geometric1.Name = "侧孔";
+                    IFeat_CylinderItem cylinder = geometric1.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Feat_Cylinder_) as IFeat_CylinderItem;
                     indices = new int[points.Count];
                     for (int i = 0; i < points.Count; i++)
                     {
@@ -3099,11 +3126,11 @@ namespace Hongyang
                 }
                 else if (toolpath.Name.Contains("顶端内侧圆弧"))
                 {
-                    IGeometricGroup geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
-                    geometric.Name = "顶端内侧圆弧";
-                    IPlane_ProbedItem plane = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
-                    plane.Name = "顶端内侧圆弧";
-                    IGeometricCircleItem circle = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Feat_ProbedCircle_) as IGeometricCircleItem;
+                    IGeometricGroup geometric2 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
+                    geometric2.Name = "顶端内侧圆弧";
+                    IPlane_ProbedItem plane2 = geometric2.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                    plane2.Name = "顶端内侧圆弧";
+                    IGeometricCircleItem circle = geometric2.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Feat_ProbedCircle_) as IGeometricCircleItem;
                     indices = new int[points.Count];
                     for (int i = 0; i < points.Count; i++)
                     {
@@ -3119,39 +3146,6 @@ namespace Hongyang
                     index += n;
                     points.CopyToClipboard(indices);
                     circle.BagOfPoints[measure].PasteFromClipboard();
-                }
-                else if (toolpath.Name.Contains("顶端平面"))
-                {                   
-                    IPlane_ProbedItem plane;
-                    if (Application.Current.Resources["顶端组"] == null)
-                    {
-                        IGeometricGroup geometric = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
-                        geometric.Name = "顶端";
-                        plane = geometric.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
-                        plane.Name = "顶端平面";
-                        Application.Current.Resources["顶端组"] = geometric;
-                        Application.Current.Resources["顶端平面"] = plane;
-                    }
-                    else
-                    {
-                        plane = Application.Current.Resources["顶端平面"] as IPlane_ProbedItem;
-                    }
-                                       
-                    indices = new int[points.Count];
-                    for (int i = 0; i < points.Count; i++)
-                    {
-                        if (i < n)
-                        {
-                            indices[i] = index + i;
-                        }
-                        else
-                        {
-                            indices[i] = index;
-                        }
-                    }
-                    index += n;
-                    points.CopyToClipboard(indices);
-                    plane.BagOfPoints[measure].PasteFromClipboard();                   
                 }                
                 else if (toolpath.Name.Contains("U型槽模型比对"))
                 {
@@ -3211,7 +3205,7 @@ namespace Hongyang
             if (File.Exists(layout))
             {
                 reader = new StreamReader(layout, System.Text.Encoding.GetEncoding("GB2312"));
-                string html = reader.ReadToEnd();                
+                string html = reader.ReadToEnd();
                 reader.Close();
                 StreamWriter writer = new StreamWriter(layout, false, System.Text.Encoding.GetEncoding("GB2312"));
                 //找出"<span id="idReportVariable" m_name="Customer" m_is_value="true">产品名称</span>这样的字符串，并替换其中的产品名称                
@@ -3230,14 +3224,17 @@ namespace Hongyang
                         string productCode = System.IO.Path.GetFileNameWithoutExtension(msr);
                         html = FillHtml(html, "Customer contact", productCode);
                     }
-                }                
-                
+                }
+
                 writer.Write(html);
                 writer.Close();
+
+                doc.LoadTemplateVariables();
             }
 
             MessageBox.Show("检测完成。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
             Application.Current.MainWindow.WindowState = WindowState.Normal;
+
         }
 
         private string FillHtml(string html, string name, string value)
@@ -3253,7 +3250,7 @@ namespace Hongyang
         }
 
         private void BtnMergeTotal_Click(object sender, RoutedEventArgs e)
-        {            
+        {
             PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
             string part = page.tbxPart.Text.Trim();
             if (string.IsNullOrEmpty(part))
@@ -3323,8 +3320,8 @@ namespace Hongyang
                 points.Enqueue(new Autodesk.Geometry.Point() { X = x, Y = y, Z = z });
                 line = reader.ReadLine();
             }
-            reader.Close(); 
-            
+            reader.Close();
+
             string project = new DirectoryInfo(saved.PMFolder).Name;
             string ncProgram = $"{partNumber}.{stage}.{process}.ZXJC.{equipment}.001";
 
@@ -3353,7 +3350,7 @@ namespace Hongyang
             }
 
             //保存并转换msr中的坐标值
-            List<string> transformed = new List<string>();                              
+            List<string> transformed = new List<string>();
             int n = 0;//整合文件的行Index
             int totalCount = 0;
             foreach (NCOutput program in saved.NCPrograms)
@@ -3372,7 +3369,7 @@ namespace Hongyang
                     for (int i = 0; i < count; i++)
                     {
                         Autodesk.Geometry.Point point = points.Dequeue();
-                        transformed.Add($"G801 N{n++} X{Math.Round(point.X * Math.Cos(angle) - point.Y * Math.Sin(angle), 3)} Y{Math.Round(point.X * Math.Sin(angle) + point.Y * Math.Cos(angle),3)} Z{point.Z} R3.0");
+                        transformed.Add($"G801 N{n++} X{Math.Round(point.X * Math.Cos(angle) - point.Y * Math.Sin(angle), 3)} Y{Math.Round(point.X * Math.Sin(angle) + point.Y * Math.Cos(angle), 3)} Z{point.Z} R3.0");
                     }
                 }
             }
@@ -3383,7 +3380,7 @@ namespace Hongyang
             }
 
             string integrated = $"{ConfigurationManager.AppSettings["ncFolder"]}\\{project}\\{ncProgram}\\{System.IO.Path.GetFileNameWithoutExtension(msr) + ".tap"}";
-            
+
             StreamWriter writer = new StreamWriter(integrated, false);
             n = 0;
             foreach (string l in totalLines)
@@ -3434,6 +3431,6 @@ namespace Hongyang
         {
             cbxPoints.ItemsSource = points2;
             cbxPoints.SelectedItem = points2.First();
-        }        
+        }
     }
 }
