@@ -2302,9 +2302,12 @@ namespace Hongyang
 
                 foreach (string ncFile in ncFiles.Where(n => !string.IsNullOrEmpty(n)))
                 {
-                    reader = new StreamReader(ncFile);
-                    writer.Write(reader.ReadToEnd());
-                    reader.Close();
+                    if (File.Exists(ncFile))
+                    {
+                        reader = new StreamReader(ncFile);
+                        writer.Write(reader.ReadToEnd());
+                        reader.Close();
+                    }
                 }
 
                 writer.WriteLine();
