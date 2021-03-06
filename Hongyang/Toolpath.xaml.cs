@@ -1268,6 +1268,116 @@ namespace Hongyang
                 powerMILL.Execute("RESET TOOLPATH START_END");
                 powerMILL.Execute("LEADS ACCEPT");
             }
+            else if (method == "侧孔2" || method == "椭圆")
+            {
+                string probing = tpName + "_Probing";
+                string spline = string.Empty;//拟合公差
+                double point = 0;//检测路径最大点数
+                PINominal page = (Application.Current.MainWindow as MainWindow).PINominal;
+
+                powerMILL.Execute($"DELETE TOOLPATH \"{probing}\"");
+                powerMILL.Execute($"DELETE PATTERN \"{tpName}\"");
+                powerMILL.Execute($"DELETE WORKPLANE \"{tpName}\"");
+
+                if (method == "侧孔2")//侧孔用孔特征建立坐标系
+                {
+                    powerMILL.Execute("EDIT FEATURECREATE TYPE HOLE EDIT FEATURECREATE CIRCULAR ON EDIT FEATURECREATE FILTER HOLES EDIT FEATURECREATE TOPDEFINE ABSOLUTE EDIT FEATURECREATE BOTTOMDEFINE ABSOLUTE FORM CANCEL FEATURE FORM CREATEHOLE");
+                    powerMILL.Execute("EDIT FEATURECREATE CREATEHOLES");
+                    powerMILL.Execute("FORM CANCEL CREATEHOLE");
+                    session.Refresh();
+                    if (session.FeatureSets.ActiveItem == null)
+                    {
+                        MessageBox.Show("无法产生特征集，请确认曲面是否是孔。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                        return;
+                    }
+                    session.FeatureSets.ActiveItem.Name = tpName;
+                    powerMILL.Execute($"ACTIVATE WORKPLANE FROMENTITY FEATURESET \"{tpName}\"");
+                    session.Workplanes.ActiveItem.Name = tpName;
+                    powerMILL.Execute($"DELETE FEATURESET \"{tpName}\"");
+
+                    point = int.Parse(ConfigurationManager.AppSettings["HoleMinPoints"]);
+                    spline = page.tbxHoleSpline.Text;
+                }
+                else if (method == "椭圆")//椭圆用Swarf方式建立
+                {
+                    string swarfTpName = tpName + "_Swarf";
+                    powerMILL.Execute($"DELETE TOOLPATH \"{swarfTpName}\"");
+
+                    //Swarf刀路    
+                    powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Finishing/Swarf-Finishing.ptf\"");
+                    session.Refresh();
+                    session.Toolpaths.ActiveItem.Name = swarfTpName;
+                    powerMILL.Execute($"ACTIVATE TOOLPATH \"{swarfTpName}\" FORM TOOLPATH");
+                    powerMILL.Execute("EDIT BLOCK COORDINATE WORLD");
+                    powerMILL.Execute("EDIT BLOCK RESET");
+                    powerMILL.Execute("EDIT PAR 'Tolerance' \"0.01\"");
+                    powerMILL.Execute("EDIT PAR 'MultipleCuts' 'offset_down'");
+                    powerMILL.Execute("EDIT PAR 'StepdownLimit.Active' 1");
+                    powerMILL.Execute("EDIT PAR 'StepdownLimit.Value' \"2\"");              
+                    powerMILL.Execute($"EDIT PAR 'AxialDepthOfCut.UserDefined' '1' EDIT PAR 'Stepdown' \"{5}\"");
+                    powerMILL.Execute("EDIT TOOLPATH START TYPE POINT_SAFE");
+                    powerMILL.Execute("EDIT TOOLAXIS TYPE AUTOMATIC");
+                    powerMILL.Execute("EDIT PAR 'AxisAlignment' 'from'");
+                    powerMILL.Execute($"ACTIVATE Tool \"{ConfigurationManager.AppSettings["ENDMILL"]}\"");
+                    powerMILL.Execute($"EDIT TOOLPATH \"{swarfTpName}\" REAPPLYFROMGUI\rYes");
+                    session.Toolpaths.ActiveItem.Calculate();
+
+                    //建立坐标系
+                    CreateWorkplanebySwarf(swarfTpName, tpName);
+                    powerMILL.Execute("edit model all deselect all");
+                    powerMILL.Execute($"EDIT LEVEL \"{level}\" SELECT ALL");
+
+                    point = int.Parse(ConfigurationManager.AppSettings["EllipseMinPoints"]);
+                    spline = page.tbxEllipseSpline.Text;
+                }
+
+                powerMILL.Execute($"CREATE PATTERN '{tpName}'");               
+                powerMILL.Execute($"EDIT PATTERN \"{tpName}\" INSERT MODEL");
+                powerMILL.Execute($"EDIT PATTERN \"{tpName}\" CURVEEDITOR START");
+                powerMILL.Execute("CURVEEDITOR MODE REORDER");                
+                powerMILL.Execute("CURVEEDITOR REORDER LISTUPDATE\r 0 NEW");
+                powerMILL.Execute("CURVEEDITOR DELETE SELECTED");
+                powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
+                powerMILL.Execute($"EDIT PATTERN \"{tpName}\" CURVEEDITOR START");
+                powerMILL.Execute("CURVEEDITOR MODE TRANSLATE");
+                powerMILL.Execute("MODE COORDINPUT COORDINATES 0 0 -3");
+                if (method == "侧孔2")
+                {
+                    powerMILL.Execute("MODE TRANSFORM COPY YES");
+                    powerMILL.Execute("MODE COORDINPUT COORDINATES 0 0 -7");
+                }               
+                powerMILL.Execute("MODE TRANSFORM FINISH");
+                powerMILL.Execute("CURVEEDITOR MODE REORDER");
+                powerMILL.Execute("CURVEEDITOR REORDER LISTUPDATE\r 1 SERIES");
+                powerMILL.Execute("CURVEEDITOR MODE FIT_SPLINE");                
+                powerMILL.Execute($"CURVEEDITOR FIT SPLINE \"{spline}\"");             
+                powerMILL.Execute("CURVEEDITOR FINISH ACCEPT");
+                
+                powerMILL.Execute("IMPORT TEMPLATE ENTITY TOOLPATH TMPLTSELECTOR \"Probing/Surface-Inspection.ptf\"");
+                session.Refresh();
+                session.Toolpaths.ActiveItem.Name = probing;
+                powerMILL.Execute($"ACTIVATE TOOLPATH \"{probing}\" FORM TOOLPATH");
+                powerMILL.Execute($"ACTIVATE Tool \"{cbxTool.Text}\"");
+                powerMILL.Execute($"EDIT PAR 'Pattern' \"{tpName}\"");
+                powerMILL.Execute($"EDIT TOOLPATH \"{probing}\" REAPPLYFROMGUI\rYes");
+                session.Toolpaths.ActiveItem.Calculate();
+
+                powerMILL.Execute("EDIT TOOLPATH LEADS RAISEFORM");
+                powerMILL.Execute("EDIT TOOLPATH LEADS PAGE STARTENDPT");
+                powerMILL.Execute("EDIT TOOLPATH START TYPE POINT_SAFE");
+                powerMILL.Execute("EDIT TOOLPATH LEADS PAGE RAPIDMOVES");
+                powerMILL.Execute("EDIT TOOLPATH SAFEAREA CALCULATE_DIMENSIONS");
+                powerMILL.Execute("PROCESS TPLEADS");
+                powerMILL.Execute("LEADS ACCEPT");
+
+                CollisionCheck(probing, probing);
+
+                int count = int.Parse(powerMILL.ExecuteEx($"print par terse \"entity('toolpath', '{probing}').Statistics.PlungesIntoStock\"").ToString());
+                if (count < point)
+                {
+                    MessageBox.Show($"{probing}的检测点数小于设定的最小点数{point}，请调整拟合公差重新计算。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                }
+            }
             else
             {
 
@@ -2308,6 +2418,10 @@ namespace Hongyang
                         writer.Write(reader.ReadToEnd());
                         reader.Close();
                     }
+                    else
+                    {
+                        MessageBox.Show($"未找到{ncFile}，请坚持此NC是否正确输出。", "Info", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                    }
                 }
 
                 writer.WriteLine();
@@ -3173,6 +3287,30 @@ namespace Hongyang
                     index += n;
                     points.CopyToClipboard(indices);
                     inspect3.BagOfPoints[measure].PasteFromClipboard();
+                }
+                else if (toolpath.Name.Contains("椭圆"))
+                {
+                    IGeometricGroup geometric1 = doc.SequenceItems.AddGroup(PWI_GroupType.pwi_grp_GeometricGroup) as IGeometricGroup;
+                    geometric1.Name = toolpath.Name;
+                    IPlane_ProbedItem plane1 = geometric1.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Plane_Probed_) as IPlane_ProbedItem;
+                    IGeometricEllipseItem ellipse = geometric1.SequenceItems.AddItem(PWI_EntityItemType.pwi_ent_Feat_ProbedEllipse_) as IGeometricEllipseItem;
+                    
+                    indices = new int[points.Count];
+                    for (int i = 0; i < points.Count; i++)
+                    {
+                        if (i < n)
+                        {
+                            indices[i] = index + i;
+                        }
+                        else
+                        {
+                            indices[i] = index;
+                        }
+                    }
+                    index += n;
+                    points.CopyToClipboard(indices);
+                    plane1.BagOfPoints[measure].PasteFromClipboard();                    
+                    ellipse.BagOfPoints[measure].PasteFromClipboard();                    
                 }
                 else
                 {

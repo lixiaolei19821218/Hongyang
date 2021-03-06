@@ -52,10 +52,14 @@
         </GroupBox>
         <GroupBox Header="孔">
             <StackPanel Orientation="Horizontal">
-                <Label Content="距离孔顶端面的距离"/>
+                <Label Content="距离端面的距离"/>
                 <TextBox Width="60" Text="3" Name="tbxHoleDistance" x:FieldModifier="public"/>
                 <Label Content="继续下探深度"/>
                 <TextBox Width="60" Text="10" Name="tbxHoleDepth" x:FieldModifier="public"/>
+                <Label Content="侧孔拟合"/>
+                <TextBox Width="60" Text="0.2" Name="tbxHoleSpline" x:FieldModifier="public"/>
+                <Label Content="椭圆拟合"/>
+                <TextBox Width="60" Text="0.01" Name="tbxEllipseSpline" x:FieldModifier="public"/>
             </StackPanel>
         </GroupBox>
         <GroupBox Header="后置文件" Margin="5">
